@@ -1,0 +1,224 @@
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { Search, ShoppingBag, Package, Truck, CheckCircle, XCircle } from 'lucide-react'
+import Header from '../../components/layout/Header'
+import Footer from '../../components/layout/Footer'
+import Container from '../../components/layout/Container'
+import Card from '../../components/common/Card'
+import Button from '../../components/common/Button'
+import Badge from '../../components/common/Badge'
+import { useAuth } from '../../context/AuthContext'
+import { transactionService } from '../../services/transactionService'
+import { productService } from '../../services/productService'
+import { userService } from '../../services/userService'
+import { formatCurrency, formatDate } from '../../utils/helpers'
+import toast from 'react-hot-toast'
+
+const SellerOrders = () => {
+  const { user } = useAuth()
+  const [activeTab, setActiveTab] = useState('Semua')
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState({ perluDiproses: 0, telahDiproses: 0, batal: 0, pendapatan: 0 })
+
+  const tabs = ['Semua', 'Perlu Diproses', 'Telah Diproses', 'Pembatalan']
+
+  useEffect(() => {
+    if (user) {
+      loadOrders()
+    }
+  }, [user])
+
+  const loadOrders = async () => {
+    setLoading(true)
+    try {
+      const sellerOrders = await transactionService.getTransactionsBySeller()
+      
+      // Enrich with product & buyer
+      const enrichedOrders = await Promise.all(sellerOrders.map(async (order) => {
+        const product = await productService.getProductById(order.productId)
+        const buyer = await userService.getUserById(order.buyerId)
+        return {
+          ...order,
+          product,
+          buyer
+        }
+      }))
+      
+      const sortedOrders = enrichedOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      
+      setOrders(sortedOrders)
+      
+      setStats({
+          perluDiproses: sortedOrders.filter(o => o.status === 'paid').length,
+          telahDiproses: sortedOrders.filter(o => o.status === 'shipped' || o.status === 'completed').length,
+          batal: sortedOrders.filter(o => o.status === 'retur').length,
+          pendapatan: sortedOrders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.hargaFinal, 0)
+      })
+    } catch (error) {
+      console.error('Failed to load seller orders', error)
+      toast.error('Gagal memuat data pesanan')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleKirim = (id) => {
+    if (window.confirm('Proses pengiriman pesanan ini?')) {
+        try {
+            transactionService.markAsShipped(id)
+            toast.success('Pesanan berhasil diproses & dikirim!')
+            loadOrders()
+        } catch (error) {
+            toast.error('Gagal memperbarui status pengiriman')
+        }
+    }
+  }
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'pending': return <Badge variant="warning">Menunggu Pembayaran</Badge>
+      case 'paid': return <Badge variant="info">Perlu Dikirim</Badge>
+      case 'shipped': return <Badge variant="primary">Sedang Dikirim</Badge>
+      case 'completed': return <Badge variant="success">Selesai</Badge>
+      case 'retur': return <Badge variant="error">Dibatalkan/Retur</Badge>
+      default: return <Badge>{status}</Badge>
+    }
+  }
+
+  const filteredOrders = orders.filter(order => {
+      if (activeTab === 'Semua') return true
+      if (activeTab === 'Perlu Diproses') return order.status === 'paid'
+      if (activeTab === 'Telah Diproses') return order.status === 'shipped' || order.status === 'completed'
+      if (activeTab === 'Pembatalan') return order.status === 'retur'
+      return true
+  })
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gray-50">
+        <Header />
+        <Container className="flex-grow flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </Container>
+        <Footer />
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gray-50 pb-16 md:pb-0">
+      <Header />
+      
+      <main className="flex-grow py-8">
+        <Container>
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Menu Transaksi (Orderan)
+            </h1>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <Card className="text-center py-6">
+              <p className="text-3xl font-bold text-primary-600 mb-2">{stats.perluDiproses}</p>
+              <p className="text-sm font-medium text-gray-500">Pengiriman Perlu Diproses</p>
+            </Card>
+            <Card className="text-center py-6">
+              <p className="text-3xl font-bold text-teal-600 mb-2">{stats.telahDiproses}</p>
+              <p className="text-sm font-medium text-gray-500">Pengiriman Telah Diproses</p>
+            </Card>
+            <Card className="text-center py-6">
+              <p className="text-3xl font-bold text-red-600 mb-2">{stats.batal}</p>
+              <p className="text-sm font-medium text-gray-500">Pengembalian/Pembatalan</p>
+            </Card>
+            <Card className="text-center py-6">
+              <p className="text-3xl font-bold text-green-600 mb-2">{formatCurrency(stats.pendapatan)}</p>
+              <p className="text-sm font-medium text-gray-500">Total Pendapatan Sukses</p>
+            </Card>
+          </div>
+
+          <div className="border-b border-gray-200 mb-6">
+            <nav className="flex space-x-8">
+              {tabs.map(tab => (
+                <button
+                  key={tab}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                    activeTab === tab
+                      ? 'border-primary-600 text-primary-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab}
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {filteredOrders.length === 0 ? (
+              <div className="bg-white rounded-2xl p-12 shadow-soft border border-gray-100 flex flex-col items-center justify-center text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 mb-4">
+                  <ShoppingBag size={32} />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">
+                  Belum ada orderan di kategori ini
+                </h3>
+                <p className="text-gray-500">
+                  Terus promosikan produkmu agar laris manis!
+                </p>
+              </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredOrders.map(order => (
+                <div key={order.id} className="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-medium text-gray-900">Pembeli: {order.buyer?.profile?.nama || 'Pengguna'}</span>
+                      <span className="text-gray-300">•</span>
+                      <span className="text-sm text-gray-500">{formatDate(order.createdAt)}</span>
+                    </div>
+                    <div>{getStatusBadge(order.status)}</div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                    <div className="w-20 h-20 rounded-xl overflow-hidden border border-gray-200 shrink-0">
+                      <img 
+                        src={order.product?.fotos?.[0] || 'https://via.placeholder.com/150'} 
+                        alt={order.product?.nama} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900 mb-1">{order.product?.nama || 'Produk tidak tersedia'}</h3>
+                      <p className="text-sm text-gray-500 mb-2">Total Tagihan: <span className="font-bold text-primary-700">{formatCurrency(order.hargaFinal)}</span></p>
+                      
+                      <div className="bg-gray-50 rounded-lg p-3 mt-3 text-sm">
+                        <p className="font-medium text-gray-700 mb-1 flex items-center gap-1"><Truck size={14}/> Info Pengiriman:</p>
+                        <p className="text-gray-600 line-clamp-2">{order.alamatPengiriman}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                    <Button variant="outline" onClick={() => window.location.href = `/chat?product=${order.productId}&user=${order.buyerId}`}>
+                      Chat Pembeli
+                    </Button>
+                    {order.status === 'paid' && (
+                      <Button onClick={() => handleKirim(order.id)}>
+                        Kirim Pesanan
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Container>
+      </main>
+
+      <Footer />
+    </div>
+  )
+}
+
+export default SellerOrders

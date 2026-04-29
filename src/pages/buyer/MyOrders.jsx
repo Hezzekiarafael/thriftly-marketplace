@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Package, Clock, CheckCircle2, AlertCircle, Truck } from 'lucide-react'
 import Header from '../../components/layout/Header'
 import Footer from '../../components/layout/Footer'
 import Container from '../../components/layout/Container'
 import Button from '../../components/common/Button'
 import Badge from '../../components/common/Badge'
+import Modal from '../../components/common/Modal'
 import { useAuth } from '../../context/AuthContext'
 import { transactionService } from '../../services/transactionService'
 import { productService } from '../../services/productService'
@@ -14,8 +16,13 @@ import toast from 'react-hot-toast'
 
 const MyOrders = () => {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
+  const [selectedOrder, setSelectedOrder] = useState(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false)
+  const [orderToComplete, setOrderToComplete] = useState(null)
 
   useEffect(() => {
     if (user) {
@@ -49,12 +56,24 @@ const MyOrders = () => {
     }
   }
 
-  const handleSelesaikanPesanan = (id) => {
-    if (window.confirm('Pastikan barang sudah diterima dengan baik dan sesuai. Dana akan diteruskan ke penjual. Lanjutkan?')) {
+  const handleOpenDetail = (order) => {
+    setSelectedOrder(order)
+    setIsModalOpen(true)
+  }
+
+  const handleOpenConfirmModal = (id) => {
+    setOrderToComplete(id)
+    setConfirmModalOpen(true)
+  }
+
+  const confirmSelesaikanPesanan = async () => {
+    if (orderToComplete) {
       try {
-        transactionService.markAsCompleted(id)
+        await transactionService.markAsCompleted(orderToComplete)
         toast.success('Pesanan selesai! Terima kasih.')
         loadOrders()
+        setConfirmModalOpen(false)
+        setOrderToComplete(null)
       } catch (error) {
         toast.error('Gagal menyelesaikan pesanan')
       }
@@ -66,6 +85,7 @@ const MyOrders = () => {
       case 'pending':
         return <Badge variant="warning">Menunggu Pembayaran</Badge>
       case 'paid':
+      case 'settlement':
         return <Badge variant="info">Dikemas Penjual</Badge>
       case 'shipped':
         return <Badge variant="primary">Sedang Dikirim</Badge>
@@ -145,17 +165,27 @@ const MyOrders = () => {
                     </div>
                   )}
 
-                  <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                    <Button variant="outline" onClick={() => window.location.href = `/chat?product=${order.productId}&user=${order.sellerId}`}>
+                  <div className="flex flex-wrap justify-end gap-3 pt-4 border-t border-gray-100">
+                    <Button variant="outline" onClick={() => handleOpenDetail(order)}>
+                      Detail
+                    </Button>
+                    <Button variant="outline" onClick={() => navigate(`/chat?product=${order.productId}&user=${order.sellerId}`)}>
                       Chat Penjual
                     </Button>
+                    
+                    {order.status === 'pending' && (
+                      <Button onClick={() => navigate(`/payment/success/${order.order_id || order.id}`)}>
+                        Bayar Sekarang
+                      </Button>
+                    )}
+
                     {order.status === 'shipped' && (
-                      <Button onClick={() => handleSelesaikanPesanan(order.id)}>
+                      <Button onClick={() => handleOpenConfirmModal(order.id)}>
                         Selesaikan Pesanan
                       </Button>
                     )}
                     {order.status === 'completed' && (
-                      <Button variant="secondary" onClick={() => window.location.href = `/products/${order.productId}`}>
+                      <Button variant="secondary" onClick={() => navigate(`/products/${order.productId}`)}>
                         Beli Lagi
                       </Button>
                     )}
@@ -168,6 +198,117 @@ const MyOrders = () => {
       </main>
 
       <Footer />
+
+      {/* Modal Rincian Pesanan */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Rincian Pesanan"
+      >
+        {selectedOrder && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-start pb-4 border-b border-gray-100">
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Nomor Order</p>
+                <p className="font-bold text-gray-900">{selectedOrder.order_id || selectedOrder.id}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Tanggal Transaksi</p>
+                <p className="font-medium text-gray-900">{formatDate(selectedOrder.createdAt)}</p>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Package className="text-primary-600" size={18} />
+                <h3 className="font-semibold text-gray-900">Detail Produk</h3>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4 flex gap-4 border border-gray-100">
+                <div className="w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shrink-0 bg-white">
+                  <img 
+                    src={selectedOrder.product?.fotos?.[0] || 'https://via.placeholder.com/150'} 
+                    alt={selectedOrder.product?.nama} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">{selectedOrder.product?.nama}</p>
+                  <p className="text-xs text-gray-500 mt-1">Penjual: {selectedOrder.seller?.profile?.nama || 'Penjual'}</p>
+                  <p className="font-bold text-primary-700 mt-1">{formatCurrency(selectedOrder.hargaFinal || selectedOrder.price || 0)}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col">
+                <h3 className="font-semibold text-gray-900 mb-2">Info Pengiriman</h3>
+                <div className="flex-1 text-sm text-gray-600 bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+                  <p className="font-medium text-gray-900 mb-1">Alamat:</p>
+                  <p className="mb-3">{selectedOrder.alamatPengiriman || 'Alamat tidak tersedia'}</p>
+                  <p className="font-medium text-gray-900 mb-1">Estimasi Sampai:</p>
+                  <p>2 - 4 Hari Kerja</p>
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <h3 className="font-semibold text-gray-900 mb-2">Rincian Pembayaran</h3>
+                <div className="flex-1 space-y-2 text-sm bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+                  <div className="flex justify-between text-gray-600">
+                    <span>Harga Barang</span>
+                    <span>{formatCurrency(selectedOrder.hargaFinal || selectedOrder.price || 0)}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-600">
+                    <span>Ongkos Kirim</span>
+                    <span>{formatCurrency(selectedOrder.ongkir || 0)}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-600">
+                    <span>Biaya Layanan</span>
+                    <span>{formatCurrency(2500)}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-gray-900 pt-3 border-t border-gray-100 mt-3">
+                    <span>Total Bayar</span>
+                    <span className="text-primary-700">{formatCurrency((selectedOrder.hargaFinal || selectedOrder.price || 0) + (selectedOrder.ongkir || 0) + 2500)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4">
+              <Button fullWidth onClick={() => setIsModalOpen(false)}>
+                Tutup
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal Konfirmasi Selesaikan Pesanan */}
+      <Modal
+        isOpen={confirmModalOpen}
+        onClose={() => setConfirmModalOpen(false)}
+        title="Selesaikan Pesanan"
+      >
+        <div className="space-y-6">
+          <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 flex gap-3 text-orange-800">
+            <AlertCircle className="shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold mb-1">Perhatian!</p>
+              <p className="text-sm">
+                Pastikan barang sudah Anda terima dengan baik dan sesuai pesanan. 
+                Jika Anda menekan <span className="font-semibold">"Ya, Selesaikan"</span>, dana akan diteruskan ke penjual dan pesanan tidak dapat diretur/dikembalikan.
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex gap-3 pt-2">
+            <Button variant="outline" fullWidth onClick={() => setConfirmModalOpen(false)}>
+              Batal
+            </Button>
+            <Button fullWidth onClick={confirmSelesaikanPesanan}>
+              Ya, Selesaikan
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

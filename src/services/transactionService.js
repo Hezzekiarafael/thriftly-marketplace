@@ -143,6 +143,52 @@ export const transactionService = {
     }
   },
 
+  // 💳 Fungsi untuk mengirim permintaan pembayaran ke server (Midtrans)
+  async charge(paymentData) {
+    if (import.meta.env.VITE_USE_MOCK_API === 'true') {
+      const transactions = storage.get(STORAGE_KEYS.TRANSACTIONS) || [];
+      const orderId = `ORDER-${Date.now()}`;
+      const newTransaction = {
+        ...paymentData,
+        id: String(Date.now()),
+        order_id: orderId,
+        va_number: '8077' + Math.floor(100000000000 + Math.random() * 900000000000).toString(),
+        expiry_time: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        harga_final: paymentData.harga_final || paymentData.price || 0,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      };
+      transactions.push(newTransaction);
+      storage.set(STORAGE_KEYS.TRANSACTIONS, transactions);
+      return { success: true, data: newTransaction };
+    }
+
+    try {
+      const response = await api.post('/payment/charge', paymentData);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to charge payment', error);
+      throw error;
+    }
+  },
+
+  // 🔍 Mengambil data transaksi tunggal berdasarkan order_id dari Midtrans
+  async getTransactionByOrderId(orderId) {
+    if (import.meta.env.VITE_USE_MOCK_API === 'true') {
+      const transactions = storage.get(STORAGE_KEYS.TRANSACTIONS) || [];
+      return transactions.find(t => t.order_id === orderId);
+    }
+
+    try {
+      const response = await api.get('/transactions');
+      const data = response.data.data || response.data || [];
+      return data.find(t => t.order_id === orderId);
+    } catch (error) {
+      console.error('Failed to get transaction by order id', error);
+      return null;
+    }
+  },
+
 
   // 🔄 Update status transaksi (Pay, Ship, Complete, Retur)
   async updateTransactionStatus(id, status, additionalData = {}) {

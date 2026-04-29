@@ -50,7 +50,7 @@ const SellerOrders = () => {
       setOrders(sortedOrders)
       
       setStats({
-          perluDiproses: sortedOrders.filter(o => o.status === 'paid').length,
+          perluDiproses: sortedOrders.filter(o => o.status === 'paid' || o.status === 'settlement').length,
           telahDiproses: sortedOrders.filter(o => o.status === 'shipped' || o.status === 'completed').length,
           batal: sortedOrders.filter(o => o.status === 'retur').length,
           pendapatan: sortedOrders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.hargaFinal, 0)
@@ -78,7 +78,8 @@ const SellerOrders = () => {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'pending': return <Badge variant="warning">Menunggu Pembayaran</Badge>
-      case 'paid': return <Badge variant="info">Perlu Dikirim</Badge>
+      case 'paid':
+      case 'settlement': return <Badge variant="info">Perlu Dikirim</Badge>
       case 'shipped': return <Badge variant="primary">Sedang Dikirim</Badge>
       case 'completed': return <Badge variant="success">Selesai</Badge>
       case 'retur': return <Badge variant="error">Dibatalkan/Retur</Badge>
@@ -88,7 +89,7 @@ const SellerOrders = () => {
 
   const filteredOrders = orders.filter(order => {
       if (activeTab === 'Semua') return true
-      if (activeTab === 'Perlu Diproses') return order.status === 'paid'
+      if (activeTab === 'Perlu Diproses') return order.status === 'paid' || order.status === 'settlement'
       if (activeTab === 'Telah Diproses') return order.status === 'shipped' || order.status === 'completed'
       if (activeTab === 'Pembatalan') return order.status === 'retur'
       return true
@@ -203,7 +204,7 @@ const SellerOrders = () => {
                     <Button variant="outline" onClick={() => window.location.href = `/chat?product=${order.productId}&user=${order.buyerId}`}>
                       Chat Pembeli
                     </Button>
-                    {order.status === 'paid' && (
+                    {(order.status === 'paid' || order.status === 'settlement') && (
                       <Button onClick={() => handleKirim(order.id)}>
                         Kirim Pesanan
                       </Button>

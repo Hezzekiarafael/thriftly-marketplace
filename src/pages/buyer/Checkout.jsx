@@ -76,21 +76,33 @@ const Checkout = () => {
     try {
       const ongkir = shippingRates[shippingOption]
       
-      const transaction = await transactionService.createTransaction({
-        productId: product.id,
-        buyerId: user.id,
-        sellerId: product.sellerId,
-        hargaFinal: product.harga,
+      const res = await transactionService.charge({
+        product_id: product.id,
+        seller_id: product.sellerId,
+        harga_final: product.harga, // Sesuaikan dengan kebutuhan backend
         ongkir: ongkir,
-        alamatPengiriman: user.profile.alamat
+        alamat_pengiriman: user.profile.alamat,
+        bank: paymentMethod === 'transfer_bank' ? 'bca' : paymentMethod,
       })
 
-      setTransactionData(transaction)
-      setShowPaymentModal(true)
-      setIsSubmitting(false)
+      if(res && res.success && res.data?.order_id) {
+        toast.success('Pesanan berhasil dibuat!');
+        navigate(`/payment/success/${res.data.order_id}`);
+      } else if (res && res.data?.order_id) {
+        toast.success('Pesanan berhasil dibuat!');
+        navigate(`/payment/success/${res.data.order_id}`);
+      } else if (res && res.order_id) {
+        toast.success('Pesanan berhasil dibuat!');
+        navigate(`/payment/success/${res.order_id}`);
+      } else {
+        // Fallback untuk antisipasi perbedaan response payload
+        setTransactionData(res.data || res)
+        setShowPaymentModal(true)
+      }
       
     } catch (error) {
-      toast.error(error.message || 'Gagal membuat pesanan')
+      toast.error(error.response?.data?.message || error.message || 'Gagal membuat pesanan')
+    } finally {
       setIsSubmitting(false)
     }
   }

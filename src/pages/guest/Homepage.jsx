@@ -169,6 +169,9 @@ const Homepage = () => {
             <img
               src={slide.src}
               alt={slide.alt}
+              loading={i === 0 ? 'eager' : 'lazy'}
+              decoding="async"
+              fetchPriority={i === 0 ? 'high' : 'low'}
               className="w-full h-full object-cover md:object-center opacity-70 blur-[1px]"
             />
           </div>
@@ -182,7 +185,7 @@ const Homepage = () => {
         <div className="relative z-10 text-center px-4 w-full max-w-4xl mx-auto">
           <div className="flex justify-center mb-2 md:mb-4">
             <div className="shimmer-image">
-              <img src="/icon_dashV2.png" alt="Shop Icon" className="h-[80px] md:h-[120px] lg:h-[160px] object-contain mix-blend-overlay opacity-90" />
+              <img src="/icon_dashV2.png" alt="Shop Icon" loading="eager" decoding="async" className="h-[80px] md:h-[120px] lg:h-[160px] object-contain mix-blend-overlay opacity-90" />
             </div>
           </div>
           <p className="text-xs sm:text-lg md:text-2xl text-gray-200 mb-6 md:mb-12 font-light tracking-wide -mt-2 sm:-mt-4">
@@ -408,7 +411,9 @@ const Homepage = () => {
                   <div className="relative h-44 overflow-hidden">
                     <img 
                       src={post.image} 
-                      alt={post.title} 
+                      alt={post.title}
+                      loading="lazy"
+                      decoding="async" 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                     <div className="absolute top-3 left-3">

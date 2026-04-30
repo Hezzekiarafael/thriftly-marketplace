@@ -83,9 +83,9 @@ const Transactions = () => {
       render: (row) => <span className="text-gray-600">{formatDate(row.createdAt)}</span>
     },
     {
-      header: 'Amount',
+      header: 'Total Amount',
       accessor: 'hargaFinal',
-      render: (row) => <span className="font-medium text-gray-900">{formatCurrency(row.hargaFinal)}</span>
+      render: (row) => <span className="font-medium text-gray-900">{formatCurrency(Number(row.hargaFinal || 0) + Number(row.ongkir || 0) + 2500)}</span>
     },
     {
       header: 'Status',
@@ -210,15 +210,19 @@ const Transactions = () => {
                 <div className="space-y-2 text-sm bg-gray-900 text-white p-4 rounded-xl shadow-lg">
                   <div className="flex justify-between text-gray-400 text-xs">
                     <span>Subtotal Products</span>
-                    <span>{formatCurrency(selectedTrx.hargaFinal - selectedTrx.ongkir)}</span>
+                    <span>{formatCurrency(selectedTrx.hargaFinal || 0)}</span>
                   </div>
                   <div className="flex justify-between text-gray-400 text-xs">
                     <span>Shipping Cost</span>
-                    <span>{formatCurrency(selectedTrx.ongkir)}</span>
+                    <span>{formatCurrency(selectedTrx.ongkir || 0)}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-400 text-xs">
+                    <span>Platform Fee</span>
+                    <span>{formatCurrency(2500)}</span>
                   </div>
                   <div className="flex justify-between pt-2 border-t border-white/10 font-bold">
                     <span className="text-gray-300">Total Amount</span>
-                    <span className="text-indigo-400">{formatCurrency(selectedTrx.hargaFinal)}</span>
+                    <span className="text-indigo-400">{formatCurrency(Number(selectedTrx.hargaFinal || 0) + Number(selectedTrx.ongkir || 0) + 2500)}</span>
                   </div>
                 </div>
               </div>

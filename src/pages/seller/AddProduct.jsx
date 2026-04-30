@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Upload, X } from 'lucide-react'
+import { Upload, X, Link, Loader2, CheckCircle, ExternalLink, ChevronDown, ChevronUp, Sparkles } from 'lucide-react'
 import Header from '../../components/layout/Header'
 import Footer from '../../components/layout/Footer'
 import Container from '../../components/layout/Container'
@@ -18,6 +18,7 @@ import { ALL_LOCATIONS } from '../../constants/locations'
 import { BUTTONS, PLACEHOLDERS, INSTRUCTIONS, SUCCESS } from '../../constants/copywriting'
 import { getPriceRecommendation, formatPriceRecommendation } from '../../utils/priceRecommendation'
 import { aiService } from '../../services/aiService'
+import { scraperService } from '../../services/scraperService'
 import toast from 'react-hot-toast'
 
 const AddProduct = () => {
@@ -27,7 +28,11 @@ const AddProduct = () => {
   const [loading, setLoading] = useState(false)
   const [isAiLoading, setIsAiLoading] = useState(false)
   const [priceRec, setPriceRec] = useState(null)
-  const { images, loading: uploadLoading, handleImageUpload, removeImage } = useImageUpload({
+  const [tokopediaUrl, setTokopediaUrl] = useState('')
+  const [isScraping, setIsScraping] = useState(false)
+  const [scrapeSuccess, setScrapeSuccess] = useState(false)
+  const [showImportPanel, setShowImportPanel] = useState(false)
+  const { images, loading: uploadLoading, handleImageUpload, removeImage, setImages } = useImageUpload({
     maxFiles: 5,
     minFiles: 3
   })
@@ -102,6 +107,53 @@ const AddProduct = () => {
     }
   }
 
+  const handleTokopediaImport = async () => {
+    if (!tokopediaUrl.trim()) {
+      toast.error('Paste link Tokopedia dulu ya!')
+      return
+    }
+
+    if (!scraperService.isValidTokopediaUrl(tokopediaUrl)) {
+      toast.error('Link-nya bukan dari Tokopedia nih. Pastikan link dari tokopedia.com atau tokopedia.link ya!')
+      return
+    }
+
+    setIsScraping(true)
+    setScrapeSuccess(false)
+
+    try {
+      const data = await scraperService.scrapeFromUrl(tokopediaUrl)
+
+      // Auto-fill form fields
+      if (data.nama) setValue('nama', data.nama)
+      if (data.deskripsi) setValue('deskripsi', data.deskripsi)
+      if (data.harga) setValue('harga', data.harga)
+      if (data.kategori) setValue('kategori', data.kategori)
+      if (data.kondisi) setValue('kondisi', data.kondisi)
+      if (data.lokasi) setValue('lokasi', data.lokasi)
+
+      // Set images from scrape (jika ada)
+      if (data.fotos && data.fotos.length > 0) {
+        if (typeof setImages === 'function') {
+          setImages(data.fotos)
+        }
+        setValue('fotos', data.fotos)
+      }
+
+      setScrapeSuccess(true)
+      toast.success('Data berhasil diambil dari Tokopedia! Cek dan lengkapi form ya.')
+
+      // Auto-collapse panel setelah sukses
+      setTimeout(() => {
+        setShowImportPanel(false)
+      }, 2000)
+    } catch (error) {
+      toast.error(error.message || 'Gagal mengambil data dari link tersebut')
+    } finally {
+      setIsScraping(false)
+    }
+  }
+
   const onSubmit = async (data) => {
     setLoading(true)
     try {
@@ -127,6 +179,105 @@ const AddProduct = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-6">
             Jual Barang Nganggur
           </h1>
+
+          {/* === Tokopedia Import Section === */}
+          <div className="mb-6 rounded-xl overflow-hidden shadow-lg border border-green-100" style={{ background: 'linear-gradient(135deg, #00AA5B 0%, #00C76B 50%, #008746 100%)' }}>
+            <button
+              type="button"
+              onClick={() => setShowImportPanel(!showImportPanel)}
+              className="w-full flex items-center justify-between px-6 py-4 text-white hover:opacity-90 transition-opacity"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                  <Sparkles size={20} className="text-white" />
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-base">Quick Import dari Tokopedia</p>
+                  <p className="text-xs text-green-50">Paste link, data otomatis terisi. Hemat waktu!</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {scrapeSuccess && (
+                  <span className="bg-green-400/30 text-green-100 text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                    <CheckCircle size={12} /> Imported
+                  </span>
+                )}
+                {showImportPanel ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
+            </button>
+
+            {showImportPanel && (
+              <div className="bg-white px-6 py-5 space-y-4 border-t border-green-100">
+                <div className="flex items-start gap-3 bg-green-50 p-3 rounded-lg">
+                  <ExternalLink size={18} className="text-green-500 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-green-700">
+                    <p className="font-medium mb-1">Cara Pakai:</p>
+                    <ol className="list-decimal list-inside space-y-0.5 text-xs text-green-600">
+                      <li>Buka halaman produk di Tokopedia</li>
+                      <li>Copy link URL-nya dari browser (atau klik tombol Share)</li>
+                      <li>Paste di bawah ini, lalu klik "Ambil Data"</li>
+                      <li>Review & lengkapi data yang belum terisi</li>
+                    </ol>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <Link size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="url"
+                      value={tokopediaUrl}
+                      onChange={(e) => {
+                        setTokopediaUrl(e.target.value)
+                        setScrapeSuccess(false)
+                      }}
+                      placeholder="https://www.tokopedia.com/toko/nama-produk..."
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm transition-all"
+                      disabled={isScraping}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleTokopediaImport}
+                    disabled={isScraping || !tokopediaUrl.trim()}
+                    className="px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      background: isScraping
+                        ? '#94a3b8'
+                        : scrapeSuccess
+                          ? '#22c55e'
+                          : 'linear-gradient(135deg, #00AA5B, #008746)',
+                      minWidth: '140px'
+                    }}
+                  >
+                    {isScraping ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        Mengambil...
+                      </>
+                    ) : scrapeSuccess ? (
+                      <>
+                        <CheckCircle size={16} />
+                        Berhasil!
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles size={16} />
+                        Ambil Data
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {scrapeSuccess && (
+                  <div className="bg-green-50 text-green-700 text-sm p-3 rounded-lg flex items-center gap-2 animate-in fade-in">
+                    <CheckCircle size={16} className="flex-shrink-0" />
+                    <span>Data berhasil di-import! Scroll ke bawah untuk review dan lengkapi form.</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="bg-white rounded-lg p-6 shadow-md">

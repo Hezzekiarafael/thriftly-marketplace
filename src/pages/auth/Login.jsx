@@ -20,10 +20,23 @@ const Login = () => {
   useEffect(() => {
     // 1. Cek jika baru saja verifikasi email
     if (searchParams.get('verified') === '1') {
-      toast.success('Email berhasil diverifikasi! Silakan masuk ke akun Anda.', {
+      toast.success('Email berhasil diverifikasi! Silakan lanjut belanja.', {
         duration: 5000,
         icon: '✅'
       })
+      
+      // Jika user sebenarnya sudah login, otomatis pindahkan ke dashboard
+      const storedToken = localStorage.getItem('token')
+      if (storedToken) {
+        refreshUser().then((userData) => {
+          if (userData) {
+            setTimeout(() => {
+              const target = userData.role === 'seller' ? '/seller/dashboard' : '/buyer/dashboard'
+              navigate(target, { replace: true })
+            }, 1500)
+          }
+        })
+      }
     }
 
     // 2. Fallback: Jika backend redirect ke halaman login dengan membawa token (Google OAuth)

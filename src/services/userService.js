@@ -4,6 +4,14 @@ import { storage, STORAGE_KEYS } from './localStorage';
 export const mapLaravelUser = (u) => {
   if (!u) return null;
   const name = u.nama || u.name || u.full_name || 'Pengguna';
+  
+  // Handle avatar URL
+  let avatarUrl = u.avatar || u.profile?.avatar || null;
+  if (avatarUrl && !avatarUrl.startsWith('http')) {
+    // Sesuaikan dengan URL storage Laravel Anda
+    avatarUrl = `https://api.thriftly.my.id/storage/${avatarUrl}`;
+  }
+
   return {
     id: u.id,
     email: u.email,
@@ -12,6 +20,7 @@ export const mapLaravelUser = (u) => {
     createdAt: u.created_at || u.createdAt,
     profile: {
       nama: name,
+      avatar: avatarUrl,
       lokasi: u.lokasi || u.location || u.profile?.lokasi || 'Semarang',
       alamat: u.alamat || u.profile?.alamat || '',
       noTelp: u.no_telp || u.noTelp || u.profile?.noTelp || '-'

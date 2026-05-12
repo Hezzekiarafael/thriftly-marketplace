@@ -124,8 +124,11 @@ const Checkout = () => {
   }
 
   const handleCopyVA = () => {
-    navigator.clipboard.writeText('8077123456789012')
-    toast.success('Nomor VA berhasil disalin')
+    const vaNumber = transactionData?.va_numbers?.[0]?.va_number || transactionData?.permata_va_number || '';
+    if (vaNumber) {
+      navigator.clipboard.writeText(vaNumber);
+      toast.success('Nomor VA berhasil disalin');
+    }
   }
 
   if (loading || !product) {
@@ -333,7 +336,7 @@ const Checkout = () => {
           <div className="text-center">
             <p className="text-sm text-gray-500 mb-1">Total Pembayaran</p>
             <p className="text-3xl font-bold text-primary-700">{formatCurrency(totalPembayaran)}</p>
-            <p className="text-xs text-gray-400 mt-2">Order ID: {transactionData?.id}</p>
+            <p className="text-xs text-gray-400 mt-2">Order ID: {transactionData?.order_id || transactionData?.id}</p>
           </div>
 
           <div className="border-t border-b border-gray-100 py-4">
@@ -350,7 +353,9 @@ const Checkout = () => {
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <p className="text-sm text-gray-500 mb-1">Nomor Virtual Account</p>
                   <div className="flex items-center justify-between">
-                    <p className="text-xl font-mono font-bold text-gray-900 tracking-wider">8077 1234 5678 9012</p>
+                    <p className="text-xl font-mono font-bold text-gray-900 tracking-wider">
+                      {transactionData?.va_numbers?.[0]?.va_number || transactionData?.permata_va_number || 'Memuat...'}
+                    </p>
                     <button 
                       onClick={handleCopyVA}
                       className="text-primary-600 hover:text-primary-700 flex items-center gap-1 text-sm font-medium"
@@ -374,9 +379,17 @@ const Checkout = () => {
                 </div>
                 
                 <div className="bg-white p-4 rounded-2xl border-2 border-gray-100 inline-block mx-auto shadow-sm">
-                  <div className="w-48 h-48 bg-gray-50 rounded-xl flex items-center justify-center">
-                    <QrCode size={120} className="text-gray-400" />
-                  </div>
+                  {transactionData?.actions?.find(a => a.name === 'generate-qr-code') ? (
+                    <img 
+                      src={transactionData.actions.find(a => a.name === 'generate-qr-code').url} 
+                      alt="QRIS" 
+                      className="w-48 h-48 object-contain"
+                    />
+                  ) : (
+                    <div className="w-48 h-48 bg-gray-50 rounded-xl flex items-center justify-center">
+                      <QrCode size={120} className="text-gray-400" />
+                    </div>
+                  )}
                 </div>
                 <p className="text-sm text-gray-600">
                   Buka aplikasi Gojek atau e-wallet lain, lalu scan QR code di atas.
@@ -386,14 +399,9 @@ const Checkout = () => {
           </div>
 
           <div className="pt-2">
-            <Button 
-              fullWidth 
-              size="lg" 
-              onClick={handleConfirmPayment}
-              isLoading={isSubmitting}
-            >
-              Simulasikan Pembayaran Berhasil
-            </Button>
+            <p className="text-xs text-amber-600 bg-amber-50 p-3 rounded-lg text-center mb-3">
+              Silakan lakukan pembayaran melalui aplikasi perbankan atau e-wallet Anda. Status akan diperbarui otomatis.
+            </p>
             <button 
               onClick={() => {
                 setShowPaymentModal(false)
@@ -401,7 +409,7 @@ const Checkout = () => {
               }}
               className="w-full mt-3 text-sm text-gray-500 hover:text-gray-700 font-medium py-2"
             >
-              Bayar Nanti (Lihat di Pesanan Saya)
+              Tutup (Lihat Status di Pesanan Saya)
             </button>
           </div>
         </div>

@@ -138,12 +138,16 @@ const Header = () => {
                 )}
 
                 <div className="relative pl-4 border-l border-gray-200" ref={userMenuRef}>
-                  <button
+                   <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center space-x-2 hover:bg-white/10 p-1.5 rounded-lg transition-colors"
+                    className="flex items-center space-x-2 hover:bg-white/10 p-1 rounded-lg transition-colors"
                   >
-                    <div className="bg-white/20 p-1.5 rounded-full">
-                      <User size={18} className="text-white" />
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-white/20 flex items-center justify-center border border-white/10">
+                      {user.profile?.avatar ? (
+                        <img src={user.profile.avatar} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <User size={18} className="text-white" />
+                      )}
                     </div>
                     <span className="text-sm font-medium text-white hidden lg:block">
                       {user.profile?.nama?.split(' ')[0] || 'User'}
@@ -151,22 +155,49 @@ const Header = () => {
                   </button>
 
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-soft-lg border border-gray-100 py-2 z-[100]">
-                      {(isSeller || isBuyer) && (
+                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-soft-xl border border-gray-100 py-3 z-[100] animate-in fade-in zoom-in-95 duration-200">
+                      <div className="px-5 py-3 border-b border-gray-50 mb-2">
+                        <p className="text-sm font-bold text-gray-900 truncate">
+                          {user.profile?.nama || 'User'}
+                        </p>
+                        <p className="text-xs text-gray-500 truncate mt-0.5">
+                          {user.email}
+                        </p>
+                      </div>
+                      
+                      <div className="px-2 space-y-1">
                         <Link
-                          to="/complaints"
-                          className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-600 transition-colors"
+                          to="/profile"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors group"
                           onClick={() => setIsUserMenuOpen(false)}
                         >
-                          <AlertCircle size={16} /> Pusat Bantuan
+                          <div className="p-1.5 bg-gray-50 rounded-lg group-hover:bg-white transition-colors">
+                            <User size={16} className="text-gray-500" />
+                          </div>
+                          Pengaturan Akun
                         </Link>
-                      )}
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 transition-colors"
-                      >
-                        <LogOut size={16} /> {BUTTONS.logout}
-                      </button>
+                        
+                        <Link
+                          to="/complaints"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors group"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <div className="p-1.5 bg-gray-50 rounded-lg group-hover:bg-white transition-colors">
+                            <AlertCircle size={16} className="text-gray-500" />
+                          </div>
+                          Pusat Bantuan
+                        </Link>
+                        
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 rounded-xl transition-colors group mt-2"
+                        >
+                          <div className="p-1.5 bg-rose-50 rounded-lg group-hover:bg-white transition-colors">
+                            <LogOut size={16} className="text-rose-600" />
+                          </div>
+                          Keluar
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

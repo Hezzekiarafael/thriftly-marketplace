@@ -48,6 +48,8 @@ const HowItWorks = lazy(() => import('../pages/info/HowItWorks'))
 const LegalTerms = lazy(() => import('../pages/info/LegalTerms'))
 const LegalPrivacy = lazy(() => import('../pages/info/LegalPrivacy'))
 
+const Profile = lazy(() => import('../pages/buyer/Profile'))
+
 // ── Loading Fallback ──────────────────────────────────────────────────────────
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -245,6 +247,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['buyer', 'seller']}>
               <MyComplaints />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="/profile"
+          element={
+            <ProtectedRoute allowedRoles={['buyer', 'seller']}>
+              <Profile />
             </ProtectedRoute>
           }
         />

@@ -12,6 +12,7 @@ const LoginSuccess = () => {
   useEffect(() => {
     const handleCallback = async () => {
       const token = searchParams.get('token');
+      console.log('Google Login Callback - Token found:', !!token);
       
       if (token) {
         // 1. Simpan token ke localStorage
@@ -19,24 +20,30 @@ const LoginSuccess = () => {
         
         try {
           // 2. Ambil data user terbaru menggunakan token tersebut
-          await refreshUser();
+          console.log('Refreshing user data...');
+          const userData = await refreshUser();
+          console.log('User refreshed successfully:', userData);
           
           toast.success('Berhasil masuk dengan Google!');
           
-          // 3. Redirect ke dashboard
-          // Kita beri sedikit delay agar proses refreshUser selesai sempurna
+          // 3. Redirect ke dashboard berdasarkan role
+          const targetPath = userData?.role === 'seller' ? '/seller/dashboard' : '/buyer/dashboard';
+          
+          // Kita beri sedikit delay agar proses refreshUser selesai sempurna di state global
           setTimeout(() => {
-            navigate('/buyer/dashboard');
-          }, 500);
+            navigate(targetPath, { replace: true });
+          }, 800);
           
         } catch (error) {
           console.error('Error fetching user after Google login:', error);
+          localStorage.removeItem('token'); // Bersihkan token yang gagal
           toast.error('Gagal mengambil data pengguna.');
-          navigate('/login');
+          navigate('/login', { replace: true });
         }
       } else {
+        console.warn('No token found in URL search params');
         toast.error('Token tidak ditemukan.');
-        navigate('/login');
+        navigate('/login', { replace: true });
       }
     };
 

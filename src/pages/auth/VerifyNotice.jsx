@@ -2,7 +2,7 @@ import React from 'react';
 import { Mail, ArrowLeft, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { api } from '../../services/api';
+import api from '../../services/api';
 import { toast } from 'react-hot-toast';
 import Button from '../../components/common/Button';
 import Container from '../../components/layout/Container';

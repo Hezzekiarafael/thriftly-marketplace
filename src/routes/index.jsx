@@ -13,6 +13,7 @@ const Login = lazy(() => import('../pages/auth/Login'))
 const BuyerRegister = lazy(() => import('../pages/buyer/BuyerRegister'))
 const SellerRegister = lazy(() => import('../pages/seller/SellerRegister'))
 const LoginSuccess = lazy(() => import('../pages/auth/LoginSuccess'))
+const VerifyNotice = lazy(() => import('../pages/auth/VerifyNotice'))
 
 const BuyerDashboard = lazy(() => import('../pages/buyer/BuyerDashboard'))
 const MyOrders = lazy(() => import('../pages/buyer/MyOrders'))
@@ -61,7 +62,7 @@ const PageLoader = () => (
   </div>
 )
 
-const ProtectedRoute = ({ children, allowedRoles }) => {
+const ProtectedRoute = ({ children, allowedRoles, requireVerified = false }) => {
   const { user, loading } = useAuth()
 
   if (loading) {
@@ -76,6 +77,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/" replace />
   }
 
+  // Cek verifikasi email jika diwajibkan
+  if (requireVerified && !user.email_verified_at) {
+    return <Navigate to="/verify-notice" replace />
+  }
+
   return children
 }
 
@@ -88,6 +94,7 @@ const AppRoutes = () => {
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/login-success" element={<LoginSuccess />} />
+        <Route path="/verify-notice" element={<VerifyNotice />} />
         <Route path="/register/buyer" element={<BuyerRegister />} />
         <Route path="/register/seller" element={<SellerRegister />} />
 
@@ -110,7 +117,7 @@ const AppRoutes = () => {
         <Route
           path="/buyer/checkout/:productId"
           element={
-            <ProtectedRoute allowedRoles={['buyer']}>
+            <ProtectedRoute allowedRoles={['buyer']} requireVerified={true}>
               <Checkout />
             </ProtectedRoute>
           }

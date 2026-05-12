@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '../../context/AuthContext'
@@ -9,11 +9,33 @@ import Container from '../../components/layout/Container'
 import Header from '../../components/layout/Header'
 import Footer from '../../components/layout/Footer'
 import { BUTTONS, PLACEHOLDERS } from '../../constants/copywriting'
+import { toast } from 'react-hot-toast'
 
 const Login = () => {
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const { login, refreshUser } = useAuth()
   const [loading, setLoading] = useState(false)
+  const [searchParams] = useSearchParams()
+
+  useEffect(() => {
+    // 1. Cek jika baru saja verifikasi email
+    if (searchParams.get('verified') === '1') {
+      toast.success('Email berhasil diverifikasi! Silakan masuk ke akun Anda.', {
+        duration: 5000,
+        icon: '✅'
+      })
+    }
+
+    // 2. Fallback: Jika backend redirect ke halaman login dengan membawa token (Google OAuth)
+    const token = searchParams.get('token')
+    if (token) {
+      localStorage.setItem('token', token)
+      refreshUser().then((userData) => {
+        const target = userData?.role === 'seller' ? '/seller/dashboard' : '/buyer/dashboard'
+        navigate(target, { replace: true })
+      })
+    }
+  }, [searchParams, navigate, refreshUser])
 
   const {
     register,

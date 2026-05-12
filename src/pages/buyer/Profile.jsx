@@ -17,6 +17,7 @@ const Profile = () => {
   const { user, updateProfile, refreshUser } = useAuth()
   const [activeTab, setActiveTab] = useState('profile')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [resending, setResending] = useState(false)
   const fileInputRef = useRef(null)
 
   // Form States
@@ -131,6 +132,18 @@ const Profile = () => {
     }
   }
 
+  const handleResendEmail = async () => {
+    setResending(true)
+    try {
+      await api.post('/email/verification-notification')
+      toast.success('Email verifikasi baru telah dikirim!')
+    } catch (error) {
+      toast.error('Gagal mengirim email. Coba lagi nanti.')
+    } finally {
+      setResending(false)
+    }
+  }
+
   const renderProfileTab = () => (
     <div className="bg-white rounded-3xl p-8 shadow-soft-lg border border-gray-100">
       <div className="flex items-center gap-6 mb-8">
@@ -196,9 +209,20 @@ const Profile = () => {
                   className="w-full pl-12 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-2xl text-gray-500 cursor-not-allowed"
                 />
               </div>
-              <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
-                <CheckCircle size={10} /> Verified
-              </div>
+              {user?.email_verified_at ? (
+                <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
+                  <CheckCircle size={10} /> Verified
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResendEmail}
+                  disabled={resending}
+                  className="whitespace-nowrap px-4 py-2 bg-amber-50 text-amber-700 text-xs font-bold rounded-xl border border-amber-200 hover:bg-amber-100 transition-colors disabled:opacity-50"
+                >
+                  {resending ? 'Mengirim...' : 'Kirim Link Verifikasi'}
+                </button>
+              )}
             </div>
           </div>
 

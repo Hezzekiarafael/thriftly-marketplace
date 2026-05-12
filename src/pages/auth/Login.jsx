@@ -42,9 +42,11 @@ const Login = () => {
   }
 
   const handleGoogleLogin = () => {
-    // Arahkan langsung ke backend sesuai instruksi tim backend
-    // Menggunakan base URL asli (termasuk /api) jika endpoint ada di sana
-    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`
+    // Arahkan ke backend dengan parameter frontend_url agar backend tahu harus balik ke mana
+    const backendUrl = `${import.meta.env.VITE_API_BASE_URL}/auth/google`
+    const myFrontend = window.location.origin // Otomatis deteksi localhost atau vercel
+    
+    window.location.href = `${backendUrl}?frontend_url=${myFrontend}`
   }
 
   return (

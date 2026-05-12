@@ -42,9 +42,9 @@ const Login = () => {
   }
 
   const handleGoogleLogin = () => {
-    // Arahkan ke backend dengan parameter frontend_url lengkap ke path callback
+    // Sesuai screenshot backend: kirim origin saja
     const backendUrl = `${import.meta.env.VITE_API_BASE_URL}/auth/google`
-    const myFrontend = `${window.location.origin}/auth/google/callback` 
+    const myFrontend = window.location.origin
     
     window.location.href = `${backendUrl}?frontend_url=${myFrontend}`
   }

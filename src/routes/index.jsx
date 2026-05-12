@@ -12,6 +12,7 @@ const ProductDetail = lazy(() => import('../pages/guest/ProductDetail'))
 const Login = lazy(() => import('../pages/auth/Login'))
 const BuyerRegister = lazy(() => import('../pages/buyer/BuyerRegister'))
 const SellerRegister = lazy(() => import('../pages/seller/SellerRegister'))
+const LoginSuccess = lazy(() => import('../pages/auth/LoginSuccess'))
 
 const BuyerDashboard = lazy(() => import('../pages/buyer/BuyerDashboard'))
 const MyOrders = lazy(() => import('../pages/buyer/MyOrders'))
@@ -86,6 +87,7 @@ const AppRoutes = () => {
         <Route path="/products" element={<ProductList />} />
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/auth/google/callback" element={<LoginSuccess />} />
         <Route path="/register/buyer" element={<BuyerRegister />} />
         <Route path="/register/seller" element={<SellerRegister />} />
 

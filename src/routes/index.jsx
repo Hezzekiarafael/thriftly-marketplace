@@ -87,7 +87,7 @@ const AppRoutes = () => {
         <Route path="/products" element={<ProductList />} />
         <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/auth/google/callback" element={<LoginSuccess />} />
+        <Route path="/login-success" element={<LoginSuccess />} />
         <Route path="/register/buyer" element={<BuyerRegister />} />
         <Route path="/register/seller" element={<SellerRegister />} />
 

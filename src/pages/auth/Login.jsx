@@ -65,10 +65,11 @@ const Login = () => {
 
   const handleGoogleLogin = () => {
     // Sesuai screenshot backend: kirim origin saja
+    // Tambahkan prompt=select_account agar Google selalu menampilkan pilihan akun
     const backendUrl = `${import.meta.env.VITE_API_BASE_URL}/auth/google`
     const myFrontend = window.location.origin
     
-    window.location.href = `${backendUrl}?frontend_url=${myFrontend}`
+    window.location.href = `${backendUrl}?frontend_url=${myFrontend}&prompt=select_account`
   }
 
   return (

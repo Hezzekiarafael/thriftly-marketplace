@@ -43,7 +43,8 @@ const Login = () => {
 
   const handleGoogleLogin = () => {
     // Arahkan langsung ke backend (bukan pakai axios) sesuai instruksi tim backend
-    const apiUrl = import.meta.env.VITE_API_BASE_URL.replace('/api', '')
+    // Gunakan regex agar hanya menghapus /api di AKHIR string, bukan di nama domain
+    const apiUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '')
     window.location.href = `${apiUrl}/auth/google`
   }
 

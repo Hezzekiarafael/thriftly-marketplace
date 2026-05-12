@@ -16,7 +16,9 @@ const VerifyNotice = () => {
   const handleResend = async () => {
     setLoading(true);
     try {
-      await api.post('/email/verification-notification');
+      await api.post('/email/verification-notification', {
+        frontend_url: window.location.origin
+      });
       toast.success('Link verifikasi baru telah dikirim ke email Anda.');
     } catch (error) {
       toast.error('Gagal mengirim email. Silakan coba lagi nanti.');

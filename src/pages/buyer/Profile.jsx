@@ -135,7 +135,10 @@ const Profile = () => {
   const handleResendEmail = async () => {
     setResending(true)
     try {
-      await api.post('/email/verification-notification')
+      // Kirim origin saat ini agar backend tahu ke mana harus meredirect link verifikasi
+      await api.post('/email/verification-notification', {
+        frontend_url: window.location.origin
+      })
       toast.success('Email verifikasi baru telah dikirim!')
     } catch (error) {
       toast.error('Gagal mengirim email. Coba lagi nanti.')

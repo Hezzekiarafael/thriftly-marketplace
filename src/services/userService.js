@@ -189,9 +189,12 @@ export const userService = {
     }
   },
 
-  async sendOtp(noTelp) {
+  async sendOtp(email, noTelp) {
     try {
-      const response = await api.post('/otp/send', { no_telp: noTelp });
+      const response = await api.post('/otp/send', { 
+        email: email,
+        no_telp: noTelp 
+      });
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Gagal mengirim OTP');

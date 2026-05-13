@@ -12,6 +12,7 @@ const VerifyOtp = () => {
   const navigate = useNavigate()
   const { refreshUser } = useAuth()
   const phone = searchParams.get('phone') || ''
+  const email = searchParams.get('email') || ''
   
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [timer, setTimer] = useState(60)
@@ -83,7 +84,7 @@ const VerifyOtp = () => {
     
     setIsResending(true)
     try {
-      await userService.sendOtp(phone)
+      await userService.sendOtp(email, phone)
       toast.success('Kode OTP baru telah dikirim ke WhatsApp')
       setTimer(60)
       setOtp(['', '', '', '', '', ''])

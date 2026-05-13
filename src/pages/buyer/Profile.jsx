@@ -183,9 +183,9 @@ const Profile = () => {
     
     setVerifyingPhone(true)
     try {
-      await userService.sendOtp(profileForm.noTelp)
+      await userService.sendOtp(user.email, profileForm.noTelp)
       toast.success('Kode OTP telah dikirim ke WhatsApp Anda')
-      navigate(`/verify-otp?phone=${profileForm.noTelp}`)
+      navigate(`/verify-otp?phone=${profileForm.noTelp}&email=${user.email}`)
     } catch (error) {
       toast.error(error.message || 'Gagal mengirim OTP')
     } finally {

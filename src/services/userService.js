@@ -208,16 +208,10 @@ export const userService = {
   },
 
   async verifyOtp(email, noTelp, otpCode) {
-    // Normalisasi nomor ke format 62 untuk pencocokan database backend
-    let cleanPhone = noTelp.replace(/\D/g, '');
-    if (cleanPhone.startsWith('0')) {
-      cleanPhone = '62' + cleanPhone.substring(1);
-    }
-
-    console.log('Verifying OTP (With 62 Phone):', { no_telp: cleanPhone, code: otpCode });
+    console.log('Verifying OTP (Backend Fixed):', { no_telp: noTelp, code: otpCode });
     try {
       const response = await api.post('/otp/verify', { 
-        no_telp: cleanPhone,
+        no_telp: noTelp,
         code: otpCode
       });
       console.log('OTP Verify Success Response:', response.data);

@@ -191,9 +191,13 @@ export const userService = {
 
   async sendOtp(email, noTelp) {
     try {
+      // Bersihkan nomor HP dari karakter non-digit (misal: spasi, dash, kurung)
+      const cleanPhone = noTelp.replace(/\D/g, '');
+
       const response = await api.post('/otp/send', { 
         email: email,
-        no_telp: noTelp 
+        no_telp: cleanPhone,
+        phone: cleanPhone // Variasi nama field siapa tahu backend minta 'phone'
       });
       return response.data;
     } catch (error) {

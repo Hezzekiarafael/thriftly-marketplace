@@ -25,8 +25,8 @@ export const mapLaravelUser = (u) => {
       lokasi: u.lokasi || u.location || u.profile?.lokasi || 'Semarang',
       alamat: u.alamat || u.profile?.alamat || '',
       noTelp: u.no_telp || u.no_Telp || u.profile?.noTelp || '-',
-      tanggalLahir: u.tanggal_lahir || u.tanggalLahir || u.profile?.tanggalLahir || '',
-      jenisKelamin: u.jenis_kelamin || u.jenisKelamin || u.profile?.jenisKelamin || 'Laki-laki'
+      tanggalLahir: u.date_of_birth || u.tanggalLahir || u.profile?.tanggalLahir || '',
+      jenisKelamin: u.gender === 'L' ? 'Laki-laki' : (u.gender === 'P' ? 'Perempuan' : 'Laki-laki')
     }
   }
 }

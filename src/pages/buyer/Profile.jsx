@@ -75,8 +75,8 @@ const Profile = () => {
         name: profileForm.nama,
         email: user.email,
         no_telp: profileForm.noTelp,
-        tanggal_lahir: profileForm.tanggalLahir,
-        jenis_kelamin: profileForm.jenisKelamin,
+        date_of_birth: profileForm.tanggalLahir,
+        gender: profileForm.jenisKelamin === 'Laki-laki' ? 'L' : 'P',
         role: user.role
       }
       await updateProfile(payload)

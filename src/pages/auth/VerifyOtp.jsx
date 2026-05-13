@@ -66,9 +66,13 @@ const VerifyOtp = () => {
 
     setLoading(true)
     try {
-      await userService.verifyOtp(email, phone, code)
+      const result = await userService.verifyOtp(email, phone, code)
+      console.log('VERIFY RESULT:', result);
       toast.success('Nomor HP berhasil diverifikasi! 🎉')
-      await refreshUser()
+      
+      const freshData = await refreshUser()
+      console.log('FRESH DATA AFTER VERIFY:', freshData);
+
       setTimeout(() => {
         navigate('/profile')
       }, 1500)

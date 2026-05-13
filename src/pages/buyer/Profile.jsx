@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
+import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { 
   User, MapPin, ShieldCheck, Camera, 
   Calendar, ArrowLeft, Mail, Phone, 
@@ -19,6 +19,19 @@ const Profile = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [resending, setResending] = useState(false)
   const fileInputRef = useRef(null)
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+
+  // Jika backend redirect ke /profile?verified=1, refresh data user otomatis
+  useEffect(() => {
+    if (searchParams.get('verified') === '1') {
+      toast.success('Email berhasil diverifikasi! 🎉', { duration: 5000 })
+      refreshUser().then(() => {
+        // Bersihkan query param dari URL tanpa reload halaman
+        navigate('/profile', { replace: true })
+      })
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Form States
   const [profileForm, setProfileForm] = useState({

@@ -41,6 +41,18 @@ const Profile = () => {
     tanggalLahir: user?.profile?.tanggalLahir || '',
   })
 
+  // Sinkronisasi form jika data user berubah (setelah refreshUser)
+  useEffect(() => {
+    if (user?.profile) {
+      setProfileForm({
+        nama: user.profile.nama || '',
+        noTelp: user.profile.noTelp || '',
+        jenisKelamin: user.profile.jenisKelamin || 'Laki-laki',
+        tanggalLahir: user.profile.tanggalLahir || '',
+      })
+    }
+  }, [user])
+
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
     newPassword: '',
@@ -63,6 +75,8 @@ const Profile = () => {
         name: profileForm.nama,
         email: user.email,
         no_telp: profileForm.noTelp,
+        tanggal_lahir: profileForm.tanggalLahir,
+        jenis_kelamin: profileForm.jenisKelamin,
         role: user.role
       }
       await updateProfile(payload)

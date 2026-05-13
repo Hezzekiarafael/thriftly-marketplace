@@ -25,11 +25,11 @@ const Profile = () => {
   // Jika backend redirect ke /profile?verified=1, refresh data user otomatis
   useEffect(() => {
     if (searchParams.get('verified') === '1') {
-      toast.success('Email berhasil diverifikasi! 🎉', { duration: 5000 })
-      refreshUser().then(() => {
-        // Bersihkan query param dari URL tanpa reload halaman
-        navigate('/profile', { replace: true })
-      })
+      toast.success('Email berhasil diverifikasi! 🎉', { duration: 3000 })
+      // Hard reload setelah 1.5 detik agar data user diambil ulang secara fresh dari server
+      setTimeout(() => {
+        window.location.replace('/profile')
+      }, 1500)
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 

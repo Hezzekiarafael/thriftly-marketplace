@@ -190,16 +190,15 @@ export const userService = {
   },
 
   async sendOtp(email, noTelp) {
+    console.log('Sending OTP Request:', { no_telp: noTelp });
     try {
-      // Bersihkan nomor HP dari karakter non-digit (spasi, dash, dll)
-      const cleanPhone = noTelp.replace(/\D/g, '');
-
-      // Kirim HANYA no_telp sesuai dokumentasi backend
       const response = await api.post('/otp/send', { 
-        no_telp: cleanPhone
+        no_telp: noTelp
       });
+      console.log('OTP Send Success Response:', response.data);
       return response.data;
     } catch (error) {
+      console.error('OTP Send Error Response:', error.response?.data || error.message);
       throw new Error(error.response?.data?.message || 'Gagal mengirim OTP');
     }
   },

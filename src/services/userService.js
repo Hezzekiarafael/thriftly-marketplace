@@ -191,13 +191,8 @@ export const userService = {
 
   async sendOtp(email, noTelp) {
     try {
-      // Bersihkan nomor HP dari karakter non-digit
-      let cleanPhone = noTelp.replace(/\D/g, '');
-
-      // Normalisasi: Jika diawali '0', ubah jadi '62' (Standar Fonnte/WhatsApp)
-      if (cleanPhone.startsWith('0')) {
-        cleanPhone = '62' + cleanPhone.substring(1);
-      }
+      // Bersihkan nomor HP hanya dari karakter non-digit (spasi, dash, dll)
+      const cleanPhone = noTelp.replace(/\D/g, '');
 
       const response = await api.post('/otp/send', { 
         email: email,

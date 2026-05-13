@@ -209,7 +209,11 @@ export const userService = {
 
   async verifyOtp(otpCode) {
     try {
-      const response = await api.post('/otp/verify', { otp: otpCode });
+      // Backend minta field 'code' berdasarkan pesan error
+      const response = await api.post('/otp/verify', { 
+        code: otpCode,
+        otp: otpCode 
+      });
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Kode OTP salah atau kedaluwarsa');

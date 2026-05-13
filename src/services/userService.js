@@ -208,13 +208,10 @@ export const userService = {
   },
 
   async verifyOtp(email, noTelp, otpCode) {
-    console.log('Verifying OTP:', { email, no_telp: noTelp, code: otpCode });
+    console.log('Verifying OTP (Simple):', { code: otpCode });
     try {
       const response = await api.post('/otp/verify', { 
-        email: email,
-        no_telp: noTelp,
-        code: otpCode,
-        otp: otpCode 
+        code: otpCode
       });
       console.log('OTP Verify Success Response:', response.data);
       return response.data;

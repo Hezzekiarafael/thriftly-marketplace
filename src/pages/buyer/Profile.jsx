@@ -12,6 +12,7 @@ import Container from '../../components/layout/Container'
 import Button from '../../components/common/Button'
 import { toast } from 'react-hot-toast'
 import api from '../../services/api'
+import { userService } from '../../services/userService'
 
 const Profile = () => {
   const { user, updateProfile, refreshUser } = useAuth()

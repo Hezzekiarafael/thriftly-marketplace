@@ -66,7 +66,7 @@ const VerifyOtp = () => {
 
     setLoading(true)
     try {
-      await userService.verifyOtp(code)
+      await userService.verifyOtp(email, phone, code)
       toast.success('Nomor HP berhasil diverifikasi! 🎉')
       await refreshUser()
       setTimeout(() => {

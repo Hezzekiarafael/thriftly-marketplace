@@ -207,15 +207,19 @@ export const userService = {
     }
   },
 
-  async verifyOtp(otpCode) {
+  async verifyOtp(email, noTelp, otpCode) {
+    console.log('Verifying OTP:', { email, no_telp: noTelp, code: otpCode });
     try {
-      // Backend minta field 'code' berdasarkan pesan error
       const response = await api.post('/otp/verify', { 
+        email: email,
+        no_telp: noTelp,
         code: otpCode,
         otp: otpCode 
       });
+      console.log('OTP Verify Success Response:', response.data);
       return response.data;
     } catch (error) {
+      console.error('OTP Verify Error:', error.response?.data || error.message);
       throw new Error(error.response?.data?.message || 'Kode OTP salah atau kedaluwarsa');
     }
   },

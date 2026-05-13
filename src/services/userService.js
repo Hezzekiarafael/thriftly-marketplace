@@ -190,13 +190,16 @@ export const userService = {
   },
 
   async sendOtp(email, noTelp) {
-    console.log('Sending OTP Request:', { email, no_telp: noTelp });
+    console.log('Sending OTP Request (Trying Multiple Phone Fields):', { noTelp });
     try {
       const response = await api.post('/otp/send', { 
-        email: email,
-        no_telp: noTelp
+        // Kita tidak kirim email agar tidak lari ke email
+        no_telp: noTelp,
+        phone: noTelp,
+        number: noTelp,
+        whatsapp: noTelp
       });
-      console.log('OTP Send Success Response:', response.data);
+      console.log('OTP Send Response:', response.data);
       return response.data;
     } catch (error) {
       console.error('OTP Send Error Response:', error.response?.data || error.message);

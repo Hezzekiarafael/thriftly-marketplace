@@ -17,8 +17,8 @@ export const mapLaravelUser = (u) => {
     email: u.email,
     name: name,
     role: u.role || 'buyer',
-    email_verified_at: u.email_verified_at || null,
-    phone_verified_at: u.phone_verified_at || u.profile?.phone_verified_at || null,
+    emailVerifiedAt: u.email_verified_at || null,
+    phoneVerifiedAt: u.phone_verified_at || u.profile?.phone_verified_at || null,
     createdAt: u.created_at || u.createdAt,
     profile: {
       nama: name,

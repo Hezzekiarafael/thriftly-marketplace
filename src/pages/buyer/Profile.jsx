@@ -290,7 +290,7 @@ const Profile = () => {
                   placeholder="0812xxxx"
                 />
               </div>
-              {user?.phone_verified_at ? (
+              {user?.phoneVerifiedAt ? (
                 <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
                   <CheckCircle size={10} /> Verified
                 </div>

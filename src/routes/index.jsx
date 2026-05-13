@@ -14,6 +14,7 @@ const BuyerRegister = lazy(() => import('../pages/buyer/BuyerRegister'))
 const SellerRegister = lazy(() => import('../pages/seller/SellerRegister'))
 const LoginSuccess = lazy(() => import('../pages/auth/LoginSuccess'))
 const VerifyNotice = lazy(() => import('../pages/auth/VerifyNotice'))
+const VerifyOtp = lazy(() => import('../pages/auth/VerifyOtp'))
 
 const BuyerDashboard = lazy(() => import('../pages/buyer/BuyerDashboard'))
 const MyOrders = lazy(() => import('../pages/buyer/MyOrders'))
@@ -95,6 +96,7 @@ const AppRoutes = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/login-success" element={<LoginSuccess />} />
         <Route path="/verify-notice" element={<VerifyNotice />} />
+        <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/register/buyer" element={<BuyerRegister />} />
         <Route path="/register/seller" element={<SellerRegister />} />
 

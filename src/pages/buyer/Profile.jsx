@@ -18,6 +18,7 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState('profile')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [resending, setResending] = useState(false)
+  const [verifyingPhone, setVerifyingPhone] = useState(false)
   const fileInputRef = useRef(null)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -174,6 +175,23 @@ const Profile = () => {
     }
   }
 
+  const handleVerifyPhone = async () => {
+    if (!profileForm.noTelp) {
+      return toast.error('Silakan masukkan nomor HP terlebih dahulu')
+    }
+    
+    setVerifyingPhone(true)
+    try {
+      await userService.sendOtp(profileForm.noTelp)
+      toast.success('Kode OTP telah dikirim ke WhatsApp Anda')
+      navigate(`/verify-otp?phone=${profileForm.noTelp}`)
+    } catch (error) {
+      toast.error(error.message || 'Gagal mengirim OTP')
+    } finally {
+      setVerifyingPhone(false)
+    }
+  }
+
   const renderProfileTab = () => (
     <div className="bg-white rounded-3xl p-8 shadow-soft-lg border border-gray-100">
       <div className="flex items-center gap-6 mb-8">
@@ -258,17 +276,33 @@ const Profile = () => {
 
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700">Nomor HP</label>
-            <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <Phone size={18} />
+            <div className="relative flex items-center gap-3">
+              <div className="relative flex-1">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <Phone size={18} />
+                </div>
+                <input
+                  type="text"
+                  value={profileForm.noTelp}
+                  onChange={(e) => setProfileForm({ ...profileForm, noTelp: e.target.value })}
+                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
+                  placeholder="0812xxxx"
+                />
               </div>
-              <input
-                type="text"
-                value={profileForm.noTelp}
-                onChange={(e) => setProfileForm({ ...profileForm, noTelp: e.target.value })}
-                className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
-                placeholder="0812xxxx"
-              />
+              {user?.phone_verified_at ? (
+                <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
+                  <CheckCircle size={10} /> Verified
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleVerifyPhone}
+                  disabled={verifyingPhone}
+                  className="whitespace-nowrap px-4 py-2 bg-amber-50 text-amber-700 text-xs font-bold rounded-xl border border-amber-200 hover:bg-amber-100 transition-colors disabled:opacity-50"
+                >
+                  {verifyingPhone ? 'Mengirim...' : 'Verifikasi'}
+                </button>
+              )}
             </div>
           </div>
 

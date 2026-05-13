@@ -18,6 +18,7 @@ export const mapLaravelUser = (u) => {
     name: name,
     role: u.role || 'buyer',
     email_verified_at: u.email_verified_at || null,
+    phone_verified_at: u.phone_verified_at || u.profile?.phone_verified_at || null,
     createdAt: u.created_at || u.createdAt,
     profile: {
       nama: name,
@@ -185,6 +186,24 @@ export const userService = {
       return mapLaravelUser(resData) || resData;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Gagal mengupdate profil');
+    }
+  },
+
+  async sendOtp(noTelp) {
+    try {
+      const response = await api.post('/otp/send', { no_telp: noTelp });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Gagal mengirim OTP');
+    }
+  },
+
+  async verifyOtp(otpCode) {
+    try {
+      const response = await api.post('/otp/verify', { otp: otpCode });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Kode OTP salah atau kedaluwarsa');
     }
   },
 

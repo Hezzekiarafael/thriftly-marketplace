@@ -191,13 +191,18 @@ export const userService = {
 
   async sendOtp(email, noTelp) {
     try {
-      // Bersihkan nomor HP dari karakter non-digit (misal: spasi, dash, kurung)
-      const cleanPhone = noTelp.replace(/\D/g, '');
+      // Bersihkan nomor HP dari karakter non-digit
+      let cleanPhone = noTelp.replace(/\D/g, '');
+
+      // Normalisasi: Jika diawali '0', ubah jadi '62' (Standar Fonnte/WhatsApp)
+      if (cleanPhone.startsWith('0')) {
+        cleanPhone = '62' + cleanPhone.substring(1);
+      }
 
       const response = await api.post('/otp/send', { 
         email: email,
         no_telp: cleanPhone,
-        phone: cleanPhone // Variasi nama field siapa tahu backend minta 'phone'
+        phone: cleanPhone
       });
       return response.data;
     } catch (error) {

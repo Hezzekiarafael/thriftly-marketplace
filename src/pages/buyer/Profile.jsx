@@ -258,7 +258,7 @@ const Profile = () => {
                   className="w-full pl-12 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-2xl text-gray-500 cursor-not-allowed"
                 />
               </div>
-              {user?.email_verified_at && user.email_verified_at !== null ? (
+              {user?.emailVerifiedAt ? (
                 <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
                   <CheckCircle size={10} /> Verified
                 </div>

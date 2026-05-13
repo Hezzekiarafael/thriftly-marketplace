@@ -190,9 +190,10 @@ export const userService = {
   },
 
   async sendOtp(email, noTelp) {
-    console.log('Sending OTP Request:', { no_telp: noTelp });
+    console.log('Sending OTP Request:', { email, no_telp: noTelp });
     try {
       const response = await api.post('/otp/send', { 
+        email: email,
         no_telp: noTelp
       });
       console.log('OTP Send Success Response:', response.data);

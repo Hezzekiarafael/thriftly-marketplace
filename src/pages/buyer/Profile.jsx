@@ -228,15 +228,12 @@ const Profile = () => {
 
     setIsSubmitting(true)
     try {
-      // Simulating API verification request
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      await userService.verifyKtp(ktpForm)
       
       toast.success('Data verifikasi KTP berhasil dikirim! Menunggu persetujuan admin.', { duration: 5000 })
       
-      // Update state local or user context
-      if (user) {
-        user.ktp_status = 'pending'
-      }
+      // Refresh user context data to update status in UI immediately
+      refreshUser()
       
       // Reset form
       setKtpForm({

@@ -20,6 +20,14 @@ export const mapLaravelUser = (u) => {
     emailVerifiedAt: u.email_verified_at || null,
     phoneVerifiedAt: u.phone_verified_at || u.profile?.phone_verified_at || null,
     createdAt: u.created_at || u.createdAt,
+    ktp_status: u.ktp_status || u.profile?.ktp_status || null,
+    ktp_rejection_reason: u.ktp_rejection_reason || u.profile?.ktp_rejection_reason || null,
+    ktp_path: u.ktp_path || u.profile?.ktp_path || null,
+    ktp_nik: u.ktp_nik || u.profile?.ktp_nik || null,
+    ktp_name: u.ktp_name || u.profile?.ktp_name || null,
+    ktp_birth_place: u.ktp_birth_place || u.profile?.ktp_birth_place || null,
+    ktp_birth_date: u.ktp_birth_date || u.profile?.ktp_birth_date || null,
+    is_ktp_verified: u.is_ktp_verified || u.profile?.is_ktp_verified || 0,
     profile: {
       nama: name,
       avatar: avatarUrl,
@@ -184,6 +192,36 @@ export const userService = {
       return mapLaravelUser(resData) || resData;
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Gagal mengupdate profil');
+    }
+  },
+
+  async verifyKtp(ktpData) {
+    try {
+      const fd = new FormData();
+      fd.append('ktp_nik', ktpData.nik);
+      fd.append('ktp_name', ktpData.namaKtp);
+      fd.append('ktp_birth_place', ktpData.tempatLahir);
+      fd.append('ktp_birth_date', ktpData.tanggalLahir);
+      
+      if (ktpData.image) {
+        if (ktpData.image instanceof File) {
+          fd.append('ktp_image', ktpData.image);
+        } else if (typeof ktpData.image === 'string' && ktpData.image.startsWith('data:')) {
+          const response = await fetch(ktpData.image);
+          const blob = await response.blob();
+          fd.append('ktp_image', blob, 'ktp_camera.jpg');
+        }
+      }
+
+      const response = await api.post('/user/verify-ktp', fd, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      const resData = response.data.user || response.data;
+      return mapLaravelUser(resData) || resData;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Gagal mengirim data verifikasi KTP');
     }
   },
 

@@ -1,8 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { MapPin } from 'lucide-react'
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import axios from 'axios'
 import { useAuth } from '../../context/AuthContext'
 import { registerSellerSchema } from '../../utils/validation'
 import { getLocationFromCoordinates } from '../../utils/geolocation'
@@ -14,20 +18,61 @@ import { ALL_LOCATIONS } from '../../constants/locations'
 import { BUTTONS, PLACEHOLDERS, INSTRUCTIONS } from '../../constants/copywriting'
 import toast from 'react-hot-toast'
 
+// Perbaikan bug icon marker default di React Leaflet dengan Vite
+delete L.Icon.Default.prototype._getIconUrl
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png'
+})
+
+// Komponen Pembantu untuk menggeser pin dan memusatkan kamera
+const LocationSelector = ({ position, setPosition, setAddress }) => {
+  const map = useMap()
+
+  useEffect(() => {
+    if (position) {
+      map.flyTo(position, map.getZoom(), { animate: true })
+    }
+  }, [position, map])
+
+  useMapEvents({
+    async click(e) {
+      const { lat, lng } = e.latlng
+      setPosition([lat, lng])
+
+      // Reverse Geocoding via Nominatim API
+      try {
+        const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+        if (response.data && response.data.display_name) {
+          setAddress(response.data.display_name)
+        }
+      } catch (error) {
+        console.error('Gagal mengambil alamat:', error)
+      }
+    }
+  })
+  return position ? <Marker position={position}></Marker> : null
+}
+
 const SellerRegister = () => {
   const navigate = useNavigate()
   const { register: registerUser } = useAuth()
   const [gettingLocation, setGettingLocation] = useState(false)
+  const [mapPosition, setMapPosition] = useState([-6.9932, 110.4229]) // Default: Semarang
+  const [isLocating, setIsLocating] = useState(false)
 
   const {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors }
   } = useForm({
     resolver: zodResolver(registerSellerSchema)
   })
 
+  const currentAlamat = watch('alamat') || ''
   const [loading, setLoading] = useState(false)
 
   const handleUseCurrentLocation = async () => {
@@ -181,15 +226,92 @@ const SellerRegister = () => {
                     </div>
                   </div>
 
+                  {/* Map Selector */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-gray-700">Tentukan Titik Pengiriman</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        isLoading={isLocating}
+                        onClick={() => {
+                          if (!navigator.geolocation) {
+                            toast.error('Browser tidak mendukung lokasi');
+                            return;
+                          }
+                          setIsLocating(true);
+                          navigator.geolocation.getCurrentPosition(
+                            async (position) => {
+                              const lat = position.coords.latitude;
+                              const lng = position.coords.longitude;
+                              setMapPosition([lat, lng]);
+
+                              try {
+                                const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                                if (response.data && response.data.display_name) {
+                                  setValue('alamat', response.data.display_name);
+                                  toast.success('Lokasi berhasil ditemukan');
+                                }
+                              } catch (error) {
+                                toast.error('Gagal memuat detail alamat otomatis');
+                              }
+                              setIsLocating(false);
+                            },
+                            () => {
+                              toast.error('Gagal mengambil lokasi, pastikan izin akses lokasi diberikan');
+                              setIsLocating(false);
+                            }
+                          );
+                        }}
+                        className="py-1 text-xs text-primary-600 border-primary-200 hover:bg-primary-50 rounded-full flex items-center gap-1"
+                      >
+                        <MapPin size={12} /> Gunakan Lokasi Saat Ini
+                      </Button>
+                    </div>
+
+                    <div className="relative w-full h-48 bg-gray-100 rounded-xl overflow-hidden border border-gray-200 z-0">
+                      <MapContainer
+                        center={mapPosition}
+                        zoom={13}
+                        scrollWheelZoom={true}
+                        style={{ height: '100%', width: '100%' }}
+                      >
+                        <TileLayer
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                        <LocationSelector position={mapPosition} setPosition={setMapPosition} setAddress={(addr) => setValue('alamat', addr)} />
+                      </MapContainer>
+
+                      <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[400] pointer-events-none">
+                        <span className="text-[10px] font-semibold text-gray-900 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-gray-200">
+                          Klik pada peta untuk menaruh pin
+                        </span>
+                      </div>
+                    </div>
+
+                    {currentAlamat && (
+                      <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Alamat Terpilih:</p>
+                        <p className="text-xs text-gray-700 mt-1 leading-relaxed">{currentAlamat}</p>
+                      </div>
+                    )}
+
+                    <div className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">
+                      LANGKAH: GESER PETA &rarr; KLIK TITIK LOKASI TEPAT
+                    </div>
+                  </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Alamat Lengkap *
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Alamat Lengkap &amp; Titik Lokasi *
                     </label>
                     <textarea
                       {...register('alamat')}
                       rows={3}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                      placeholder={PLACEHOLDERS.address}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-shadow min-h-[100px] resize-none"
+                      placeholder="Detail alamat (RT/RW, No. Rumah)"
                     />
                     {errors.alamat && (
                       <p className="text-red-500 text-sm mt-1">{errors.alamat.message}</p>

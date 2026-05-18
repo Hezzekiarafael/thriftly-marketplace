@@ -769,11 +769,45 @@ const Profile = () => {
                 className="w-full h-full object-cover"
               />
               
-              {/* Guidance Box Overlay */}
-              <div className="absolute inset-8 border-2 border-dashed border-white/60 rounded-2xl pointer-events-none flex flex-col justify-end items-center pb-4">
-                <span className="bg-black/80 px-4 py-1.5 rounded-full text-[10px] font-bold text-white uppercase tracking-widest shadow-md">
-                  Posisikan KTP di Dalam Kotak
-                </span>
+              {/* Guidance Box Overlay / KTP Scanner Frame */}
+              <div className="absolute inset-6 border-2 border-dashed border-white/80 rounded-2xl pointer-events-none flex flex-col justify-between p-4 bg-black/10">
+                {/* Top header of dummy KTP */}
+                <div className="flex justify-between items-center w-full">
+                  <span className="text-[7px] font-bold text-white/70 tracking-widest uppercase">REPUBLIK INDONESIA</span>
+                  <div className="w-10 h-1.5 bg-white/20 rounded"></div>
+                </div>
+
+                {/* Middle content: fields & photos */}
+                <div className="flex-1 flex items-center justify-between gap-4 my-2 w-full">
+                  {/* Left fields list */}
+                  <div className="flex-1 space-y-2">
+                    <div className="w-1/2 h-2 bg-white/40 rounded"></div>
+                    <div className="w-4/5 h-1 bg-white/25 rounded"></div>
+                    <div className="w-3/4 h-1 bg-white/25 rounded"></div>
+                    <div className="w-2/3 h-1 bg-white/25 rounded"></div>
+                    <div className="w-1/2 h-1 bg-white/25 rounded"></div>
+                  </div>
+
+                  {/* Right photo box */}
+                  <div className="w-20 flex flex-col items-center gap-1.5">
+                    {/* Face avatar card */}
+                    <div className="w-16 h-20 border border-dashed border-white/70 rounded-lg flex flex-col items-center justify-center bg-white/5 backdrop-blur-[0.5px]">
+                      <User size={14} className="text-white/40 mb-1" />
+                      <span className="text-[6px] font-bold text-white/55 tracking-wider uppercase">Foto Wajah</span>
+                    </div>
+                    {/* Signature card */}
+                    <div className="w-16 h-6 border border-dashed border-white/40 rounded bg-white/5 backdrop-blur-[0.5px] flex items-center justify-center">
+                      <span className="text-[4px] font-bold text-white/30 tracking-wider uppercase">Tanda Tangan</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom guidance pill */}
+                <div className="w-full flex justify-center">
+                  <span className="bg-emerald-600/90 text-white font-bold text-[8px] tracking-widest px-3 py-1 rounded-full uppercase shadow-md border border-emerald-500/30 backdrop-blur-sm">
+                    Posisikan KTP di Dalam Kotak
+                  </span>
+                </div>
               </div>
             </div>
 

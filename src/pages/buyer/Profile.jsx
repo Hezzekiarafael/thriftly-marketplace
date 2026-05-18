@@ -4,7 +4,7 @@ import {
   User, MapPin, ShieldCheck, Camera, 
   Calendar, ArrowLeft, Mail, Phone, 
   Lock, CheckCircle, Plus, Edit2, AlertCircle,
-  X, Upload
+  X, Upload, CreditCard
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import Header from '../../components/layout/Header'
@@ -62,8 +62,11 @@ const Profile = () => {
     confirmPassword: '',
   })
 
-  const [rekeningForm, setRekeningForm] = useState({
-    noRekening: user?.profile?.noRekening || ''
+  const [isRekeningModalOpen, setIsRekeningModalOpen] = useState(false)
+  const [bankForm, setBankForm] = useState({
+    namaBank: 'BCA',
+    nomorRekening: '',
+    namaPemilik: user?.profile?.nama || ''
   })
 
   const [ktpForm, setKtpForm] = useState({
@@ -81,9 +84,18 @@ const Profile = () => {
 
   // Sinkronisasi rekening bank
   useEffect(() => {
-    if (user?.profile) {
-      setRekeningForm({
-        noRekening: user.profile.noRekening || ''
+    if (user?.profile?.noRekening) {
+      const parts = user.profile.noRekening.split(' - ')
+      setBankForm({
+        namaBank: parts[0] || 'BCA',
+        nomorRekening: parts[1] || user.profile.noRekening,
+        namaPemilik: parts[2] || user.profile.nama || ''
+      })
+    } else {
+      setBankForm({
+        namaBank: 'BCA',
+        nomorRekening: '',
+        namaPemilik: user?.profile?.nama || ''
       })
     }
   }, [user])
@@ -135,21 +147,44 @@ const Profile = () => {
 
   const handleRekeningSubmit = async (e) => {
     e.preventDefault()
-    if (!rekeningForm.noRekening) {
+    if (!bankForm.nomorRekening.trim()) {
       return toast.error('Nomor rekening tidak boleh kosong')
+    }
+    if (!bankForm.namaPemilik.trim()) {
+      return toast.error('Nama pemilik rekening tidak boleh kosong')
     }
     setIsSubmitting(true)
     try {
+      const combinedValue = `${bankForm.namaBank} - ${bankForm.nomorRekening.trim()} - ${bankForm.namaPemilik.trim()}`
       await updateProfile({
         name: user.profile.nama,
         email: user.email,
-        no_rekening: rekeningForm.noRekening
+        no_rekening: combinedValue
       })
-      toast.success('Nomor rekening berhasil diperbarui')
+      toast.success('Rekening bank berhasil disimpan')
+      setIsRekeningModalOpen(false)
     } catch (error) {
-      toast.error(error.message || 'Gagal memperbarui nomor rekening')
+      toast.error(error.message || 'Gagal menyimpan rekening bank')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleRemoveRekening = async () => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus rekening bank ini?')) {
+      setIsSubmitting(true)
+      try {
+        await updateProfile({
+          name: user.profile.nama,
+          email: user.email,
+          no_rekening: null
+        })
+        toast.success('Rekening bank berhasil dihapus')
+      } catch (error) {
+        toast.error(error.message || 'Gagal menghapus rekening bank')
+      } finally {
+        setIsSubmitting(false)
+      }
     }
   }
 
@@ -515,6 +550,88 @@ const Profile = () => {
       </div>
     </div>
   )
+
+  const renderRekeningTab = () => {
+    const hasRekening = !!user?.profile?.noRekening;
+    
+    // Parse combined rekening
+    const parts = (user?.profile?.noRekening || '').split(' - ');
+    const bankName = parts[0] || 'Bank';
+    const accNo = parts[1] || user?.profile?.noRekening || '';
+    const accHolder = parts[2] || user?.profile?.nama || '';
+
+    return (
+      <div className="bg-white rounded-3xl p-8 shadow-soft-lg border border-gray-100 animate-in fade-in duration-300">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Simpan rekening untuk penarikan saldo</h2>
+            <p className="text-gray-400 text-xs mt-1">Saldo Thriftly kamu bisa ditarik ke rekening ini.</p>
+          </div>
+          {hasRekening && (
+            <button 
+              onClick={() => setIsRekeningModalOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2 border border-emerald-600 text-emerald-600 hover:bg-emerald-50 font-bold rounded-2xl text-xs transition-colors"
+            >
+              + Tambah Rekening Lain
+            </button>
+          )}
+        </div>
+
+        {!hasRekening ? (
+          <div className="border-2 border-dashed border-gray-100 rounded-3xl p-12 text-center flex flex-col items-center justify-center bg-gray-50/50">
+            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400 mb-4">
+              <CreditCard size={28} />
+            </div>
+            <h3 className="font-bold text-gray-900 text-sm mb-1">Belum ada rekening bank</h3>
+            <p className="text-xs text-gray-500 max-w-sm leading-relaxed mb-6">
+              Hubungkan rekening bank Anda untuk memudahkan penarikan saldo penjualan.
+            </p>
+            <button 
+              onClick={() => setIsRekeningModalOpen(true)}
+              className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-xs flex items-center gap-1.5 transition-all shadow-md animate-bounce"
+            >
+              + Tambah Rekening Sekarang
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Premium Bank Card */}
+            <div className="p-6 border border-emerald-100 bg-emerald-50/30 rounded-3xl relative flex items-start justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center border border-gray-100 shadow-sm shrink-0">
+                  <div className="font-bold text-xs text-emerald-600 uppercase tracking-wider">
+                    {bankName.substring(0, 3)}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-bold text-gray-900 text-base">{bankName}</h4>
+                  <p className="font-mono text-sm text-gray-600 tracking-wider">
+                    {accNo.replace(/(\d{4})/g, '$1 ').trim()}
+                  </p>
+                  <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">
+                    a.n. {accHolder}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full uppercase tracking-wider">
+                  Aktif
+                </span>
+                <button 
+                  onClick={handleRemoveRekening}
+                  className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                  title="Hapus Rekening"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   const renderSecurityTab = () => (
     <div className="space-y-8">
@@ -914,6 +1031,23 @@ const Profile = () => {
                 </button>
 
                 <button
+                  onClick={() => setActiveTab('rekening')}
+                  className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${
+                    activeTab === 'rekening' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-500'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <CreditCard size={20} className={activeTab === 'rekening' ? 'text-primary-600' : 'text-gray-400'} />
+                    <span className="font-semibold">Rekening Bank</span>
+                  </div>
+                  {activeTab === 'rekening' ? (
+                    <div className="w-1.5 h-6 bg-primary-600 rounded-full" />
+                  ) : (
+                    <Edit2 size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                  )}
+                </button>
+
+                <button
                   onClick={() => setActiveTab('security')}
                   className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${
                     activeTab === 'security' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-500'
@@ -936,6 +1070,7 @@ const Profile = () => {
             <div className="lg:col-span-9 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {activeTab === 'profile' && renderProfileTab()}
               {activeTab === 'address' && renderAddressTab()}
+              {activeTab === 'rekening' && renderRekeningTab()}
               {activeTab === 'security' && renderSecurityTab()}
             </div>
           </div>
@@ -943,6 +1078,86 @@ const Profile = () => {
       </main>
 
       <Footer />
+
+      {/* Rekening Bank Modal */}
+      {isRekeningModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl relative animate-in zoom-in-95 duration-300 border border-gray-100">
+            <button 
+              onClick={() => setIsRekeningModalOpen(false)}
+              className="absolute right-4 top-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-2xl">
+                <CreditCard size={22} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Hubungkan Rekening Bank</h3>
+                <p className="text-xs text-gray-400">Pastikan data yang Anda masukkan sudah benar.</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleRekeningSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Nama Bank</label>
+                <select
+                  value={bankForm.namaBank}
+                  onChange={(e) => setBankForm({ ...bankForm, namaBank: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all text-sm font-semibold cursor-pointer"
+                >
+                  {['BCA', 'Mandiri', 'BNI', 'BRI', 'CIMB Niaga', 'Bank Permata', 'Danamon', 'BSI'].map(bank => (
+                    <option key={bank} value={bank}>{bank}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Nomor Rekening</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: 1234567890"
+                  value={bankForm.nomorRekening}
+                  onChange={(e) => setBankForm({ ...bankForm, nomorRekening: e.target.value.replace(/\D/g, '') })}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all font-mono text-sm tracking-wider"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Nama Pemilik Rekening</label>
+                <input
+                  type="text"
+                  placeholder="Nama lengkap pemilik rekening"
+                  value={bankForm.namaPemilik}
+                  onChange={(e) => setBankForm({ ...bankForm, namaPemilik: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all text-sm font-semibold"
+                  required
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsRekeningModalOpen(false)}
+                  className="flex-1 py-3 border border-gray-200 text-gray-500 font-bold rounded-2xl hover:bg-gray-50 transition-all text-xs"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl transition-all shadow-md text-xs disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Menyimpan...' : 'Simpan Rekening'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

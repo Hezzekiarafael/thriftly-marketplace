@@ -682,37 +682,6 @@ const Profile = () => {
         </form>
       </div>
 
-      {/* Nomor Rekening */}
-      {user?.role === 'seller' && (
-        <div className="bg-white rounded-3xl p-8 shadow-soft-lg border border-gray-100">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-primary-50 text-primary-500 rounded-xl">
-              <ShieldCheck size={20} />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900">Rekening Bank</h2>
-          </div>
-
-          <form onSubmit={handleRekeningSubmit} className="space-y-6 max-w-lg">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Nomor Rekening</label>
-              <input
-                type="text"
-                placeholder="Masukkan nomor rekening Anda"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
-                value={rekeningForm.noRekening}
-                onChange={(e) => setRekeningForm({ noRekening: e.target.value })}
-              />
-            </div>
-            <Button 
-              type="submit" 
-              isLoading={isSubmitting}
-              className="px-8 bg-gray-900 text-white rounded-2xl py-3 mt-4"
-            >
-              Simpan Nomor Rekening
-            </Button>
-          </form>
-        </div>
-      )}
 
       {/* KTP Verification */}
       {user?.role === 'seller' && (

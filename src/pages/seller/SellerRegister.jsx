@@ -58,7 +58,6 @@ const LocationSelector = ({ position, setPosition, setAddress }) => {
 const SellerRegister = () => {
   const navigate = useNavigate()
   const { register: registerUser } = useAuth()
-  const [gettingLocation, setGettingLocation] = useState(false)
   const [mapPosition, setMapPosition] = useState([-6.9932, 110.4229]) // Default: Semarang
   const [isLocating, setIsLocating] = useState(false)
 
@@ -75,19 +74,6 @@ const SellerRegister = () => {
   const currentAlamat = watch('alamat') || ''
   const [loading, setLoading] = useState(false)
 
-  const handleUseCurrentLocation = async () => {
-    setGettingLocation(true)
-    try {
-      const result = await getLocationFromCoordinates()
-      setValue('lokasi', result.location.id)
-      toast.success(`Lokasi terdeteksi: ${result.location.nama}`)
-    } catch (error) {
-      toast.error(error.message)
-    } finally {
-      setGettingLocation(false)
-    }
-  }
-
   const onSubmit = async (data) => {
     setLoading(true)
     const result = await registerUser({
@@ -98,8 +84,7 @@ const SellerRegister = () => {
         nama: data.nama,
         ttl: data.ttl,
         noTelp: data.noTelp,
-        alamat: data.alamat,
-        lokasi: data.lokasi
+        alamat: data.alamat
       }
     })
     setLoading(false)
@@ -316,43 +301,6 @@ const SellerRegister = () => {
                     {errors.alamat && (
                       <p className="text-red-500 text-sm mt-1">{errors.alamat.message}</p>
                     )}
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Lokasi *
-                    </label>
-                    <div className="flex gap-2">
-                      <select
-                        {...register('lokasi')}
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                      >
-                        <option value="">Pilih Lokasi</option>
-                        <optgroup label="DI Yogyakarta">
-                          {ALL_LOCATIONS.filter(loc => loc.provinsi === 'DI Yogyakarta').map(loc => (
-                            <option key={loc.id} value={loc.id}>{loc.nama}</option>
-                          ))}
-                        </optgroup>
-                        <optgroup label="Jawa Tengah">
-                          {ALL_LOCATIONS.filter(loc => loc.provinsi === 'Jawa Tengah').map(loc => (
-                            <option key={loc.id} value={loc.id}>{loc.nama}</option>
-                          ))}
-                        </optgroup>
-                      </select>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleUseCurrentLocation}
-                        loading={gettingLocation}
-                        disabled={gettingLocation}
-                      >
-                        <MapPin size={20} />
-                      </Button>
-                    </div>
-                    {errors.lokasi && (
-                      <p className="text-red-500 text-sm mt-1">{errors.lokasi.message}</p>
-                    )}
-                    <p className="text-sm text-gray-500 mt-1">{INSTRUCTIONS.selectLocation}</p>
                   </div>
                 </div>
               </div>

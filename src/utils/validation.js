@@ -47,8 +47,6 @@ export const registerSellerSchema = z.object({
     .regex(/^(\+62|62|0)[0-9]{9,12}$/, 'Format nomor telepon: 08xxxxxxxxxx'),
   alamat: z.string()
     .min(10, 'Alamat minimal 10 karakter ya'),
-  lokasi: z.string()
-    .min(1, 'Lokasi wajib dipilih'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Password gak sama nih',
   path: ['confirmPassword']

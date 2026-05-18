@@ -227,7 +227,9 @@ export const userService = {
 
   async approveKtp(userId) {
     try {
-      const response = await api.put(`/admin/users/${userId}/approve-ktp`);
+      const response = await api.put(`/admin/users/${userId}/approve-ktp`, {
+        frontend_url: window.location.origin
+      });
       const resData = response.data.user || response.data;
       return mapLaravelUser(resData) || resData;
     } catch (error) {
@@ -238,7 +240,8 @@ export const userService = {
   async rejectKtp(userId, reason) {
     try {
       const response = await api.put(`/admin/users/${userId}/reject-ktp`, {
-        reason: reason
+        reason: reason,
+        frontend_url: window.location.origin
       });
       const resData = response.data.user || response.data;
       return mapLaravelUser(resData) || resData;

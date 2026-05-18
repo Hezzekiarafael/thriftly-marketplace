@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
       const newUser = await userService.createUser(userData)
       const userWithoutPassword = { ...newUser }
       delete userWithoutPassword.password
-      setUser(userWithoutPassword)
+      // Jangan set user secara otomatis agar user diarahkan untuk login terlebih dahulu
       toast.success(SUCCESS.registered)
       return { success: true, user: userWithoutPassword }
     } catch (error) {

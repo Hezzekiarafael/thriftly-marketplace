@@ -40,7 +40,7 @@ const BuyerRegister = () => {
     setLoading(false)
 
     if (result.success) {
-      navigate('/buyer/dashboard')
+      navigate('/login')
     }
   }
 

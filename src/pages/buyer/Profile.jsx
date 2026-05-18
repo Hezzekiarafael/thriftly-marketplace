@@ -61,11 +61,24 @@ const Profile = () => {
     confirmPassword: '',
   })
 
+  const [rekeningForm, setRekeningForm] = useState({
+    noRekening: user?.profile?.noRekening || ''
+  })
+
   const [ktpForm, setKtpForm] = useState({
     nik: '',
     namaKtp: '',
     image: null
   })
+
+  // Sinkronisasi rekening bank
+  useEffect(() => {
+    if (user?.profile) {
+      setRekeningForm({
+        noRekening: user.profile.noRekening || ''
+      })
+    }
+  }, [user])
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault()
@@ -107,6 +120,26 @@ const Profile = () => {
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
     } catch (error) {
       toast.error(error.message || 'Gagal memperbarui password')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleRekeningSubmit = async (e) => {
+    e.preventDefault()
+    if (!rekeningForm.noRekening) {
+      return toast.error('Nomor rekening tidak boleh kosong')
+    }
+    setIsSubmitting(true)
+    try {
+      await updateProfile({
+        name: user.profile.nama,
+        email: user.email,
+        no_rekening: rekeningForm.noRekening
+      })
+      toast.success('Nomor rekening berhasil diperbarui')
+    } catch (error) {
+      toast.error(error.message || 'Gagal memperbarui nomor rekening')
     } finally {
       setIsSubmitting(false)
     }
@@ -437,73 +470,107 @@ const Profile = () => {
         </form>
       </div>
 
+      {/* Nomor Rekening */}
+      {user?.role === 'seller' && (
+        <div className="bg-white rounded-3xl p-8 shadow-soft-lg border border-gray-100">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-primary-50 text-primary-500 rounded-xl">
+              <ShieldCheck size={20} />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">Rekening Bank</h2>
+          </div>
+
+          <form onSubmit={handleRekeningSubmit} className="space-y-6 max-w-lg">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Nomor Rekening</label>
+              <input
+                type="text"
+                placeholder="Masukkan nomor rekening Anda"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
+                value={rekeningForm.noRekening}
+                onChange={(e) => setRekeningForm({ noRekening: e.target.value })}
+              />
+            </div>
+            <Button 
+              type="submit" 
+              isLoading={isSubmitting}
+              className="px-8 bg-gray-900 text-white rounded-2xl py-3 mt-4"
+            >
+              Simpan Nomor Rekening
+            </Button>
+          </form>
+        </div>
+      )}
+
       {/* KTP Verification */}
-      <div className="bg-white rounded-3xl p-8 shadow-soft-lg border border-gray-100">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-emerald-50 text-emerald-500 rounded-xl">
-            <CheckCircle size={20} />
+      {user?.role === 'seller' && (
+        <div className="bg-white rounded-3xl p-8 shadow-soft-lg border border-gray-100">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-emerald-50 text-emerald-500 rounded-xl">
+              <CheckCircle size={20} />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">Verifikasi Data Diri (KTP)</h2>
           </div>
-          <h2 className="text-xl font-bold text-gray-900">Verifikasi Data Diri (KTP)</h2>
-        </div>
 
-        {user?.ktp_status === 'rejected' && (
-          <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4 mb-6">
-            <div className="flex gap-3">
-              <AlertCircle className="text-rose-600 shrink-0" size={20} />
-              <div className="text-sm">
-                <p className="font-bold text-rose-900">Penolakan Admin:</p>
-                <p className="text-rose-700 mt-0.5">{user.ktp_rejection_reason || 'Foto KTP kurang jelas.'}</p>
-                <p className="text-rose-600 mt-2 font-medium">Silakan upload ulang foto KTP Anda melalui form di bawah.</p>
+          {user?.ktp_status === 'rejected' && (
+            <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4 mb-6">
+              <div className="flex gap-3">
+                <AlertCircle className="text-rose-600 shrink-0" size={20} />
+                <div className="text-sm">
+                  <p className="font-bold text-rose-900">Penolakan Admin:</p>
+                  <p className="text-rose-700 mt-0.5">{user.ktp_rejection_reason || 'Foto KTP kurang jelas.'}</p>
+                  <p className="text-rose-600 mt-2 font-medium">Silakan upload ulang foto KTP Anda melalui form di bawah.</p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <div className="space-y-6">
-          <p className="text-sm text-gray-500 leading-relaxed">
-            Verifikasi KTP diperlukan jika Anda ingin menjadi <strong className="text-gray-900">**Penjual Terpercaya**</strong> dan meningkatkan batas penarikan dana.
-          </p>
+          <div className="space-y-6">
+            <p className="text-sm text-gray-500 leading-relaxed">
+              Verifikasi KTP diperlukan jika Anda ingin menjadi <strong className="text-gray-900">**Penjual Terpercaya**</strong> dan meningkatkan batas penarikan dana.
+            </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">NIK KTP (16 Digit)</label>
-              <input
-                type="text"
-                placeholder="Masukkan 16 digit NIK"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
-                value={ktpForm.nik}
-                onChange={(e) => setKtpForm({...ktpForm, nik: e.target.value})}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Nama Sesuai KTP</label>
-              <input
-                type="text"
-                placeholder="Masukkan nama lengkap"
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
-                value={ktpForm.namaKtp}
-                onChange={(e) => setKtpForm({...ktpForm, namaKtp: e.target.value})}
-              />
-            </div>
-          </div>
-
-          <div className="border-2 border-dashed border-gray-200 rounded-3xl p-8 text-center hover:border-primary-300 transition-colors cursor-pointer group">
-            <input 
-              type="file" 
-              className="hidden" 
-              id="ktp-upload" 
-              onChange={(e) => e.target.files?.[0] && handleUploadKtp(e.target.files[0])}
-            />
-            <label htmlFor="ktp-upload" className="cursor-pointer block">
-              <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary-50 transition-colors">
-                <Camera size={30} className="text-gray-400 group-hover:text-primary-500" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">NIK KTP (16 Digit)</label>
+                <input
+                  type="text"
+                  placeholder="Masukkan 16 digit NIK"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
+                  value={ktpForm.nik}
+                  onChange={(e) => setKtpForm({...ktpForm, nik: e.target.value})}
+                />
               </div>
-              <p className="text-sm font-bold text-gray-900">Upload Foto KTP</p>
-              <p className="text-xs text-gray-500 mt-1">Pastikan foto jelas dan terbaca. Format JPG/PNG max 2MB.</p>
-            </label>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Nama Sesuai KTP</label>
+                <input
+                  type="text"
+                  placeholder="Masukkan nama lengkap"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
+                  value={ktpForm.namaKtp}
+                  onChange={(e) => setKtpForm({...ktpForm, namaKtp: e.target.value})}
+                />
+              </div>
+            </div>
+
+            <div className="border-2 border-dashed border-gray-200 rounded-3xl p-8 text-center hover:border-primary-300 transition-colors cursor-pointer group">
+              <input 
+                type="file" 
+                className="hidden" 
+                id="ktp-upload" 
+                onChange={(e) => e.target.files?.[0] && handleUploadKtp(e.target.files[0])}
+              />
+              <label htmlFor="ktp-upload" className="cursor-pointer block">
+                <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary-50 transition-colors">
+                  <Camera size={30} className="text-gray-400 group-hover:text-primary-500" />
+                </div>
+                <p className="text-sm font-bold text-gray-900">Upload Foto KTP</p>
+                <p className="text-xs text-gray-500 mt-1">Pastikan foto jelas dan terbaca. Format JPG/PNG max 2MB.</p>
+              </label>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 

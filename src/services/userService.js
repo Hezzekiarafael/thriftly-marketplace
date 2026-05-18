@@ -27,7 +27,8 @@ export const mapLaravelUser = (u) => {
       alamat: u.alamat || u.profile?.alamat || '',
       noTelp: u.no_telp || u.no_Telp || u.profile?.noTelp || '-',
       tanggalLahir: u.date_of_birth || u.tanggalLahir || u.profile?.tanggalLahir || '',
-      jenisKelamin: u.gender === 'L' ? 'Laki-laki' : (u.gender === 'P' ? 'Perempuan' : 'Laki-laki')
+      jenisKelamin: u.gender === 'L' ? 'Laki-laki' : (u.gender === 'P' ? 'Perempuan' : 'Laki-laki'),
+      noRekening: u.no_rekening || u.noRekening || u.profile?.noRekening || '-'
     }
   }
 }
@@ -57,10 +58,7 @@ export const userService = {
 
       const response = await api.post('/register', payload);
 
-      // Jika Laravel mengirim kembali property token, simpan di localStorage
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-      }
+      // Kami tidak menyimpan token di sini agar user masuk ke login page terlebih dahulu.
 
       // Mengembalikan objek user yang didapat dari Backend, dipetakan ke format frontend
       const rawUser = response.data.user || response.data;

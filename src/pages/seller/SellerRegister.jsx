@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { MapPin } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { registerSellerSchema } from '../../utils/validation'
-import { addWatermarkToImage } from '../../utils/watermark'
 import { getLocationFromCoordinates } from '../../utils/geolocation'
 import Button from '../../components/common/Button'
 import Container from '../../components/layout/Container'
@@ -18,9 +17,6 @@ import toast from 'react-hot-toast'
 const SellerRegister = () => {
   const navigate = useNavigate()
   const { register: registerUser } = useAuth()
-  const [loading, setLoading] = useState(false)
-  const [ktpPreview, setKtpPreview] = useState(null)
-  const [ktpFile, setKtpFile] = useState(null)
   const [gettingLocation, setGettingLocation] = useState(false)
 
   const {
@@ -32,20 +28,7 @@ const SellerRegister = () => {
     resolver: zodResolver(registerSellerSchema)
   })
 
-  const handleKtpUpload = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-
-    try {
-      const watermarkedImage = await addWatermarkToImage(file)
-      setKtpPreview(watermarkedImage)
-      setKtpFile(watermarkedImage)
-      setValue('ktpUrl', watermarkedImage)
-      toast.success('Foto KTP berhasil diupload dan diberi watermark!')
-    } catch (error) {
-      toast.error('Gagal upload foto KTP')
-    }
-  }
+  const [loading, setLoading] = useState(false)
 
   const handleUseCurrentLocation = async () => {
     setGettingLocation(true)
@@ -71,15 +54,13 @@ const SellerRegister = () => {
         ttl: data.ttl,
         noTelp: data.noTelp,
         alamat: data.alamat,
-        lokasi: data.lokasi,
-        noRekening: data.noRekening,
-        ktpUrl: data.ktpUrl
+        lokasi: data.lokasi
       }
     })
     setLoading(false)
 
     if (result.success) {
-      navigate('/seller/dashboard')
+      navigate('/login')
     }
   }
 
@@ -251,52 +232,6 @@ const SellerRegister = () => {
                     )}
                     <p className="text-sm text-gray-500 mt-1">{INSTRUCTIONS.selectLocation}</p>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Nomor Rekening *
-                    </label>
-                    <input
-                      type="text"
-                      {...register('noRekening')}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                      placeholder={PLACEHOLDERS.accountNumber}
-                    />
-                    {errors.noRekening && (
-                      <p className="text-red-500 text-sm mt-1">{errors.noRekening.message}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Verifikasi KTP</h2>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Upload Foto KTP *
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleKtpUpload}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  />
-                  <input type="hidden" {...register('ktpUrl')} />
-                  {errors.ktpUrl && (
-                    <p className="text-red-500 text-sm mt-1">{errors.ktpUrl.message}</p>
-                  )}
-                  <p className="text-sm text-gray-500 mt-1">{INSTRUCTIONS.uploadKTP}</p>
-
-                  {ktpPreview && (
-                    <div className="mt-4">
-                      <img
-                        src={ktpPreview}
-                        alt="Preview KTP"
-                        className="max-w-md rounded-lg border border-gray-300"
-                      />
-                    </div>
-                  )}
                 </div>
               </div>
 

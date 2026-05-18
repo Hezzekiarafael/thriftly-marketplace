@@ -12,6 +12,42 @@ const UsersList = () => {
   const [users, setUsers] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
+  const [selectedKtpUser, setSelectedKtpUser] = useState(null)
+  const [isKtpModalOpen, setIsKtpModalOpen] = useState(false)
+  const [rejectionReason, setRejectionReason] = useState('')
+
+  const handleViewKtpDetails = (user) => {
+    setSelectedKtpUser(user)
+    setRejectionReason('')
+    setIsKtpModalOpen(true)
+  }
+
+  const handleApproveKtp = async () => {
+    if (!selectedKtpUser) return;
+    try {
+      await userService.approveKtp(selectedKtpUser.id)
+      toast.success('KTP seller berhasil diverifikasi!')
+      setIsKtpModalOpen(false)
+      loadUsers()
+    } catch (error) {
+      toast.error(error.message || 'Gagal memverifikasi KTP')
+    }
+  }
+
+  const handleRejectKtp = async () => {
+    if (!selectedKtpUser) return;
+    if (!rejectionReason.trim()) {
+      return toast.error('Silakan isi alasan penolakan terlebih dahulu')
+    }
+    try {
+      await userService.rejectKtp(selectedKtpUser.id, rejectionReason)
+      toast.success('KTP seller berhasil ditolak!')
+      setIsKtpModalOpen(false)
+      loadUsers()
+    } catch (error) {
+      toast.error(error.message || 'Gagal menolak verifikasi KTP')
+    }
+  }
   
   const [formData, setFormData] = useState({
     email: '',
@@ -177,6 +213,32 @@ const UsersList = () => {
       render: (row) => <span className="text-gray-600">{formatDate(row.createdAt)}</span>
     },
     {
+      header: 'KTP Status',
+      accessor: 'ktp_status',
+      render: (row) => {
+        if (row.role !== 'seller') return <span className="text-gray-400 font-medium">-</span>;
+        
+        const status = row.ktp_status;
+        if (!status) {
+          return <span className="text-gray-400 italic font-medium">Belum Upload</span>;
+        } else if (status === 'pending') {
+          return (
+            <button
+              onClick={() => handleViewKtpDetails(row)}
+              className="px-3.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-full shadow-sm animate-pulse transition-all"
+            >
+              Cek
+            </button>
+          );
+        } else if (status === 'verified') {
+          return <span className="text-emerald-600 font-bold text-xs">Verified</span>;
+        } else if (status === 'rejected') {
+          return <span className="text-rose-500 font-bold text-xs">Ditolak</span>;
+        }
+        return <span className="text-gray-400 italic font-medium">Belum Upload</span>;
+      }
+    },
+    {
       header: 'Actions',
       accessor: 'actions',
       className: 'text-right',
@@ -303,6 +365,111 @@ const UsersList = () => {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* KTP Verification Details Modal */}
+      <Modal
+        isOpen={isKtpModalOpen}
+        onClose={() => setIsKtpModalOpen(false)}
+        title="Detail Verifikasi KTP"
+      >
+        {selectedKtpUser && (
+          <div className="space-y-6">
+            {/* KTP Picture Display */}
+            <div className="relative rounded-2xl overflow-hidden bg-gray-900 aspect-[1.6/1] border border-gray-150 shadow-inner flex items-center justify-center">
+              {selectedKtpUser.ktp_path ? (
+                <img 
+                  src={selectedKtpUser.ktp_path.startsWith('data:') || selectedKtpUser.ktp_path.startsWith('http') 
+                    ? selectedKtpUser.ktp_path 
+                    : `https://api.thriftly.my.id/storage/${selectedKtpUser.ktp_path}`
+                  } 
+                  alt="KTP Dokumen" 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="text-center p-6 text-gray-500">
+                  <span className="text-xs font-bold block uppercase tracking-wider text-gray-400">Tidak ada gambar KTP</span>
+                </div>
+              )}
+            </div>
+
+            {/* KTP Fields Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">NIK</label>
+                <input
+                  type="text"
+                  disabled
+                  value={selectedKtpUser.ktp_nik || '-'}
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-800 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Nama Sesuai KTP</label>
+                <input
+                  type="text"
+                  disabled
+                  value={selectedKtpUser.ktp_name || '-'}
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-800 focus:outline-none capitalize"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Tempat Lahir</label>
+                <input
+                  type="text"
+                  disabled
+                  value={selectedKtpUser.ktp_birth_place || '-'}
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-800 focus:outline-none capitalize"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Tanggal Lahir</label>
+                <input
+                  type="text"
+                  disabled
+                  value={selectedKtpUser.ktp_birth_date || '-'}
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-gray-800 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Rejection Reason Form */}
+            <div>
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Alasan Penolakan (Jika Ditolak)</label>
+              <textarea
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="Contoh: Foto KTP kurang jelas atau buram"
+                rows={2}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none resize-none transition-all placeholder-gray-400"
+              />
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleRejectKtp}
+                className="flex-1 py-3 border border-rose-200 text-rose-600 font-bold hover:bg-rose-50 rounded-2xl text-sm transition-all shadow-sm"
+              >
+                Tolak Verifikasi
+              </button>
+              
+              <button
+                type="button"
+                onClick={handleApproveKtp}
+                className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-sm transition-all shadow-md"
+              >
+                Terima Verifikasi
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </AdminLayout>
   )

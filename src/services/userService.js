@@ -225,6 +225,28 @@ export const userService = {
     }
   },
 
+  async approveKtp(userId) {
+    try {
+      const response = await api.post(`/admin/users/${userId}/approve-ktp`);
+      const resData = response.data.user || response.data;
+      return mapLaravelUser(resData) || resData;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Gagal menyetujui verifikasi KTP');
+    }
+  },
+
+  async rejectKtp(userId, reason) {
+    try {
+      const response = await api.post(`/admin/users/${userId}/reject-ktp`, {
+        rejection_reason: reason
+      });
+      const resData = response.data.user || response.data;
+      return mapLaravelUser(resData) || resData;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Gagal menolak verifikasi KTP');
+    }
+  },
+
   async sendOtp(email, noTelp) {
     console.log('Sending OTP Request (Trying Multiple Phone Fields):', { noTelp });
     try {

@@ -238,7 +238,7 @@ export const userService = {
   async rejectKtp(userId, reason) {
     try {
       const response = await api.put(`/admin/users/${userId}/reject-ktp`, {
-        rejection_reason: reason
+        reason: reason
       });
       const resData = response.data.user || response.data;
       return mapLaravelUser(resData) || resData;

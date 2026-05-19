@@ -163,21 +163,13 @@ const Header = () => {
                     <>
                       {/* Mobile Blur Overlay */}
                       <div 
-                        className="md:hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
+                        className="md:hidden fixed inset-0 top-[64px] z-[90] bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
                         onClick={() => setIsUserMenuOpen(false)}
                       />
                       
-                      <div className="fixed right-0 top-0 bottom-0 w-[280px] bg-white shadow-2xl z-[101] animate-in slide-in-from-right duration-300 md:absolute md:inset-auto md:top-full md:mt-2 md:w-64 md:bottom-auto md:rounded-2xl md:shadow-soft-xl md:border md:border-gray-100 md:py-3 md:z-[100] md:animate-in md:fade-in md:slide-in-from-top-0 md:zoom-in-95">
+                      <div className="fixed right-0 top-[64px] bottom-0 w-[280px] bg-white shadow-2xl z-[101] animate-in slide-in-from-right duration-300 md:absolute md:inset-auto md:top-full md:mt-2 md:w-64 md:bottom-auto md:rounded-2xl md:shadow-soft-xl md:border md:border-gray-100 md:py-3 md:z-[100] md:animate-in md:fade-in md:slide-in-from-top-0 md:zoom-in-95">
                         
-                        {/* Mobile Drawer Header */}
-                        <div className="md:hidden flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50/50">
-                           <span className="font-bold text-gray-900 text-sm">Profil Saya</span>
-                           <button onClick={() => setIsUserMenuOpen(false)} className="p-1.5 -mr-1.5 text-gray-500 hover:text-gray-700 bg-gray-200/50 hover:bg-gray-200 rounded-full transition-colors">
-                              <X size={16} />
-                           </button>
-                        </div>
-
-                        <div className="px-5 py-4 md:py-3 border-b border-gray-50 mb-2 mt-2 md:mt-0">
+                        <div className="px-5 py-4 md:py-3 border-b border-gray-50 mb-2">
                         <p className="text-sm font-bold text-gray-900 truncate">
                           {user.profile?.nama || 'User'}
                         </p>

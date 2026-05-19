@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Package, Clock, CheckCircle, XCircle, DollarSign, RefreshCw, LogOut, MapPin } from 'lucide-react'
+import toast from 'react-hot-toast'
 import Header from '../../components/layout/Header'
 import Footer from '../../components/layout/Footer'
 import Container from '../../components/layout/Container'
@@ -18,7 +19,8 @@ const SellerDashboard = () => {
     total: 0,
     pending: 0,
     approved: 0,
-    rejected: 0
+    rejected: 0,
+    totalPenjualan: 0
   })
 
   useEffect(() => {
@@ -26,11 +28,15 @@ const SellerDashboard = () => {
       const fetchProducts = async () => {
         try {
           const products = await productService.getProductsBySeller(user.id)
+          const soldProducts = products.filter(p => p.status === 'sold')
+          const totalPenjualanSum = soldProducts.reduce((sum, p) => sum + (p.harga || 0), 0)
+
           setStats({
             total: products.length,
             pending: products.filter(p => p.status === 'pending').length,
             approved: products.filter(p => p.status === 'approved').length,
-            rejected: products.filter(p => p.status === 'rejected').length
+            rejected: products.filter(p => p.status === 'rejected').length,
+            totalPenjualan: totalPenjualanSum
           })
         } catch (error) {
           console.error("Gagal load produk seller", error)
@@ -45,6 +51,10 @@ const SellerDashboard = () => {
   const handleLogout = () => {
     navigate('/', { replace: true })
     setTimeout(() => logout(), 0)
+  }
+
+  const handleWithdraw = () => {
+    navigate('/seller/withdraw')
   }
 
   return (
@@ -120,6 +130,12 @@ const SellerDashboard = () => {
               <DollarSign className="text-green-600" size={32} />
             </div>
             <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                <span className="text-gray-700 font-medium">Total Penjualan</span>
+                <span className="font-bold text-green-600">
+                  {formatCurrency(stats.totalPenjualan || 0)}
+                </span>
+              </div>
               <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg">
                 <span className="text-gray-700">Saldo Ketahanan</span>
                 <span className="font-bold text-amber-600">
@@ -129,11 +145,16 @@ const SellerDashboard = () => {
               <div className="flex justify-between items-center p-3 bg-indigo-50 rounded-lg">
                 <span className="text-gray-700">Bisa Ditarik</span>
                 <span className="font-bold text-indigo-600">
-                  {formatCurrency(user?.saldo?.bisaDitarik || 0)}
+                  {formatCurrency(stats.totalPenjualan || 0)}
                 </span>
               </div>
             </div>
-            <Button variant="primary" fullWidth className="mt-4 shadow-md hover:scale-[1.02] active:scale-[0.98]">
+            <Button
+              variant="primary"
+              fullWidth
+              className="mt-4 shadow-md hover:scale-[1.02] active:scale-[0.98]"
+              onClick={handleWithdraw}
+            >
               {BUTTONS.withdraw}
             </Button>
 

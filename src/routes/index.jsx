@@ -26,6 +26,7 @@ const AddProduct = lazy(() => import('../pages/seller/AddProduct'))
 const MyProducts = lazy(() => import('../pages/seller/MyProducts'))
 const EditProduct = lazy(() => import('../pages/seller/EditProduct'))
 const SellerOrders = lazy(() => import('../pages/seller/SellerOrders'))
+const Withdraw = lazy(() => import('../pages/seller/Withdraw'))
 
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'))
 const ApprovalQueue = lazy(() => import('../pages/admin/ApprovalQueue'))
@@ -138,6 +139,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['seller']}>
               <SellerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/seller/withdraw"
+          element={
+            <ProtectedRoute allowedRoles={['seller']}>
+              <Withdraw />
             </ProtectedRoute>
           }
         />

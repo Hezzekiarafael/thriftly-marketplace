@@ -167,7 +167,7 @@ const Header = () => {
                         onClick={() => setIsUserMenuOpen(false)}
                       />
                       
-                      <div className="fixed right-0 top-[64px] bottom-0 w-[280px] bg-white shadow-2xl z-[101] animate-in slide-in-from-right duration-300 md:absolute md:inset-auto md:top-full md:mt-2 md:w-64 md:bottom-auto md:rounded-2xl md:shadow-soft-xl md:border md:border-gray-100 md:py-3 md:z-[100] md:animate-in md:fade-in md:slide-in-from-top-0 md:zoom-in-95">
+                      <div className="fixed right-0 top-[64px] bottom-0 w-[280px] bg-white shadow-2xl z-[101] animate-in slide-in-from-right duration-300 md:absolute md:inset-auto md:right-0 md:top-full md:mt-2 md:w-64 md:bottom-auto md:rounded-2xl md:shadow-soft-xl md:border md:border-gray-100 md:py-3 md:z-[100] md:animate-in md:fade-in md:slide-in-from-top-0 md:zoom-in-95">
                         
                         <div className="px-5 py-4 md:py-3 border-b border-gray-50 mb-2">
                         <p className="text-sm font-bold text-gray-900 truncate">

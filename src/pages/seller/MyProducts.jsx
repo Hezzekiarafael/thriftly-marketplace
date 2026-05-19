@@ -42,13 +42,26 @@ const MyProducts = () => {
     }
   }
 
+  const handleMarkAsSold = async (id) => {
+    if (window.confirm('Tandai produk ini sebagai terjual?')) {
+      try {
+        await productService.markAsSold(id)
+        setProducts(products.map(p => p.id === id ? { ...p, status: 'sold' } : p))
+        toast.success('Produk berhasil ditandai terjual')
+      } catch (error) {
+        toast.error('Gagal menandai produk terjual')
+      }
+    }
+  }
+
   const getStatusBadge = (status) => {
     const variants = {
       pending: 'warning',
       approved: 'success',
-      rejected: 'danger'
+      rejected: 'danger',
+      sold: 'sold'
     }
-    return <Badge variant={variants[status]}>{STATUS[status]}</Badge>
+    return <Badge variant={variants[status] || 'default'}>{STATUS[status] || status}</Badge>
   }
 
   return (
@@ -82,11 +95,22 @@ const MyProducts = () => {
                       </p>
                     </div>
                     <div className="flex gap-2">
-                      <Link to={`/seller/products/edit/${product.id}`}>
-                        <Button variant="outline" size="sm">
-                          <Edit size={16} />
+                      {product.status === 'approved' && (
+                        <Button
+                          variant="success"
+                          size="sm"
+                          onClick={() => handleMarkAsSold(product.id)}
+                        >
+                          Tandai Terjual
                         </Button>
-                      </Link>
+                      )}
+                      {product.status !== 'sold' && (
+                        <Link to={`/seller/products/edit/${product.id}`}>
+                          <Button variant="outline" size="sm">
+                            <Edit size={16} />
+                          </Button>
+                        </Link>
+                      )}
                       <Button
                         variant="danger"
                         size="sm"

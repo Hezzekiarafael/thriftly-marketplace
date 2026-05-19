@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Edit, Trash2 } from 'lucide-react'
+import { Edit, Trash2, Package } from 'lucide-react'
 import Header from '../../components/layout/Header'
 import Footer from '../../components/layout/Footer'
 import Container from '../../components/layout/Container'
@@ -68,76 +68,100 @@ const MyProducts = () => {
     <div className="min-h-screen flex flex-col bg-gray-50 pb-16 md:pb-0">
       <Header />
       
-      <Container>
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Produk Saya</h1>
-          <Link to="/seller/products/add">
-            <Button>Tambah Produk</Button>
-          </Link>
-        </div>
+      <main className="flex-grow py-6 md:py-10">
+        <Container>
+          <div className="flex justify-between items-center mb-4 md:mb-6">
+            <h1 className="text-xl md:text-3xl font-bold text-gray-900">Produk Saya</h1>
+            <Link to="/seller/products/add">
+              <Button size="sm" className="md:px-6 md:py-2.5 md:text-base text-xs py-2 px-4 shadow-md font-bold">Tambah Produk</Button>
+            </Link>
+          </div>
 
-        <div className="space-y-4">
-          {products.map((product) => (
-            <div key={product.id} className="bg-white rounded-lg p-6 shadow-md">
-              <div className="flex gap-4">
-                <img
-                  src={product.fotos && product.fotos.length > 0 ? product.fotos[0] : (product.image || product.image_url || 'https://via.placeholder.com/300?text=No+Image')}
-                  alt={product.nama}
-                  className="w-32 h-32 object-cover rounded-lg"
-                />
-                
-                <div className="flex-1">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-900">{product.nama}</h3>
-                      <p className="text-2xl font-bold text-red-600 mt-1">
-                        {formatCurrency(product.harga)}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      {product.status === 'approved' && (
-                        <Button
-                          variant="success"
-                          size="sm"
-                          onClick={() => handleMarkAsSold(product.id)}
-                        >
-                          Tandai Terjual
-                        </Button>
-                      )}
-                      {product.status !== 'sold' && (
-                        <Link to={`/seller/products/edit/${product.id}`}>
-                          <Button variant="outline" size="sm">
-                            <Edit size={16} />
-                          </Button>
-                        </Link>
-                      )}
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => handleDelete(product.id)}
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2 mb-2">
-                    {getStatusBadge(product.status)}
-                    {product.isBU && <Badge variant="bu">BU</Badge>}
-                  </div>
-                  
-                  {product.adminNote && (
-                    <div className="mt-2 p-3 bg-yellow-50 rounded-lg">
-                      <p className="text-sm font-medium text-gray-700">Catatan Admin:</p>
-                      <p className="text-sm text-gray-600">{product.adminNote}</p>
-                    </div>
-                  )}
-                </div>
+          {products.length === 0 ? (
+            <div className="bg-white rounded-2xl p-8 md:p-12 text-center shadow-sm border border-gray-100 flex flex-col items-center max-w-md mx-auto mt-8 animate-in fade-in duration-500">
+              <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4">
+                <Package className="w-8 h-8" />
               </div>
+              <h3 className="text-base md:text-lg font-bold text-gray-900 mb-1.5 md:mb-2">Belum Ada Produk</h3>
+              <p className="text-xs text-gray-500 leading-relaxed mb-6 max-w-xs">
+                Kamu belum mengunggah produk apa pun untuk dijual. Yuk, mulai pajang produk pertamamu sekarang!
+              </p>
+              <Link to="/seller/products/add">
+                <Button variant="primary" size="sm" className="px-5 py-2 font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] text-xs">
+                  Mulai Jual Barang Nganggur
+                </Button>
+              </Link>
             </div>
-          ))}
-        </div>
-      </Container>
+          ) : (
+            <div className="space-y-3 md:space-y-4">
+              {products.map((product) => (
+                <div key={product.id} className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in fade-in duration-300">
+                  <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+                    <img
+                      src={product.fotos && product.fotos.length > 0 ? product.fotos[0] : (product.image || product.image_url || 'https://via.placeholder.com/300?text=No+Image')}
+                      alt={product.nama}
+                      className="w-full sm:w-24 sm:h-24 md:w-32 md:h-32 object-cover rounded-xl shrink-0"
+                    />
+                    
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div>
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-1.5 md:mb-2">
+                          <div>
+                            <h3 className="text-sm md:text-lg font-bold text-gray-900 leading-tight">{product.nama}</h3>
+                            <p className="text-base md:text-xl font-bold text-red-600 mt-0.5 md:mt-1">
+                              {formatCurrency(product.harga)}
+                            </p>
+                          </div>
+                          
+                          <div className="flex gap-1.5 md:gap-2 self-start sm:self-auto sm:ml-auto">
+                            {product.status === 'approved' && (
+                              <Button
+                                variant="success"
+                                size="sm"
+                                className="text-[10px] md:text-xs py-1.5 px-3 md:py-2 md:px-4 font-bold"
+                                onClick={() => handleMarkAsSold(product.id)}
+                              >
+                                Tandai Terjual
+                              </Button>
+                            )}
+                            {product.status !== 'sold' && (
+                              <Link to={`/seller/products/edit/${product.id}`} className="block">
+                                <Button variant="outline" size="sm" className="p-1.5 md:p-2.5">
+                                  <Edit className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                                </Button>
+                              </Link>
+                            )}
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              className="p-1.5 md:p-2.5"
+                              onClick={() => handleDelete(product.id)}
+                            >
+                              <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-1.5 md:gap-2 mb-1.5">
+                          {getStatusBadge(product.status)}
+                          {product.isBU && <Badge variant="bu">BU</Badge>}
+                        </div>
+                      </div>
+                      
+                      {product.adminNote && (
+                        <div className="mt-2 p-2.5 md:p-3 bg-yellow-50 border border-yellow-100 rounded-xl">
+                          <p className="text-[10px] md:text-xs font-bold text-yellow-800">Catatan Admin:</p>
+                          <p className="text-[10px] md:text-xs text-yellow-700 leading-relaxed mt-0.5">{product.adminNote}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Container>
+      </main>
 
       <Footer />
     </div>

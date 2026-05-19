@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-hot-toast';
@@ -8,13 +8,17 @@ const LoginSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { refreshUser } = useAuth();
+  const hasRun = useRef(false);
 
   useEffect(() => {
     const handleCallback = async () => {
+      if (hasRun.current) return;
+      
       const token = searchParams.get('token');
       console.log('Google Login Callback - Token found:', !!token);
       
       if (token) {
+        hasRun.current = true;
         // 1. Simpan token ke localStorage
         localStorage.setItem('token', token);
         
@@ -24,7 +28,7 @@ const LoginSuccess = () => {
           const userData = await refreshUser();
           console.log('User refreshed successfully:', userData);
           
-          toast.success('Berhasil masuk dengan Google!');
+          toast.success('Berhasil masuk dengan Google!', { id: 'google-login-success' });
           
           // 3. Redirect ke dashboard berdasarkan role
           const targetPath = userData?.role === 'seller' ? '/seller/dashboard' : '/buyer/dashboard';

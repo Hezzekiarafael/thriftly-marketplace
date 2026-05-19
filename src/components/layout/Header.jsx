@@ -147,7 +147,7 @@ const Header = () => {
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                     className="flex items-center space-x-2 hover:bg-white/10 p-1 rounded-lg transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-full overflow-hidden bg-white/20 flex items-center justify-center border border-white/10">
+                    <div className="hidden md:flex w-8 h-8 rounded-full overflow-hidden bg-white/20 items-center justify-center border border-white/10">
                       {user.profile?.avatar ? (
                         <img src={user.profile.avatar} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
@@ -208,32 +208,25 @@ const Header = () => {
                 </div>
           )}
 
-          <button
-            className="md:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Search size={24} />}
-          </button>
+          {!user && (
+            <button
+              className="md:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+              onClick={() => navigate('/login')}
+            >
+              <User size={24} />
+            </button>
+          )}
+          
+          {user && (
+            <button
+              className="md:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+            >
+              {isUserMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          )}
         </div>
         </div>
-
-        {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-100 animate-in slide-in-from-top-2">
-            <form onSubmit={handleSearch} className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={PLACEHOLDERS.search}
-                className="w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                autoFocus
-              />
-              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                <Search size={18} />
-              </button>
-            </form>
-          </div>
-        )}
       </div>
     </header>
   )

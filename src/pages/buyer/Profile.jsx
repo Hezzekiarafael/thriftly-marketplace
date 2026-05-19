@@ -357,23 +357,23 @@ const Profile = () => {
   }
 
   const renderProfileTab = () => (
-    <div className="bg-white rounded-3xl p-8 shadow-soft-lg border border-gray-100">
-      <div className="flex items-center gap-6 mb-8">
-        <div className="relative group">
-          <div className="w-24 h-24 rounded-full border-4 border-white shadow-md overflow-hidden bg-gray-100">
+    <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-sm md:shadow-soft-lg border border-gray-100">
+      <div className="flex items-center gap-4 md:gap-6 mb-6 md:mb-8">
+        <div className="relative group shrink-0">
+          <div className="w-16 h-16 md:w-24 md:h-24 rounded-full border-2 md:border-4 border-white shadow-md overflow-hidden bg-gray-100">
             {user?.profile?.avatar ? (
               <img src={user.profile.avatar} alt="Avatar" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400">
-                <User size={40} />
+                <User className="w-8 h-8 md:w-10 md:h-10" />
               </div>
             )}
           </div>
           <button 
             onClick={() => fileInputRef.current?.click()}
-            className="absolute bottom-0 right-0 p-2 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-colors"
+            className="absolute bottom-0 right-0 p-1.5 md:p-2 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-colors"
           >
-            <Camera size={14} />
+            <Camera className="w-3 h-3 md:w-3.5 md:h-3.5" />
           </button>
           <input 
             type="file" 
@@ -384,45 +384,45 @@ const Profile = () => {
           />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-gray-900">{user?.profile?.nama || 'User'}</h3>
-          <p className="text-sm text-gray-500 mt-1">Update foto profil dan informasi pribadi Anda.</p>
+          <h3 className="text-base md:text-xl font-bold text-gray-900">{user?.profile?.nama || 'User'}</h3>
+          <p className="text-xs md:text-sm text-gray-500 mt-0.5 md:mt-1">Update foto profil dan informasi pribadi Anda.</p>
         </div>
       </div>
 
-      <form onSubmit={handleProfileSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Nama Lengkap</label>
+      <form onSubmit={handleProfileSubmit} className="space-y-4 md:space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <div className="space-y-1.5 md:space-y-2">
+            <label className="text-xs md:text-sm font-semibold text-gray-700">Nama Lengkap</label>
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <User size={18} />
+              <div className="absolute left-3.5 md:left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                <User className="w-4 h-4 md:w-4.5 md:h-4.5" />
               </div>
               <input
                 type="text"
                 value={profileForm.nama}
                 onChange={(e) => setProfileForm({ ...profileForm, nama: e.target.value })}
-                className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
+                className="w-full pl-10 md:pl-12 pr-4 py-2.5 md:py-3 bg-gray-50 border border-gray-200 rounded-xl md:rounded-2xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
                 placeholder="Masukkan nama lengkap"
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Alamat Email</label>
-            <div className="relative flex items-center gap-3">
+          <div className="space-y-1.5 md:space-y-2">
+            <label className="text-xs md:text-sm font-semibold text-gray-700">Alamat Email</label>
+            <div className="relative flex items-center gap-2 md:gap-3">
               <div className="relative flex-1">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                  <Mail size={18} />
+                <div className="absolute left-3.5 md:left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <Mail className="w-4 h-4 md:w-4.5 md:h-4.5" />
                 </div>
                 <input
                   type="email"
                   value={user?.email || ''}
                   disabled
-                  className="w-full pl-12 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-2xl text-gray-500 cursor-not-allowed"
+                  className="w-full pl-10 md:pl-12 pr-4 py-2.5 md:py-3 bg-gray-100 border border-gray-200 rounded-xl md:rounded-2xl text-xs md:text-sm text-gray-500 cursor-not-allowed"
                 />
               </div>
               {user?.emailVerifiedAt ? (
-                <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
+                <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[8px] md:text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider shrink-0">
                   <CheckCircle size={10} /> Verified
                 </div>
               ) : (
@@ -430,7 +430,7 @@ const Profile = () => {
                   type="button"
                   onClick={handleResendEmail}
                   disabled={resending}
-                  className="whitespace-nowrap px-4 py-2 bg-amber-50 text-amber-700 text-xs font-bold rounded-xl border border-amber-200 hover:bg-amber-100 transition-colors disabled:opacity-50"
+                  className="whitespace-nowrap px-3 py-1.5 md:px-4 md:py-2 bg-amber-50 text-amber-700 text-[10px] md:text-xs font-bold rounded-lg md:rounded-xl border border-amber-200 hover:bg-amber-100 transition-colors disabled:opacity-50 shrink-0"
                 >
                   {resending ? 'Mengirim...' : 'Kirim Link Verifikasi'}
                 </button>
@@ -438,23 +438,23 @@ const Profile = () => {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Nomor HP</label>
-            <div className="relative flex items-center gap-3">
+          <div className="space-y-1.5 md:space-y-2">
+            <label className="text-xs md:text-sm font-semibold text-gray-700">Nomor HP</label>
+            <div className="relative flex items-center gap-2 md:gap-3">
               <div className="relative flex-1">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                  <Phone size={18} />
+                <div className="absolute left-3.5 md:left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                  <Phone className="w-4 h-4 md:w-4.5 md:h-4.5" />
                 </div>
                 <input
                   type="text"
                   value={profileForm.noTelp}
                   onChange={(e) => setProfileForm({ ...profileForm, noTelp: e.target.value })}
-                  className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
+                  className="w-full pl-10 md:pl-12 pr-4 py-2.5 md:py-3 bg-gray-50 border border-gray-200 rounded-xl md:rounded-2xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
                   placeholder="0812xxxx"
                 />
               </div>
               {user?.phoneVerifiedAt ? (
-                <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
+                <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[8px] md:text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider shrink-0">
                   <CheckCircle size={10} /> Verified
                 </div>
               ) : (
@@ -462,7 +462,7 @@ const Profile = () => {
                   type="button"
                   onClick={handleVerifyPhone}
                   disabled={verifyingPhone}
-                  className="whitespace-nowrap px-4 py-2 bg-amber-50 text-amber-700 text-xs font-bold rounded-xl border border-amber-200 hover:bg-amber-100 transition-colors disabled:opacity-50"
+                  className="whitespace-nowrap px-3 py-1.5 md:px-4 md:py-2 bg-amber-50 text-amber-700 text-[10px] md:text-xs font-bold rounded-lg md:rounded-xl border border-amber-200 hover:bg-amber-100 transition-colors disabled:opacity-50 shrink-0"
                 >
                   {verifyingPhone ? 'Mengirim...' : 'Verifikasi'}
                 </button>
@@ -470,15 +470,15 @@ const Profile = () => {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Jenis Kelamin</label>
-            <div className="flex gap-3">
+          <div className="space-y-1.5 md:space-y-2">
+            <label className="text-xs md:text-sm font-semibold text-gray-700">Jenis Kelamin</label>
+            <div className="flex gap-2 md:gap-3">
               {['Laki-laki', 'Perempuan'].map((gender) => (
                 <button
                   key={gender}
                   type="button"
                   onClick={() => setProfileForm({ ...profileForm, jenisKelamin: gender })}
-                  className={`flex-1 py-3 rounded-2xl border transition-all font-medium ${
+                  className={`flex-1 py-2.5 md:py-3 rounded-xl md:rounded-2xl border transition-all text-xs md:text-sm font-medium ${
                     profileForm.jenisKelamin === gender 
                     ? 'bg-primary-50 border-primary-500 text-primary-700' 
                     : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-primary-300'
@@ -490,27 +490,27 @@ const Profile = () => {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Tanggal Lahir</label>
+          <div className="space-y-1.5 md:space-y-2">
+            <label className="text-xs md:text-sm font-semibold text-gray-700">Tanggal Lahir</label>
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-                <Calendar size={18} />
+              <div className="absolute left-3.5 md:left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                <Calendar className="w-4 h-4 md:w-4.5 md:h-4.5" />
               </div>
               <input
                 type="date"
                 value={profileForm.tanggalLahir}
                 onChange={(e) => setProfileForm({ ...profileForm, tanggalLahir: e.target.value })}
-                className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
+                className="w-full pl-10 md:pl-12 pr-4 py-2.5 md:py-3 bg-gray-50 border border-gray-200 rounded-xl md:rounded-2xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
               />
             </div>
           </div>
         </div>
 
-        <div className="pt-4">
+        <div className="pt-2 md:pt-4">
           <Button 
             type="submit" 
             isLoading={isSubmitting}
-            className="px-8 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl py-3"
+            className="w-full md:w-auto px-6 md:px-8 bg-primary-600 hover:bg-primary-700 text-white rounded-xl md:rounded-2xl py-2.5 md:py-3 text-xs md:text-sm font-bold"
           >
             Simpan Perubahan
           </Button>
@@ -520,30 +520,30 @@ const Profile = () => {
   )
 
   const renderAddressTab = () => (
-    <div className="bg-white rounded-3xl p-8 shadow-soft-lg border border-gray-100">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Alamat Saya</h2>
-        <button className="flex items-center gap-1.5 text-primary-600 font-semibold text-sm hover:text-primary-700">
-          <Plus size={18} /> Tambah Alamat Baru
+    <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-sm md:shadow-soft-lg border border-gray-100">
+      <div className="flex justify-between items-center mb-4 md:mb-6">
+        <h2 className="text-base md:text-xl font-bold text-gray-900">Alamat Saya</h2>
+        <button className="flex items-center gap-1 text-primary-600 font-semibold text-xs md:text-sm hover:text-primary-700">
+          <Plus size={16} /> Tambah Alamat Baru
         </button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3 md:space-y-4">
         {/* Address Card */}
-        <div className="p-6 border-2 border-primary-100 bg-primary-50/30 rounded-3xl relative">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="font-bold text-gray-900">Utama</span>
-            <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded-full">
-              <MapPin size={10} /> TITIK MAP TERPASANG
+        <div className="p-4 md:p-6 border-2 border-primary-100 bg-primary-50/30 rounded-2xl md:rounded-3xl relative">
+          <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+            <span className="text-xs md:text-sm font-bold text-gray-900">Utama</span>
+            <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[8px] md:text-[9px] font-bold rounded-full">
+              <MapPin size={8} /> TITIK MAP TERPASANG
             </div>
           </div>
           <div className="space-y-1 text-gray-700">
-            <p className="font-bold text-gray-900">{user?.profile?.nama}</p>
-            <p className="text-sm leading-relaxed max-w-lg">
+            <p className="text-sm md:text-base font-bold text-gray-900">{user?.profile?.nama}</p>
+            <p className="text-xs md:text-sm leading-relaxed max-w-lg">
               {user?.profile?.alamat || 'Jalan Ungaran, Mulyoharjo, Pemalang, Central Java, Java, 52312, Indonesia'}
             </p>
           </div>
-          <button className="mt-4 text-primary-600 font-bold text-sm hover:underline">
+          <button className="mt-3 md:mt-4 text-primary-600 font-bold text-xs md:text-sm hover:underline">
             Ubah Alamat
           </button>
         </div>
@@ -561,16 +561,16 @@ const Profile = () => {
     const accHolder = parts[2] || user?.profile?.nama || '';
 
     return (
-      <div className="bg-white rounded-3xl p-8 shadow-soft-lg border border-gray-100 animate-in fade-in duration-300">
-        <div className="flex justify-between items-center mb-6">
+      <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-sm md:shadow-soft-lg border border-gray-100 animate-in fade-in duration-300">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 md:mb-6">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Simpan rekening untuk penarikan saldo</h2>
-            <p className="text-gray-400 text-xs mt-1">Saldo Thriftly kamu bisa ditarik ke rekening ini.</p>
+            <h2 className="text-base md:text-xl font-bold text-gray-900">Simpan rekening untuk penarikan saldo</h2>
+            <p className="text-gray-400 text-[10px] md:text-xs mt-0.5 md:mt-1">Saldo Thriftly kamu bisa ditarik ke rekening ini.</p>
           </div>
           {hasRekening && (
             <button 
               onClick={() => setIsRekeningModalOpen(true)}
-              className="flex items-center gap-1.5 px-4 py-2 border border-emerald-600 text-emerald-600 hover:bg-emerald-50 font-bold rounded-2xl text-xs transition-colors"
+              className="flex items-center gap-1 px-3 py-1.5 border border-emerald-600 text-emerald-600 hover:bg-emerald-50 font-bold rounded-xl text-[10px] md:text-xs transition-colors shrink-0"
             >
               + Tambah Rekening Lain
             </button>
@@ -578,17 +578,17 @@ const Profile = () => {
         </div>
 
         {!hasRekening ? (
-          <div className="border-2 border-dashed border-gray-100 rounded-3xl p-12 text-center flex flex-col items-center justify-center bg-gray-50/50">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400 mb-4">
-              <CreditCard size={28} />
+          <div className="border-2 border-dashed border-gray-100 rounded-2xl md:rounded-3xl p-6 md:p-12 text-center flex flex-col items-center justify-center bg-gray-50/50">
+            <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 mb-3 md:mb-4">
+              <CreditCard size={24} className="md:w-7 md:h-7" />
             </div>
-            <h3 className="font-bold text-gray-900 text-sm mb-1">Belum ada rekening bank</h3>
-            <p className="text-xs text-gray-500 max-w-sm leading-relaxed mb-6">
+            <h3 className="font-bold text-gray-900 text-xs md:text-sm mb-1">Belum ada rekening bank</h3>
+            <p className="text-[10px] md:text-xs text-gray-500 max-w-xs leading-relaxed mb-4 md:mb-6">
               Hubungkan rekening bank Anda untuk memudahkan penarikan saldo penjualan.
             </p>
             <button 
               onClick={() => setIsRekeningModalOpen(true)}
-              className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-xs flex items-center gap-1.5 transition-all shadow-md animate-bounce"
+              className="px-4 py-2.5 md:px-6 md:py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl md:rounded-2xl text-[10px] md:text-xs flex items-center gap-1.5 transition-all shadow-md animate-bounce"
             >
               + Tambah Rekening Sekarang
             </button>
@@ -596,34 +596,34 @@ const Profile = () => {
         ) : (
           <div className="space-y-4">
             {/* Premium Bank Card */}
-            <div className="p-6 border border-emerald-100 bg-emerald-50/30 rounded-3xl relative flex items-start justify-between gap-4">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center border border-gray-100 shadow-sm shrink-0">
-                  <div className="font-bold text-xs text-emerald-600 uppercase tracking-wider">
+            <div className="p-4 md:p-6 border border-emerald-100 bg-emerald-50/30 rounded-2xl md:rounded-3xl relative flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3 md:gap-4">
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl md:rounded-2xl flex items-center justify-center border border-gray-100 shadow-sm shrink-0">
+                  <div className="font-bold text-[10px] md:text-xs text-emerald-600 uppercase tracking-wider">
                     {bankName.substring(0, 3)}
                   </div>
                 </div>
-                <div className="space-y-1">
-                  <h4 className="font-bold text-gray-900 text-base">{bankName}</h4>
-                  <p className="font-mono text-sm text-gray-600 tracking-wider">
+                <div className="space-y-0.5 md:space-y-1">
+                  <h4 className="font-bold text-gray-900 text-sm md:text-base">{bankName}</h4>
+                  <p className="font-mono text-xs md:text-sm text-gray-600 tracking-wider">
                     {accNo.replace(/(\d{4})/g, '$1 ').trim()}
                   </p>
-                  <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">
+                  <p className="text-[10px] md:text-xs text-gray-400 font-semibold uppercase tracking-wider">
                     a.n. {accHolder}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full uppercase tracking-wider">
+              <div className="flex items-center gap-1.5 md:gap-2">
+                <span className="px-2 md:px-2.5 py-0.5 md:py-1 bg-emerald-100 text-emerald-700 text-[8px] md:text-[10px] font-bold rounded-full uppercase tracking-wider">
                   Aktif
                 </span>
                 <button 
                   onClick={handleRemoveRekening}
-                  className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                  className="p-1.5 md:p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg md:rounded-xl transition-all"
                   title="Hapus Rekening"
                 >
-                  <X size={16} />
+                  <X size={14} className="md:w-4 md:h-4" />
                 </button>
               </div>
             </div>
@@ -634,40 +634,40 @@ const Profile = () => {
   }
 
   const renderSecurityTab = () => (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       {/* Change Password */}
-      <div className="bg-white rounded-3xl p-8 shadow-soft-lg border border-gray-100">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-rose-50 text-rose-500 rounded-xl">
-            <Lock size={20} />
+      <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-sm md:shadow-soft-lg border border-gray-100">
+        <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+          <div className="p-1.5 md:p-2 bg-rose-50 text-rose-500 rounded-lg md:rounded-xl">
+            <Lock className="w-4 h-4 md:w-5 md:h-5" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900">Ubah Kata Sandi</h2>
+          <h2 className="text-base md:text-xl font-bold text-gray-900">Ubah Kata Sandi</h2>
         </div>
 
-        <form onSubmit={handlePasswordSubmit} className="space-y-6 max-w-lg">
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Password Sekarang</label>
+        <form onSubmit={handlePasswordSubmit} className="space-y-4 md:space-y-6 max-w-lg">
+          <div className="space-y-1.5 md:space-y-2">
+            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider">Password Sekarang</label>
             <input
               type="password"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
+              className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-gray-50 border border-gray-200 rounded-xl md:rounded-2xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
               value={passwordForm.currentPassword}
               onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
             />
           </div>
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Password Baru</label>
+          <div className="space-y-1.5 md:space-y-2">
+            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider">Password Baru</label>
             <input
               type="password"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
+              className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-gray-50 border border-gray-200 rounded-xl md:rounded-2xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
               value={passwordForm.newPassword}
               onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
             />
           </div>
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Konfirmasi Password Baru</label>
+          <div className="space-y-1.5 md:space-y-2">
+            <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider">Konfirmasi Password Baru</label>
             <input
               type="password"
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
+              className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-gray-50 border border-gray-200 rounded-xl md:rounded-2xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
               value={passwordForm.confirmPassword}
               onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
             />
@@ -675,7 +675,7 @@ const Profile = () => {
           <Button 
             type="submit" 
             isLoading={isSubmitting}
-            className="w-full md:w-auto px-8 bg-gray-900 text-white rounded-2xl py-3 mt-4"
+            className="w-full md:w-auto px-6 md:px-8 bg-gray-900 text-white rounded-xl md:rounded-2xl py-2.5 md:py-3 text-xs md:text-sm font-bold mt-2"
           >
             Update Password
           </Button>
@@ -685,48 +685,48 @@ const Profile = () => {
 
       {/* KTP Verification */}
       {user?.role === 'seller' && (
-        <div className="bg-white rounded-3xl p-8 shadow-soft-lg border border-gray-100">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-emerald-50 text-emerald-500 rounded-xl">
-              <CheckCircle size={20} />
+        <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-sm md:shadow-soft-lg border border-gray-100">
+          <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+            <div className="p-1.5 md:p-2 bg-emerald-50 text-emerald-500 rounded-lg md:rounded-xl">
+              <CheckCircle className="w-4 h-4 md:w-5 md:h-5" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Verifikasi Data Diri (KTP)</h2>
+            <h2 className="text-base md:text-xl font-bold text-gray-900">Verifikasi Data Diri (KTP)</h2>
           </div>
 
           {/* KTP pending status */}
           {user?.ktp_status === 'pending' && (
-            <div className="bg-amber-50 border border-amber-100 rounded-3xl p-6 flex items-start gap-4 animate-in fade-in duration-300">
-              <div className="p-3 bg-amber-100 text-amber-600 rounded-2xl shrink-0">
-                <ShieldCheck size={24} />
+            <div className="bg-amber-50 border border-amber-100 rounded-2xl md:rounded-3xl p-4 md:p-6 flex items-start gap-3 md:gap-4 animate-in fade-in duration-300">
+              <div className="p-2.5 md:p-3 bg-amber-100 text-amber-600 rounded-xl md:rounded-2xl shrink-0">
+                <ShieldCheck className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <div>
-                <h3 className="font-bold text-amber-900 text-base">Sedang Diverifikasi</h3>
-                <p className="text-amber-700 text-sm mt-1 leading-relaxed">Data KTP Anda sedang dalam proses peninjauan oleh Admin.</p>
+                <h3 className="font-bold text-amber-900 text-sm md:text-base">Sedang Diverifikasi</h3>
+                <p className="text-amber-700 text-xs md:text-sm mt-0.5 md:mt-1 leading-relaxed">Data KTP Anda sedang dalam proses peninjauan oleh Admin.</p>
               </div>
             </div>
           )}
 
           {/* KTP verified status */}
           {user?.ktp_status === 'verified' && (
-            <div className="bg-emerald-50 border border-emerald-100 rounded-3xl p-6 flex items-start gap-4 animate-in fade-in duration-300">
-              <div className="p-3 bg-emerald-100 text-emerald-600 rounded-2xl shrink-0">
-                <CheckCircle size={24} />
+            <div className="bg-emerald-50 border border-emerald-100 rounded-2xl md:rounded-3xl p-4 md:p-6 flex items-start gap-3 md:gap-4 animate-in fade-in duration-300">
+              <div className="p-2.5 md:p-3 bg-emerald-100 text-emerald-600 rounded-xl md:rounded-2xl shrink-0">
+                <CheckCircle className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <div>
-                <h3 className="font-bold text-emerald-950 text-base">Terverifikasi</h3>
-                <p className="text-emerald-700 text-sm mt-1 leading-relaxed">Akun Anda telah sukses diverifikasi sebagai Penjual Terpercaya.</p>
+                <h3 className="font-bold text-emerald-950 text-sm md:text-base">Terverifikasi</h3>
+                <p className="text-emerald-700 text-xs md:text-sm mt-0.5 md:mt-1 leading-relaxed">Akun Anda telah sukses diverifikasi sebagai Penjual Terpercaya.</p>
               </div>
             </div>
           )}
 
           {/* KTP rejected / not uploaded status */}
           {user?.ktp_status !== 'pending' && user?.ktp_status !== 'verified' && (
-            <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="space-y-4 md:space-y-6 animate-in fade-in duration-300">
               {user?.ktp_status === 'rejected' && (
-                <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4 mb-6">
-                  <div className="flex gap-3">
-                    <AlertCircle className="text-rose-600 shrink-0" size={20} />
-                    <div className="text-sm">
+                <div className="bg-rose-50 border border-rose-100 rounded-xl md:rounded-2xl p-4 mb-4 md:mb-6">
+                  <div className="flex gap-2.5 md:gap-3">
+                    <AlertCircle className="text-rose-600 shrink-0 w-4 h-4 md:w-5 md:h-5" />
+                    <div className="text-xs md:text-sm">
                       <p className="font-bold text-rose-900">Penolakan Admin:</p>
                       <p className="text-rose-700 mt-0.5">{user.ktp_rejection_reason || 'Foto KTP kurang jelas.'}</p>
                       <p className="text-rose-600 mt-2 font-medium">Silakan upload ulang foto KTP Anda melalui form di bawah.</p>
@@ -735,29 +735,29 @@ const Profile = () => {
                 </div>
               )}
 
-              <form onSubmit={handleKtpSubmit} className="space-y-6">
-                <p className="text-sm text-gray-500 leading-relaxed">
-                  Verifikasi KTP diperlukan jika Anda ingin menjadi <strong className="text-gray-900">**Penjual Terpercaya**</strong> dan meningkatkan batas penarikan dana.
+              <form onSubmit={handleKtpSubmit} className="space-y-4 md:space-y-6">
+                <p className="text-xs md:text-sm text-gray-500 leading-relaxed">
+                  Verifikasi KTP diperlukan jika Anda ingin menjadi <strong className="text-gray-900">Penjual Terpercaya</strong> dan meningkatkan batas penarikan dana.
                 </p>
 
                 {/* NIK and Nama */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">NIK KTP (16 Digit)</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <div className="space-y-1.5 md:space-y-2">
+                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider">NIK KTP (16 Digit)</label>
                     <input
                       type="text"
                       placeholder="Masukkan 16 digit NIK"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all text-sm placeholder-gray-400"
+                      className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-gray-50 border border-gray-200 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all text-xs md:text-sm placeholder-gray-400"
                       value={ktpForm.nik}
                       onChange={(e) => setKtpForm({...ktpForm, nik: e.target.value})}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Nama Sesuai KTP</label>
+                  <div className="space-y-1.5 md:space-y-2">
+                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider">Nama Sesuai KTP</label>
                     <input
                       type="text"
                       placeholder="Masukkan nama lengkap"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all text-sm placeholder-gray-400"
+                      className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-gray-50 border border-gray-200 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all text-xs md:text-sm placeholder-gray-400"
                       value={ktpForm.namaKtp}
                       onChange={(e) => setKtpForm({...ktpForm, namaKtp: e.target.value})}
                     />
@@ -765,22 +765,22 @@ const Profile = () => {
                 </div>
 
                 {/* Tempat Lahir and Tanggal Lahir */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Tempat Lahir</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <div className="space-y-1.5 md:space-y-2">
+                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider">Tempat Lahir</label>
                     <input
                       type="text"
                       placeholder="Contoh: Jakarta"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all text-sm placeholder-gray-400"
+                      className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-gray-50 border border-gray-200 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all text-xs md:text-sm placeholder-gray-400"
                       value={ktpForm.tempatLahir}
                       onChange={(e) => setKtpForm({...ktpForm, tempatLahir: e.target.value})}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal Lahir</label>
+                  <div className="space-y-1.5 md:space-y-2">
+                    <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal Lahir</label>
                     <input
                       type="date"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all text-sm text-gray-700 placeholder-gray-400"
+                      className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-gray-50 border border-gray-200 rounded-xl md:rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all text-xs md:text-sm text-gray-700 placeholder-gray-400"
                       value={ktpForm.tanggalLahir}
                       onChange={(e) => setKtpForm({...ktpForm, tanggalLahir: e.target.value})}
                     />
@@ -788,10 +788,10 @@ const Profile = () => {
                 </div>
 
                 {/* Foto KTP Upload and Camera Container */}
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">Foto KTP</label>
+                <div className="space-y-1.5 md:space-y-2">
+                  <label className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-wider block">Foto KTP</label>
                   
-                  <div className="border-2 border-dashed border-gray-200 rounded-3xl p-8 text-center hover:border-emerald-300 transition-colors bg-gray-50/50">
+                  <div className="border-2 border-dashed border-gray-200 rounded-2xl md:rounded-3xl p-4 md:p-8 text-center hover:border-emerald-300 transition-colors bg-gray-50/50">
                     <input 
                       type="file" 
                       className="hidden" 
@@ -811,32 +811,32 @@ const Profile = () => {
                     
                     {ktpForm.imagePreview ? (
                       <div className="relative max-w-sm mx-auto animate-in fade-in duration-300">
-                        <img src={ktpForm.imagePreview} alt="Preview KTP" className="w-full h-auto rounded-2xl border border-gray-200 shadow-md" />
+                        <img src={ktpForm.imagePreview} alt="Preview KTP" className="w-full h-auto rounded-xl md:rounded-2xl border border-gray-200 shadow-md" />
                         <button 
                           type="button"
                           onClick={() => setKtpForm(prev => ({ ...prev, image: null, imagePreview: null }))}
-                          className="absolute -top-3 -right-3 bg-rose-500 text-white rounded-full p-2 hover:bg-rose-600 shadow-lg transition-all"
+                          className="absolute -top-2.5 -right-2.5 md:-top-3 md:-right-3 bg-rose-500 text-white rounded-full p-1.5 md:p-2 hover:bg-rose-600 shadow-lg transition-all"
                         >
-                          <X size={18} />
+                          <X size={16} />
                         </button>
                       </div>
                     ) : (
-                      <div className="space-y-4">
+                      <div className="space-y-3 md:space-y-4">
                         <label htmlFor="ktp-upload" className="cursor-pointer block group">
-                          <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-emerald-100 transition-colors">
-                            <Upload className="text-emerald-500" size={30} />
+                          <div className="w-12 h-12 md:w-16 md:h-16 bg-emerald-50 rounded-xl md:rounded-2xl flex items-center justify-center mx-auto mb-3 md:mb-4 group-hover:bg-emerald-100 transition-colors">
+                            <Upload className="text-emerald-500 w-6 h-6 md:w-7 md:h-7" />
                           </div>
-                          <p className="text-sm font-bold text-gray-900">Klik untuk upload foto KTP</p>
-                          <p className="text-xs text-gray-500 mt-1">Format JPG, PNG (Maks 2MB)</p>
+                          <p className="text-xs md:text-sm font-bold text-gray-900">Klik untuk upload foto KTP</p>
+                          <p className="text-[10px] md:text-xs text-gray-500 mt-0.5 md:mt-1">Format JPG, PNG (Maks 2MB)</p>
                         </label>
                         
-                        <div className="flex justify-center pt-2">
+                        <div className="flex justify-center pt-1 md:pt-2">
                           <button 
                             type="button" 
                             onClick={startCamera}
-                            className="px-6 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-full font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm"
+                            className="px-4 py-1.5 md:px-6 md:py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-full font-bold text-[10px] md:text-xs flex items-center gap-1 md:gap-1.5 transition-all shadow-sm"
                           >
-                            <Camera size={14} className="text-emerald-600" /> Ambil Foto Realtime
+                            <Camera size={12} className="text-emerald-600" /> Ambil Foto Realtime
                           </button>
                         </div>
                       </div>
@@ -847,7 +847,7 @@ const Profile = () => {
                 <Button 
                   type="submit" 
                   isLoading={isSubmitting}
-                  className="w-full bg-emerald-500 text-white rounded-2xl py-3.5 font-bold hover:bg-emerald-600 transition-all shadow-md mt-6"
+                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl md:rounded-2xl py-2.5 md:py-3.5 text-xs md:text-sm font-bold transition-all shadow-md mt-4 md:mt-6"
                 >
                   Kirim untuk Verifikasi
                 </Button>
@@ -952,28 +952,28 @@ const Profile = () => {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
       
-      <main className="flex-grow py-8 md:py-12">
+      <main className="flex-grow py-6 md:py-12">
         <Container maxWidth="max-w-6xl">
-          <Link to="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors mb-6 group">
-            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-medium">Kembali ke Beranda</span>
+          <Link to="/" className="inline-flex items-center gap-1.5 text-gray-500 hover:text-gray-900 transition-colors mb-4 md:mb-6 group">
+            <ArrowLeft className="w-3.5 h-3.5 md:w-[18px] md:h-[18px] group-hover:-translate-x-1 transition-transform" />
+            <span className="text-xs md:text-sm font-medium">Kembali ke Beranda</span>
           </Link>
 
-          <h1 className="text-3xl font-bold text-gray-900 mb-10">Pengaturan Akun</h1>
+          <h1 className="text-xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-10">Pengaturan Akun</h1>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 lg:gap-8 items-start">
             {/* Sidebar Navigation */}
             <aside className="lg:col-span-3">
-              <nav className="bg-white rounded-3xl p-2 lg:p-4 shadow-soft-lg border border-gray-100 flex flex-row lg:flex-col gap-1 overflow-x-auto hide-scrollbar">
+              <nav className="bg-white rounded-2xl md:rounded-3xl p-1.5 md:p-2 lg:p-4 shadow-sm md:shadow-soft-lg border border-gray-100 flex flex-row lg:flex-col gap-1 overflow-x-auto hide-scrollbar">
                 <button
                   onClick={() => setActiveTab('profile')}
-                  className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-3 lg:p-4 rounded-2xl transition-all group ${
+                  className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-2.5 md:p-3 lg:p-4 rounded-xl lg:rounded-2xl transition-all group ${
                     activeTab === 'profile' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-500'
                   }`}
                 >
                   <div className="flex items-center gap-2 lg:gap-3">
-                    <User size={20} className={activeTab === 'profile' ? 'text-primary-600' : 'text-gray-400'} />
-                    <span className="font-semibold text-sm lg:text-base">Profil Saya</span>
+                    <User className={`w-4 h-4 lg:w-5 lg:h-5 ${activeTab === 'profile' ? 'text-primary-600' : 'text-gray-400'}`} />
+                    <span className="font-semibold text-xs md:text-sm lg:text-base">Profil Saya</span>
                   </div>
                   {activeTab === 'profile' ? (
                     <div className="hidden lg:block w-1.5 h-6 bg-primary-600 rounded-full" />
@@ -984,13 +984,13 @@ const Profile = () => {
 
                 <button
                   onClick={() => setActiveTab('address')}
-                  className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-3 lg:p-4 rounded-2xl transition-all group ${
+                  className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-2.5 md:p-3 lg:p-4 rounded-xl lg:rounded-2xl transition-all group ${
                     activeTab === 'address' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-500'
                   }`}
                 >
                   <div className="flex items-center gap-2 lg:gap-3">
-                    <MapPin size={20} className={activeTab === 'address' ? 'text-primary-600' : 'text-gray-400'} />
-                    <span className="font-semibold text-sm lg:text-base">Daftar Alamat</span>
+                    <MapPin className={`w-4 h-4 lg:w-5 lg:h-5 ${activeTab === 'address' ? 'text-primary-600' : 'text-gray-400'}`} />
+                    <span className="font-semibold text-xs md:text-sm lg:text-base">Daftar Alamat</span>
                   </div>
                   {activeTab === 'address' ? (
                     <div className="hidden lg:block w-1.5 h-6 bg-primary-600 rounded-full" />
@@ -1002,13 +1002,13 @@ const Profile = () => {
                 {user?.role === 'seller' && (
                   <button
                     onClick={() => setActiveTab('rekening')}
-                    className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-3 lg:p-4 rounded-2xl transition-all group ${
+                    className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-2.5 md:p-3 lg:p-4 rounded-xl lg:rounded-2xl transition-all group ${
                       activeTab === 'rekening' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-500'
                     }`}
                   >
                     <div className="flex items-center gap-2 lg:gap-3">
-                      <CreditCard size={20} className={activeTab === 'rekening' ? 'text-primary-600' : 'text-gray-400'} />
-                      <span className="font-semibold text-sm lg:text-base">Rekening Bank</span>
+                      <CreditCard className={`w-4 h-4 lg:w-5 lg:h-5 ${activeTab === 'rekening' ? 'text-primary-600' : 'text-gray-400'}`} />
+                      <span className="font-semibold text-xs md:text-sm lg:text-base">Rekening Bank</span>
                     </div>
                     {activeTab === 'rekening' ? (
                       <div className="hidden lg:block w-1.5 h-6 bg-primary-600 rounded-full" />
@@ -1020,13 +1020,13 @@ const Profile = () => {
 
                 <button
                   onClick={() => setActiveTab('security')}
-                  className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-3 lg:p-4 rounded-2xl transition-all group ${
+                  className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-2.5 md:p-3 lg:p-4 rounded-xl lg:rounded-2xl transition-all group ${
                     activeTab === 'security' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-500'
                   }`}
                 >
                   <div className="flex items-center gap-2 lg:gap-3">
-                    <ShieldCheck size={20} className={activeTab === 'security' ? 'text-primary-600' : 'text-gray-400'} />
-                    <span className="font-semibold text-sm lg:text-base">Keamanan</span>
+                    <ShieldCheck className={`w-4 h-4 lg:w-5 lg:h-5 ${activeTab === 'security' ? 'text-primary-600' : 'text-gray-400'}`} />
+                    <span className="font-semibold text-xs md:text-sm lg:text-base">Keamanan</span>
                   </div>
                   {activeTab === 'security' ? (
                     <div className="hidden lg:block w-1.5 h-6 bg-primary-600 rounded-full" />

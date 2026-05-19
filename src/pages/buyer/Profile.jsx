@@ -964,74 +964,74 @@ const Profile = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Sidebar Navigation */}
             <aside className="lg:col-span-3">
-              <nav className="bg-white rounded-3xl p-4 shadow-soft-lg border border-gray-100 space-y-1">
+              <nav className="bg-white rounded-3xl p-2 lg:p-4 shadow-soft-lg border border-gray-100 flex flex-row lg:flex-col gap-1 overflow-x-auto hide-scrollbar">
                 <button
                   onClick={() => setActiveTab('profile')}
-                  className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${
+                  className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-3 lg:p-4 rounded-2xl transition-all group ${
                     activeTab === 'profile' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-500'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 lg:gap-3">
                     <User size={20} className={activeTab === 'profile' ? 'text-primary-600' : 'text-gray-400'} />
-                    <span className="font-semibold">Profil Saya</span>
+                    <span className="font-semibold text-sm lg:text-base">Profil Saya</span>
                   </div>
                   {activeTab === 'profile' ? (
-                    <div className="w-1.5 h-6 bg-primary-600 rounded-full" />
+                    <div className="hidden lg:block w-1.5 h-6 bg-primary-600 rounded-full" />
                   ) : (
-                    <Edit2 size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Edit2 size={16} className="hidden lg:block opacity-0 group-hover:opacity-100 transition-opacity" />
                   )}
                 </button>
 
                 <button
                   onClick={() => setActiveTab('address')}
-                  className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${
+                  className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-3 lg:p-4 rounded-2xl transition-all group ${
                     activeTab === 'address' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-500'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 lg:gap-3">
                     <MapPin size={20} className={activeTab === 'address' ? 'text-primary-600' : 'text-gray-400'} />
-                    <span className="font-semibold">Daftar Alamat</span>
+                    <span className="font-semibold text-sm lg:text-base">Daftar Alamat</span>
                   </div>
                   {activeTab === 'address' ? (
-                    <div className="w-1.5 h-6 bg-primary-600 rounded-full" />
+                    <div className="hidden lg:block w-1.5 h-6 bg-primary-600 rounded-full" />
                   ) : (
-                    <Edit2 size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Edit2 size={16} className="hidden lg:block opacity-0 group-hover:opacity-100 transition-opacity" />
                   )}
                 </button>
 
                 {user?.role === 'seller' && (
                   <button
                     onClick={() => setActiveTab('rekening')}
-                    className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${
+                    className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-3 lg:p-4 rounded-2xl transition-all group ${
                       activeTab === 'rekening' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-500'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 lg:gap-3">
                       <CreditCard size={20} className={activeTab === 'rekening' ? 'text-primary-600' : 'text-gray-400'} />
-                      <span className="font-semibold">Rekening Bank</span>
+                      <span className="font-semibold text-sm lg:text-base">Rekening Bank</span>
                     </div>
                     {activeTab === 'rekening' ? (
-                      <div className="w-1.5 h-6 bg-primary-600 rounded-full" />
+                      <div className="hidden lg:block w-1.5 h-6 bg-primary-600 rounded-full" />
                     ) : (
-                      <Edit2 size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <Edit2 size={16} className="hidden lg:block opacity-0 group-hover:opacity-100 transition-opacity" />
                     )}
                   </button>
                 )}
 
                 <button
                   onClick={() => setActiveTab('security')}
-                  className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${
+                  className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-3 lg:p-4 rounded-2xl transition-all group ${
                     activeTab === 'security' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-500'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 lg:gap-3">
                     <ShieldCheck size={20} className={activeTab === 'security' ? 'text-primary-600' : 'text-gray-400'} />
-                    <span className="font-semibold">Keamanan</span>
+                    <span className="font-semibold text-sm lg:text-base">Keamanan</span>
                   </div>
                   {activeTab === 'security' ? (
-                    <div className="w-1.5 h-6 bg-primary-600 rounded-full" />
+                    <div className="hidden lg:block w-1.5 h-6 bg-primary-600 rounded-full" />
                   ) : (
-                    <Edit2 size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Edit2 size={16} className="hidden lg:block opacity-0 group-hover:opacity-100 transition-opacity" />
                   )}
                 </button>
               </nav>

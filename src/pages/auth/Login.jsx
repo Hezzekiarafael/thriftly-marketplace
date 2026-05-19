@@ -82,7 +82,7 @@ const Login = () => {
     const backendUrl = `${import.meta.env.VITE_API_BASE_URL}/auth/google`
     const myFrontend = window.location.origin
     
-    window.location.href = `${backendUrl}?frontend_url=${myFrontend}&prompt=select_account`
+    window.location.href = `${backendUrl}?frontend_url=${myFrontend}&role=buyer&prompt=select_account`
   }
 
   return (

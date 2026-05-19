@@ -7,6 +7,31 @@ import { useEffect, useState } from 'react'
 import { Eye, Edit, Trash2 } from 'lucide-react'
 import { formatDate } from '../../utils/helpers'
 import toast from 'react-hot-toast'
+import { reverseGeocode } from '../../utils/geolocation'
+import { getLocationName } from '../../constants/locations'
+
+const displayLocation = (lokasiStr) => {
+  if (!lokasiStr) return '-';
+  
+  // Check if it's a coordinate string, e.g. "6.8992323,109.395246"
+  if (typeof lokasiStr === 'string' && lokasiStr.includes(',')) {
+    const parts = lokasiStr.split(',');
+    const lat = parseFloat(parts[0]);
+    const lng = parseFloat(parts[1]);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      const resolved = reverseGeocode(lat, lng);
+      if (resolved) return resolved.nama;
+    }
+  }
+  
+  // Try to get location name by ID
+  const name = getLocationName(lokasiStr);
+  if (name !== 'Lokasi Tidak Diketahui') {
+    return name;
+  }
+  
+  return lokasiStr.replace('-', ' ');
+}
 
 const UsersList = () => {
   const [users, setUsers] = useState([])
@@ -205,7 +230,7 @@ const UsersList = () => {
     {
       header: 'Location',
       accessor: 'lokasi',
-      render: (row) => <span className="text-gray-600 capitalize">{row.profile?.lokasi?.replace('-', ' ') || '-'}</span>
+      render: (row) => <span className="text-gray-600">{displayLocation(row.profile?.lokasi)}</span>
     },
     {
       header: 'Joined Date',

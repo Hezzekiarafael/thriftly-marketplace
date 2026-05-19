@@ -9,7 +9,7 @@ import 'leaflet/dist/leaflet.css'
 import axios from 'axios'
 import { useAuth } from '../../context/AuthContext'
 import { registerSellerSchema } from '../../utils/validation'
-import { getLocationFromCoordinates } from '../../utils/geolocation'
+import { getLocationFromCoordinates, reverseGeocode } from '../../utils/geolocation'
 import Button from '../../components/common/Button'
 import Container from '../../components/layout/Container'
 import Header from '../../components/layout/Header'
@@ -76,6 +76,13 @@ const SellerRegister = () => {
 
   const onSubmit = async (data) => {
     setLoading(true)
+    let lokasiValue = 'semarang'
+    if (mapPosition && mapPosition.length === 2) {
+      const resolved = reverseGeocode(mapPosition[0], mapPosition[1])
+      if (resolved) {
+        lokasiValue = resolved.id
+      }
+    }
     const result = await registerUser({
       email: data.email,
       password: data.password,
@@ -84,7 +91,8 @@ const SellerRegister = () => {
         nama: data.nama,
         ttl: data.ttl,
         noTelp: data.noTelp,
-        alamat: data.alamat
+        alamat: data.alamat,
+        lokasi: lokasiValue
       }
     })
     setLoading(false)

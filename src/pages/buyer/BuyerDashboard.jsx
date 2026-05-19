@@ -13,6 +13,7 @@ import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 import axios from 'axios'
 import { useEffect } from 'react'
+import { reverseGeocode } from '../../utils/geolocation'
 
 // Perbaikan bug icon marker default di React Leaflet dengan Vite
 delete L.Icon.Default.prototype._getIconUrl
@@ -280,7 +281,17 @@ const BuyerDashboard = () => {
                   return;
                 }
                 setIsSaving(true)
-                const res = await updateProfile({ alamat: newAlamat })
+                let lokasiValue = user?.profile?.lokasi || 'semarang'
+                if (mapPosition && mapPosition.length === 2) {
+                  const resolved = reverseGeocode(mapPosition[0], mapPosition[1])
+                  if (resolved) {
+                    lokasiValue = resolved.id
+                  }
+                }
+                const res = await updateProfile({ 
+                  alamat: newAlamat,
+                  lokasi: lokasiValue
+                })
                 if (res.success) {
                   toast.success('Alamat berhasil diperbarui!')
                   setIsEditingAlamat(false)

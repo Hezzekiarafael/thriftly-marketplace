@@ -95,30 +95,30 @@ const MyProducts = () => {
           ) : (
             <div className="space-y-3 md:space-y-4">
               {products.map((product) => (
-                <div key={product.id} className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 animate-in fade-in duration-300">
-                  <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+                <div key={product.id} className="bg-white rounded-2xl p-3 md:p-6 shadow-sm border border-gray-100 animate-in fade-in duration-300">
+                  <div className="flex flex-row gap-3 md:gap-4 items-start">
                     <img
                       src={product.fotos && product.fotos.length > 0 ? product.fotos[0] : (product.image || product.image_url || 'https://via.placeholder.com/300?text=No+Image')}
                       alt={product.nama}
-                      className="w-full sm:w-24 sm:h-24 md:w-32 md:h-32 object-cover rounded-xl shrink-0"
+                      className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 object-cover rounded-xl shrink-0"
                     />
                     
-                    <div className="flex-1 flex flex-col justify-between">
+                    <div className="flex-1 flex flex-col justify-between min-w-0">
                       <div>
-                        <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-1.5 md:mb-2">
-                          <div>
-                            <h3 className="text-sm md:text-lg font-bold text-gray-900 leading-tight">{product.nama}</h3>
-                            <p className="text-base md:text-xl font-bold text-red-600 mt-0.5 md:mt-1">
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-1.5 mb-1 md:mb-2">
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-xs sm:text-base md:text-lg font-bold text-gray-900 leading-tight truncate">{product.nama}</h3>
+                            <p className="text-sm sm:text-lg md:text-xl font-extrabold text-red-600 mt-0.5 md:mt-1">
                               {formatCurrency(product.harga)}
                             </p>
                           </div>
                           
-                          <div className="flex gap-1.5 md:gap-2 self-start sm:self-auto sm:ml-auto">
+                          <div className="flex gap-1.5 md:gap-2 mt-1 sm:mt-0 shrink-0">
                             {product.status === 'approved' && (
                               <Button
                                 variant="success"
                                 size="sm"
-                                className="text-[10px] md:text-xs py-1.5 px-3 md:py-2 md:px-4 font-bold"
+                                className="text-[9px] md:text-xs py-1 px-2 md:py-1.5 md:px-3 font-bold"
                                 onClick={() => handleMarkAsSold(product.id)}
                               >
                                 Tandai Terjual
@@ -126,7 +126,7 @@ const MyProducts = () => {
                             )}
                             {product.status !== 'sold' && (
                               <Link to={`/seller/products/edit/${product.id}`} className="block">
-                                <Button variant="outline" size="sm" className="p-1.5 md:p-2.5">
+                                <Button variant="outline" size="sm" className="p-1 md:p-2">
                                   <Edit className="w-3.5 h-3.5 md:w-4 md:h-4" />
                                 </Button>
                               </Link>
@@ -134,7 +134,7 @@ const MyProducts = () => {
                             <Button
                               variant="danger"
                               size="sm"
-                              className="p-1.5 md:p-2.5"
+                              className="p-1 md:p-2"
                               onClick={() => handleDelete(product.id)}
                             >
                               <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
@@ -142,7 +142,7 @@ const MyProducts = () => {
                           </div>
                         </div>
                         
-                        <div className="flex flex-wrap gap-1.5 md:gap-2 mb-1.5">
+                        <div className="flex flex-wrap gap-1 md:gap-1.5 mb-1">
                           {getStatusBadge(product.status)}
                           {product.isBU && <Badge variant="bu">BU</Badge>}
                         </div>

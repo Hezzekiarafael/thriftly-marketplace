@@ -206,7 +206,6 @@ const Header = () => {
                     </div>
                   )}
                 </div>
-                </div>
           )}
 
           <button

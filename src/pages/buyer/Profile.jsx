@@ -999,22 +999,24 @@ const Profile = () => {
                   )}
                 </button>
 
-                <button
-                  onClick={() => setActiveTab('rekening')}
-                  className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${
-                    activeTab === 'rekening' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-500'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <CreditCard size={20} className={activeTab === 'rekening' ? 'text-primary-600' : 'text-gray-400'} />
-                    <span className="font-semibold">Rekening Bank</span>
-                  </div>
-                  {activeTab === 'rekening' ? (
-                    <div className="w-1.5 h-6 bg-primary-600 rounded-full" />
-                  ) : (
-                    <Edit2 size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                  )}
-                </button>
+                {user?.role === 'seller' && (
+                  <button
+                    onClick={() => setActiveTab('rekening')}
+                    className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${
+                      activeTab === 'rekening' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-500'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <CreditCard size={20} className={activeTab === 'rekening' ? 'text-primary-600' : 'text-gray-400'} />
+                      <span className="font-semibold">Rekening Bank</span>
+                    </div>
+                    {activeTab === 'rekening' ? (
+                      <div className="w-1.5 h-6 bg-primary-600 rounded-full" />
+                    ) : (
+                      <Edit2 size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </button>
+                )}
 
                 <button
                   onClick={() => setActiveTab('security')}
@@ -1039,7 +1041,7 @@ const Profile = () => {
             <div className="lg:col-span-9 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {activeTab === 'profile' && renderProfileTab()}
               {activeTab === 'address' && renderAddressTab()}
-              {activeTab === 'rekening' && renderRekeningTab()}
+              {activeTab === 'rekening' && user?.role === 'seller' && renderRekeningTab()}
               {activeTab === 'security' && renderSecurityTab()}
             </div>
           </div>

@@ -74,7 +74,8 @@ const Header = () => {
             </form>
           </div>
 
-          <nav className="hidden md:flex items-center space-x-6">
+          <div className="flex items-center gap-2 md:gap-4">
+            <nav className="hidden md:flex items-center space-x-6">
             <Link to="/" className="text-vintage-modern">
               Beranda
             </Link>
@@ -136,9 +137,13 @@ const Header = () => {
                     )}
                   </Link>
                 )}
+              </>
+            )}
+          </nav>
 
-                <div className="relative pl-4 border-l border-gray-200" ref={userMenuRef}>
-                   <button
+          {user && (
+            <div className="relative md:pl-4 md:border-l border-gray-200" ref={userMenuRef}>
+               <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                     className="flex items-center space-x-2 hover:bg-white/10 p-1 rounded-lg transition-colors"
                   >
@@ -201,148 +206,33 @@ const Header = () => {
                     </div>
                   )}
                 </div>
-              </>
-            )}
-          </nav>
+                </div>
+          )}
 
           <button
             className="md:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileMenuOpen ? <X size={24} /> : <Search size={24} />}
           </button>
+        </div>
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-white/10 animate-in slide-in-from-top-2 space-y-4 pb-6">
-            <div className="px-2">
-              <form onSubmit={handleSearch} className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={PLACEHOLDERS.search}
-                  className="w-full pl-4 pr-10 py-2.5 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-white/40 placeholder-white/50"
-                />
-                <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50">
-                  <Search size={18} />
-                </button>
-              </form>
-            </div>
-
-            <nav className="flex flex-col space-y-1 px-2">
-              <Link
-                to="/"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl font-medium transition-colors"
-              >
-                Beranda
-              </Link>
-              <Link
-                to="/products"
-                onClick={() => setMobileMenuOpen(false)}
-                className="px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl font-medium transition-colors"
-              >
-                Semua Produk
-              </Link>
-
-              {user ? (
-                <>
-                  <div className="h-px bg-white/10 my-2 mx-4" />
-                  
-                  {isSeller && (
-                    <>
-                      <Link
-                        to="/seller/dashboard"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl font-medium transition-colors"
-                      >
-                        Dashboard Penjual
-                      </Link>
-                      <Link
-                        to="/seller/products/add"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="px-4 py-3 text-primary-300 font-bold hover:bg-white/10 rounded-xl transition-colors"
-                      >
-                        + Tambah Produk
-                      </Link>
-                    </>
-                  )}
-
-                  {isBuyer && (
-                    <>
-                      <Link
-                        to="/buyer/dashboard"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl font-medium transition-colors"
-                      >
-                        Dashboard Pembeli
-                      </Link>
-                      <Link
-                        to="/buyer/orders"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl font-medium transition-colors flex items-center gap-3"
-                      >
-                        <Package size={18} /> Pesanan Saya
-                      </Link>
-                    </>
-                  )}
-
-                  {(isSeller || isBuyer) && (
-                    <Link
-                      to="/chat"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl font-medium transition-colors flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        <MessageCircle size={18} /> Chat
-                      </div>
-                      {unreadCount > 0 && (
-                        <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                          {unreadCount}
-                        </span>
-                      )}
-                    </Link>
-                  )}
-
-                  <div className="h-px bg-white/10 my-2 mx-4" />
-
-                  <Link
-                    to="/profile"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl font-medium transition-colors flex items-center gap-3"
-                  >
-                    <User size={18} /> Pengaturan Akun
-                  </Link>
-
-                  <Link
-                    to="/complaints"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl font-medium transition-colors flex items-center gap-3"
-                  >
-                    <AlertCircle size={18} /> Pusat Bantuan
-                  </Link>
-
-                  <button
-                    onClick={() => {
-                      handleLogout()
-                      setMobileMenuOpen(false)
-                    }}
-                    className="w-full text-left px-4 py-3 text-rose-400 hover:text-rose-300 hover:bg-white/10 rounded-xl font-medium transition-colors flex items-center gap-3"
-                  >
-                    <LogOut size={18} /> Keluar
-                  </button>
-                </>
-              ) : (
-                <div className="px-4 pt-4">
-                  <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                    <Button fullWidth className="bg-primary-600 hover:bg-primary-700 text-white font-bold border-none shadow-md">
-                      {BUTTONS.login}
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </nav>
+          <div className="md:hidden py-4 border-t border-gray-100 animate-in slide-in-from-top-2">
+            <form onSubmit={handleSearch} className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={PLACEHOLDERS.search}
+                className="w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                autoFocus
+              />
+              <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <Search size={18} />
+              </button>
+            </form>
           </div>
         )}
       </div>

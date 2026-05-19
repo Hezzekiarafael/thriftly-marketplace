@@ -161,25 +161,25 @@ const SellerDashboard = () => {
             <h2 className="text-base md:text-xl font-bold text-gray-900 mb-3 md:mb-4">
               Quick Actions
             </h2>
-            <div className="space-y-3">
-              <Link to="/seller/orders">
+            <div className="flex flex-col gap-3">
+              <Link to="/seller/orders" className="block w-full">
                 <Button fullWidth variant="primary" className="shadow-md hover:scale-[1.02] active:scale-[0.98] py-2 md:py-2.5 text-xs md:text-sm">
                   Pesanan Toko / Transaksi
                 </Button>
               </Link>
-              <Link to="/seller/products/add">
+              <Link to="/seller/products/add" className="block w-full">
                 <Button fullWidth variant="accent" className="shadow-md hover:scale-[1.02] active:scale-[0.98] py-2 md:py-2.5 text-xs md:text-sm">
                   {BUTTONS.sell}
                 </Button>
               </Link>
-              <Link to="/seller/products">
+              <Link to="/seller/products" className="block w-full">
                 <Button fullWidth variant="outline" className="shadow-sm hover:bg-indigo-50 py-2 md:py-2.5 text-xs md:text-sm">
                   {SECTIONS.myProducts}
                 </Button>
               </Link>
 
               {/* Tombol Logout — hanya tampil di mobile */}
-              <div className="md:hidden mt-3 pt-3 border-t border-gray-100">
+              <div className="md:hidden pt-3 border-t border-gray-100">
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl text-red-600 bg-red-50 hover:bg-red-100 font-semibold transition-colors text-xs"

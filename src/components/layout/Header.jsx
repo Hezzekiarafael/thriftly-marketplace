@@ -160,8 +160,15 @@ const Header = () => {
                   </button>
 
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-soft-xl border border-gray-100 py-3 z-[100] animate-in fade-in zoom-in-95 duration-200">
-                      <div className="px-5 py-3 border-b border-gray-50 mb-2">
+                    <>
+                      {/* Mobile Blur Overlay */}
+                      <div 
+                        className="md:hidden fixed inset-0 top-[64px] z-[90] bg-black/60 backdrop-blur-md animate-in fade-in duration-300"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      />
+                      
+                      <div className="fixed left-4 right-4 top-[80px] md:absolute md:inset-auto md:right-0 md:top-full md:mt-2 md:w-64 bg-white rounded-3xl md:rounded-2xl shadow-2xl md:shadow-soft-xl border border-gray-100 py-4 md:py-3 z-[100] animate-in fade-in slide-in-from-top-4 md:slide-in-from-top-0 md:zoom-in-95 duration-300">
+                        <div className="px-5 py-3 border-b border-gray-50 mb-2">
                         <p className="text-sm font-bold text-gray-900 truncate">
                           {user.profile?.nama || 'User'}
                         </p>
@@ -204,6 +211,7 @@ const Header = () => {
                         </button>
                       </div>
                     </div>
+                    </>
                   )}
                 </div>
           )}

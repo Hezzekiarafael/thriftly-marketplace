@@ -34,7 +34,7 @@ export const mapLaravelUser = (u) => {
       nama: name,
       avatar: avatarUrl,
       lokasi: u.lokasi || u.location || u.profile?.lokasi || 'Semarang',
-      alamat: u.alamat || u.profile?.alamat || '',
+      alamat: u.alamat || u.address || u.profile?.alamat || u.profile?.address || '',
       noTelp: u.no_telp || u.no_Telp || u.profile?.noTelp || '-',
       tanggalLahir: u.date_of_birth || u.tanggalLahir || u.profile?.tanggalLahir || '',
       jenisKelamin: u.gender === 'L' ? 'Laki-laki' : (u.gender === 'P' ? 'Perempuan' : 'Laki-laki'),

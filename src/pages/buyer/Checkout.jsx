@@ -66,7 +66,7 @@ const Checkout = () => {
   }, [productId, navigate])
 
   const handleCheckout = async () => {
-    if (!user.profile?.alamat) {
+    if (!user.profile?.alamat && !user.profile?.address && !user.alamat && !user.address) {
       toast.error('Silakan lengkapi alamat pengiriman di profil Anda')
       return
     }
@@ -174,7 +174,7 @@ const Checkout = () => {
                     <span className="bg-primary-50 text-primary-700 text-xs font-medium px-2.5 py-1 rounded-full">Utama</span>
                   </div>
                   <p className="text-sm text-gray-700 mt-2">
-                    {user.profile?.alamat || 'Alamat belum diatur. Silakan update profil Anda.'}
+                    {user.profile?.alamat || user.profile?.address || user.alamat || user.address || 'Alamat belum diatur. Silakan update profil Anda.'}
                   </p>
                 </div>
               </div>

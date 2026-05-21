@@ -98,9 +98,12 @@ export const AuthProvider = ({ children }) => {
         const userWithoutPassword = { ...currentUser }
         delete userWithoutPassword.password
         setUser(userWithoutPassword)
+        return userWithoutPassword
       }
+      return null
     } catch (error) {
       console.error('Error refreshing user:', error)
+      return null
     }
   }
 

@@ -4,7 +4,7 @@ import {
   User, MapPin, ShieldCheck, Camera, 
   Calendar, ArrowLeft, Mail, Phone, 
   Lock, CheckCircle, Plus, Edit2, AlertCircle,
-  X, Upload, CreditCard
+  X, Upload, CreditCard, Locate
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import Header from '../../components/layout/Header'
@@ -14,6 +14,50 @@ import Button from '../../components/common/Button'
 import { toast } from 'react-hot-toast'
 import api from '../../services/api'
 import { userService } from '../../services/userService'
+
+import Modal from '../../components/common/Modal'
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import axios from 'axios'
+import { reverseGeocode } from '../../utils/geolocation'
+
+// Perbaikan bug icon marker default di React Leaflet dengan Vite
+delete L.Icon.Default.prototype._getIconUrl
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png'
+})
+
+// Komponen Pembantu untuk menggeser pin dan memusatkan kamera
+const LocationSelector = ({ position, setPosition, setAddress }) => {
+  const map = useMap()
+
+  useEffect(() => {
+    if (position) {
+      map.flyTo(position, map.getZoom(), { animate: true })
+    }
+  }, [position, map])
+
+  useMapEvents({
+    async click(e) {
+      const { lat, lng } = e.latlng
+      setPosition([lat, lng])
+
+      // Reverse Geocoding via Nominatim API
+      try {
+        const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+        if (response.data && response.data.display_name) {
+          setAddress(response.data.display_name)
+        }
+      } catch (error) {
+        console.error('Gagal mengambil alamat:', error)
+      }
+    }
+  })
+  return position ? <Marker position={position}></Marker> : null
+}
 
 const Profile = () => {
   const { user, updateProfile, refreshUser } = useAuth()
@@ -49,6 +93,8 @@ const Profile = () => {
     alamat: user?.profile?.alamat || ''
   })
   const [isEditingAddress, setIsEditingAddress] = useState(false)
+  const [mapPosition, setMapPosition] = useState([-6.9932, 110.4229]) // Default: Semarang
+  const [isLocating, setIsLocating] = useState(false)
 
   // Sinkronisasi form jika data user berubah (setelah refreshUser)
   useEffect(() => {
@@ -134,17 +180,26 @@ const Profile = () => {
   }
 
   const handleAddressSubmit = async (e) => {
-    e.preventDefault()
+    if (e && e.preventDefault) e.preventDefault()
     if (!addressForm.alamat.trim()) {
       return toast.error('Alamat tidak boleh kosong')
     }
     setIsSubmitting(true)
     try {
+      let lokasiValue = user?.profile?.lokasi || 'Semarang'
+      if (mapPosition && mapPosition.length === 2) {
+        const resolved = reverseGeocode(mapPosition[0], mapPosition[1])
+        if (resolved) {
+          lokasiValue = resolved.name || resolved.id || lokasiValue
+        }
+      }
+
       await updateProfile({
         name: user.profile.nama,
         email: user.email,
         alamat: addressForm.alamat.trim(),
         address: addressForm.alamat.trim(),
+        lokasi: lokasiValue
       })
       toast.success('Alamat berhasil disimpan')
       setIsEditingAddress(false)
@@ -552,12 +607,14 @@ const Profile = () => {
   )
 
   const renderAddressTab = () => (
-    <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-sm md:shadow-soft-lg border border-gray-100">
+    <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-sm md:shadow-soft-lg border border-gray-100 animate-in fade-in duration-300">
       <div className="flex justify-between items-center mb-4 md:mb-6">
         <h2 className="text-base md:text-xl font-bold text-gray-900">Alamat Saya</h2>
         {!isEditingAddress && (
           <button 
-            onClick={() => setIsEditingAddress(true)}
+            onClick={() => {
+              setIsEditingAddress(true)
+            }}
             className="flex items-center gap-1 text-primary-600 font-semibold text-xs md:text-sm hover:text-primary-700"
           >
             {user?.profile?.alamat ? <Edit2 size={16} /> : <Plus size={16} />}
@@ -566,79 +623,154 @@ const Profile = () => {
         )}
       </div>
 
-      {isEditingAddress ? (
-        <form onSubmit={handleAddressSubmit} className="space-y-4">
-          <div className="space-y-1.5 md:space-y-2">
-            <label className="text-xs md:text-sm font-semibold text-gray-700">Alamat Lengkap</label>
+      <div className="space-y-3 md:space-y-4">
+        {user?.profile?.alamat ? (
+          <div className="p-4 md:p-6 border-2 border-primary-100 bg-primary-50/30 rounded-2xl md:rounded-3xl relative">
+            <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+              <span className="text-xs md:text-sm font-bold text-gray-900">Utama</span>
+              <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[8px] md:text-[9px] font-bold rounded-full">
+                <MapPin size={8} /> ALAMAT TERSIMPAN
+              </div>
+            </div>
+            <div className="space-y-1 text-gray-700">
+              <p className="text-sm md:text-base font-bold text-gray-900">{user?.profile?.nama}</p>
+              <p className="text-xs md:text-sm leading-relaxed max-w-lg">
+                {user.profile.alamat}
+              </p>
+            </div>
+            <button 
+              onClick={() => setIsEditingAddress(true)}
+              className="mt-3 md:mt-4 text-primary-600 font-bold text-xs md:text-sm hover:underline"
+            >
+              Ubah Alamat
+            </button>
+          </div>
+        ) : (
+          <div className="border-2 border-dashed border-gray-200 rounded-2xl md:rounded-3xl p-6 md:p-12 text-center flex flex-col items-center justify-center bg-gray-50/50">
+            <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 mb-3 md:mb-4">
+              <MapPin size={24} className="md:w-7 md:h-7" />
+            </div>
+            <h3 className="font-bold text-gray-900 text-xs md:text-sm mb-1">Belum ada alamat</h3>
+            <p className="text-[10px] md:text-xs text-gray-500 max-w-xs leading-relaxed mb-4 md:mb-6">
+              Tambahkan alamat pengiriman agar bisa melakukan checkout.
+            </p>
+            <button 
+              onClick={() => setIsEditingAddress(true)}
+              className="px-4 py-2.5 md:px-6 md:py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl md:rounded-2xl text-[10px] md:text-xs flex items-center gap-1.5 transition-all shadow-md animate-bounce"
+            >
+              <Plus size={14} /> Tambah Alamat Sekarang
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Address Edit Modal with Leaflet Map */}
+      <Modal
+        isOpen={isEditingAddress}
+        onClose={() => {
+          setIsEditingAddress(false)
+          setAddressForm({ alamat: user?.profile?.alamat || '' })
+        }}
+        title="Ubah Alamat Pengiriman"
+        size="lg"
+      >
+        <div className="space-y-4">
+          <div>
             <textarea
+              className="w-full text-xs md:text-sm p-3 md:p-4 border border-gray-200 rounded-xl md:rounded-2xl focus:ring-2 focus:ring-primary-500 focus:bg-white outline-none transition-all min-h-[80px] md:min-h-[100px] bg-gray-50 resize-y"
               value={addressForm.alamat}
               onChange={(e) => setAddressForm({ ...addressForm, alamat: e.target.value })}
-              className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-gray-50 border border-gray-200 rounded-xl md:rounded-2xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all min-h-[100px] resize-y"
               placeholder="Masukkan alamat lengkap (Jalan, RT/RW, Kelurahan, Kecamatan, Kota, Provinsi, Kode Pos)"
             />
           </div>
-          <div className="flex gap-3">
-            <Button 
-              type="submit" 
-              isLoading={isSubmitting}
-              className="px-6 md:px-8 bg-primary-600 hover:bg-primary-700 text-white rounded-xl md:rounded-2xl py-2.5 md:py-3 text-xs md:text-sm font-bold"
-            >
-              Simpan Alamat
-            </Button>
+
+          <div className="flex items-center justify-between mt-2">
+            <span className="text-xs md:text-sm font-bold text-gray-700">Tentukan Titik Pengiriman</span>
             <button
               type="button"
+              disabled={isLocating}
               onClick={() => {
-                setIsEditingAddress(false)
-                setAddressForm({ alamat: user?.profile?.alamat || '' })
+                if (!navigator.geolocation) {
+                  toast.error('Browser tidak mendukung lokasi');
+                  return;
+                }
+                setIsLocating(true);
+                navigator.geolocation.getCurrentPosition(
+                  async (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    setMapPosition([lat, lng]);
+
+                    try {
+                      const response = await axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                      if (response.data && response.data.display_name) {
+                        setAddressForm({ alamat: response.data.display_name });
+                        toast.success('Lokasi berhasil ditemukan');
+                      }
+                    } catch (error) {
+                      toast.error('Gagal memuat detail alamat otomatis');
+                    }
+                    setIsLocating(false);
+                  },
+                  () => {
+                    toast.error('Gagal mengambil lokasi, pastikan izin akses lokasi diberikan');
+                    setIsLocating(false);
+                  }
+                );
               }}
-              className="px-6 md:px-8 border border-gray-200 text-gray-600 rounded-xl md:rounded-2xl py-2.5 md:py-3 text-xs md:text-sm font-medium hover:bg-gray-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 border border-emerald-500 hover:bg-emerald-50 text-emerald-600 font-bold rounded-full text-[10px] md:text-xs transition-colors"
             >
-              Batal
+              <Locate size={12} className="md:w-3.5 md:h-3.5" />
+              {isLocating ? 'Mencari...' : 'Gunakan Lokasi Saat Ini'}
             </button>
           </div>
-        </form>
-      ) : (
-        <div className="space-y-3 md:space-y-4">
-          {user?.profile?.alamat ? (
-            <div className="p-4 md:p-6 border-2 border-primary-100 bg-primary-50/30 rounded-2xl md:rounded-3xl relative">
-              <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-                <span className="text-xs md:text-sm font-bold text-gray-900">Utama</span>
-                <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[8px] md:text-[9px] font-bold rounded-full">
-                  <MapPin size={8} /> ALAMAT TERSIMPAN
-                </div>
-              </div>
-              <div className="space-y-1 text-gray-700">
-                <p className="text-sm md:text-base font-bold text-gray-900">{user?.profile?.nama}</p>
-                <p className="text-xs md:text-sm leading-relaxed max-w-lg">
-                  {user.profile.alamat}
-                </p>
-              </div>
-              <button 
-                onClick={() => setIsEditingAddress(true)}
-                className="mt-3 md:mt-4 text-primary-600 font-bold text-xs md:text-sm hover:underline"
+
+          {/* Map Container */}
+          <div className="relative w-full h-[250px] md:h-[300px] bg-gray-100 rounded-xl md:rounded-2xl overflow-hidden border border-gray-200 z-0">
+            <MapContainer
+              center={mapPosition}
+              zoom={13}
+              scrollWheelZoom={true}
+              style={{ height: '100%', width: '100%' }}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <LocationSelector 
+                position={mapPosition} 
+                setPosition={setMapPosition} 
+                setAddress={(addr) => setAddressForm({ alamat: addr })} 
+              />
+            </MapContainer>
+
+            <div className="absolute top-2 left-1/2 -translate-x-1/2 z-[400] pointer-events-none">
+              <span className="text-[9px] md:text-[10px] font-bold text-gray-900 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-gray-200">
+                Klik pada peta untuk menaruh pin
+              </span>
+            </div>
+
+            {/* Turquoise Confirm Button inside Bottom Right of the Map */}
+            <div className="absolute bottom-4 right-4 z-[400]">
+              <button
+                type="button"
+                onClick={handleAddressSubmit}
+                disabled={isSubmitting}
+                className="bg-[#2bd9c8] hover:bg-[#24c4b4] active:scale-95 text-white font-bold text-[10px] md:text-xs py-2 px-3 md:py-2.5 md:px-4 rounded-xl shadow-md transition-all duration-200 uppercase tracking-wider"
               >
-                Ubah Alamat
+                {isSubmitting ? 'Menyimpan...' : 'Konfirmasi Lokasi Ini'}
               </button>
             </div>
-          ) : (
-            <div className="border-2 border-dashed border-gray-200 rounded-2xl md:rounded-3xl p-6 md:p-12 text-center flex flex-col items-center justify-center bg-gray-50/50">
-              <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 mb-3 md:mb-4">
-                <MapPin size={24} className="md:w-7 md:h-7" />
-              </div>
-              <h3 className="font-bold text-gray-900 text-xs md:text-sm mb-1">Belum ada alamat</h3>
-              <p className="text-[10px] md:text-xs text-gray-500 max-w-xs leading-relaxed mb-4 md:mb-6">
-                Tambahkan alamat pengiriman agar bisa melakukan checkout.
-              </p>
-              <button 
-                onClick={() => setIsEditingAddress(true)}
-                className="px-4 py-2.5 md:px-6 md:py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl md:rounded-2xl text-[10px] md:text-xs flex items-center gap-1.5 transition-all shadow-md"
-              >
-                <Plus size={14} /> Tambah Alamat Sekarang
-              </button>
-            </div>
-          )}
+          </div>
+
+          <div className="bg-indigo-50 border border-indigo-100 rounded-xl md:rounded-2xl p-3 flex gap-2.5 items-start">
+            <MapPin size={16} className="text-indigo-500 mt-0.5 shrink-0" />
+            <p className="text-[10px] md:text-xs text-indigo-800 leading-relaxed">
+              Pastikan titik lokasi dan alamat sudah sesuai agar kurir lebih mudah menemukan tempatmu.
+            </p>
+          </div>
         </div>
-      )}
+      </Modal>
     </div>
   )
 

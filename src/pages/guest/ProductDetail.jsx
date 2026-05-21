@@ -72,6 +72,11 @@ const ProductDetail = () => {
   }
 
   const handleBuy = () => {
+    if (product.status === 'sold') {
+      toast.error('Barang ini sudah terjual!')
+      return
+    }
+
     if (!user) {
       toast.error('Login dulu ya buat beli!')
       navigate('/login')
@@ -164,6 +169,7 @@ const ProductDetail = () => {
               )}
 
               <div className="absolute top-4 left-4 flex flex-col gap-2">
+                {product.status === 'sold' && <Badge variant="sold" className="shadow-md px-4 py-1.5 text-sm">{LABELS.sold}</Badge>}
                 {product.isBU && <Badge variant="bu" className="shadow-md px-4 py-1.5 text-sm">{LABELS.bu}</Badge>}
                 {product.hargaLama && <Badge variant="discount" className="shadow-md px-4 py-1.5 text-sm">{LABELS.discount}</Badge>}
               </div>
@@ -252,9 +258,15 @@ const ProductDetail = () => {
                 </div>
 
                 <div className="space-y-3 pt-6 border-t border-gray-100">
-                  <Button fullWidth size="md" onClick={handleBuy} className="sm:text-lg">
-                    {BUTTONS.buy}
-                  </Button>
+                  {product.status === 'sold' ? (
+                    <Button fullWidth size="md" disabled className="sm:text-lg bg-gray-200 text-gray-500 cursor-not-allowed">
+                      Sudah Terjual
+                    </Button>
+                  ) : (
+                    <Button fullWidth size="md" onClick={handleBuy} className="sm:text-lg">
+                      {BUTTONS.buy}
+                    </Button>
+                  )}
                   <div className="flex gap-2 sm:gap-3">
                     <Button className="flex-1" size="md" variant="secondary" onClick={handleChat}>
                       <MessageCircle size={18} />

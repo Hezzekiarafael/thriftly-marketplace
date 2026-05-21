@@ -28,6 +28,7 @@ const EditProduct = () => {
   const [formData, setFormData] = useState({
     nama: '',
     harga: '',
+    stok: '1',
     kategori: '',
     kondisi: '',
     deskripsi: '',
@@ -55,6 +56,7 @@ const EditProduct = () => {
         setFormData({
           nama: data.nama,
           harga: data.harga.toString(),
+          stok: (data.stok || 1).toString(),
           kategori: data.kategori,
           kondisi: data.kondisi,
           deskripsi: data.deskripsi,
@@ -94,6 +96,7 @@ const EditProduct = () => {
       const updates = {
         ...formData,
         harga: parseInt(formData.harga),
+        stok: parseInt(formData.stok) || 1,
         fotos: images,
       }
 
@@ -217,6 +220,22 @@ const EditProduct = () => {
                       Format: {formatCurrency(parseInt(formData.harga))}
                     </p>
                   )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Stok <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="stok"
+                    value={formData.stok}
+                    onChange={handleChange}
+                    required
+                    min="1"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
+                    placeholder="Contoh: 1"
+                  />
                 </div>
               </div>
 

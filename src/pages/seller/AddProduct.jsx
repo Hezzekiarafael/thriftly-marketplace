@@ -50,6 +50,7 @@ const AddProduct = () => {
       tipeJual: 'titip',
       opsiHarga: 'sendiri',
       isBU: false,
+      stok: 1,
       lokasi: user?.profile?.lokasi || ''
     }
   })
@@ -567,6 +568,29 @@ const AddProduct = () => {
                   />
                   {errors.harga && (
                     <p className="text-red-500 text-sm mt-1">{errors.harga.message}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Stok *
+                  </label>
+                  <Controller
+                    name="stok"
+                    control={control}
+                    render={({ field }) => (
+                      <input
+                        type="number"
+                        {...field}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                        placeholder="Contoh: 1"
+                        min="1"
+                      />
+                    )}
+                  />
+                  {errors.stok && (
+                    <p className="text-red-500 text-sm mt-1">{errors.stok.message}</p>
                   )}
                 </div>
               </div>

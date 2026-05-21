@@ -51,6 +51,7 @@ export const mapLaravelProduct = (p) => {
     deskripsi: p.description || p.deskripsi,
     lokasi: p.location || p.lokasi,
     isBU: Boolean(p.is_bu || p.isBU),
+    stok: Number(p.stock !== undefined ? p.stock : (p.stok !== undefined ? p.stok : 1)),
     fotos: p.images || p.fotos || p.images_url || [],
     status: p.status,
     adminNote: p.admin_note || p.admin_note,
@@ -179,7 +180,7 @@ export const productService = {
         condition: toBackendCondition(productData.kondisi || productData.condition),
         is_bu: productData.isBU ? 1 : 0,
         images: productData.fotos,
-        stock: 1
+        stock: productData.stok || 1
       };
 
 
@@ -202,6 +203,7 @@ export const productService = {
       if (updates.lokasi) payload.location = updates.lokasi;
       if (updates.kondisi) payload.condition = updates.kondisi;
       if (updates.isBU !== undefined) payload.is_bu = updates.isBU;
+      if (updates.stok !== undefined) payload.stock = updates.stok;
       if (updates.fotos) payload.images = updates.fotos;
 
       const response = await api.put(`/products/${id}`, payload)

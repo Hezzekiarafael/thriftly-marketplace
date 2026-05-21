@@ -75,6 +75,9 @@ export const productSchema = z.object({
     errorMap: () => ({ message: 'Pilih opsi harga' })
   }),
   isBU: z.boolean().optional(),
+  stok: z.number()
+    .min(1, 'Stok minimal 1 ya')
+    .max(100000, 'Stok maksimal 100.000'),
   fotos: z.array(z.string())
     .min(3, 'Upload minimal 3 foto ya')
     .max(5, 'Maksimal 5 foto aja')

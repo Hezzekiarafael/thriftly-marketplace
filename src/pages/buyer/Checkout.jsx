@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, Truck, CreditCard, ShieldCheck, ChevronRight, Copy, QrCode } from 'lucide-react'
+import { MapPin, Truck, ShieldCheck } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Header from '../../components/layout/Header'
 import Footer from '../../components/layout/Footer'
 import Container from '../../components/layout/Container'
 import Button from '../../components/common/Button'
-import Modal from '../../components/common/Modal'
 import { useAuth } from '../../context/AuthContext'
 import { productService } from '../../services/productService'
 import { userService } from '../../services/userService'
-import { transactionService } from '../../services/transactionService'
+import api from '../../services/api'
 import { formatCurrency } from '../../utils/helpers'
 
 const Checkout = () => {
@@ -24,10 +23,6 @@ const Checkout = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   const [shippingOption, setShippingOption] = useState('reguler')
-  const [paymentMethod, setPaymentMethod] = useState('transfer_bank')
-  
-  const [showPaymentModal, setShowPaymentModal] = useState(false)
-  const [transactionData, setTransactionData] = useState(null)
 
   const shippingRates = {
     reguler: 15000,
@@ -37,7 +32,7 @@ const Checkout = () => {
 
   // Helper: ambil alamat dari berbagai kemungkinan field backend
   const getUserAddress = () => {
-    return user?.profile?.alamat || user?.profile?.address || user?.alamat || user?.address || ''
+    return user?.alamat || user?.profile?.alamat || ''
   }
 
   useEffect(() => {
@@ -71,68 +66,27 @@ const Checkout = () => {
   }, [productId, navigate])
 
   const handleCheckout = async () => {
-    if (!getUserAddress()) {
-      toast.error('Silakan lengkapi alamat pengiriman di profil Anda')
-      return
-    }
-
     setIsSubmitting(true)
-    
     try {
-      const ongkir = shippingRates[shippingOption]
-      
-      const res = await transactionService.charge({
+      const response = await api.post('/payment/token', {
         product_id: product.id,
-        seller_id: product.sellerId,
-        harga_final: product.harga, // Sesuaikan dengan kebutuhan backend
-        ongkir: ongkir,
-        alamat_pengiriman: getUserAddress(),
-        bank: paymentMethod === 'transfer_bank' ? 'bca' : paymentMethod,
-      })
+        price: totalPembayaran,
+        seller_id: seller?.id || product.user_id,
+        alamat_pengiriman: user.alamat || user.profile?.alamat || '-',
+        ongkir: ongkir
+      });
 
-      if(res && res.success && res.data?.order_id) {
-        toast.success('Pesanan berhasil dibuat!');
-        navigate(`/payment/success/${res.data.order_id}`);
-      } else if (res && res.data?.order_id) {
-        toast.success('Pesanan berhasil dibuat!');
-        navigate(`/payment/success/${res.data.order_id}`);
-      } else if (res && res.order_id) {
-        toast.success('Pesanan berhasil dibuat!');
-        navigate(`/payment/success/${res.order_id}`);
+      // REDIRECT LANGSUNG KE PAYMENT PAGE DOKU
+      if (response.data.payment_url) {
+        window.location.href = response.data.payment_url;
+        return;
       } else {
-        // Fallback untuk antisipasi perbedaan response payload
-        setTransactionData(res.data || res)
-        setShowPaymentModal(true)
+        toast.error('Gagal mendapatkan link pembayaran dari Doku');
       }
-      
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message || 'Gagal membuat pesanan')
+      toast.error(error.response?.data?.message || 'Gagal memproses pembayaran');
     } finally {
       setIsSubmitting(false)
-    }
-  }
-
-  const handleConfirmPayment = async () => {
-    if (transactionData) {
-      setIsSubmitting(true)
-      try {
-        await transactionService.markAsPaid(transactionData.id)
-        toast.success('Pembayaran berhasil! Pesanan sedang diproses.')
-        setShowPaymentModal(false)
-        navigate('/buyer/orders')
-      } catch (error) {
-        toast.error('Gagal membayara')
-      } finally {
-        setIsSubmitting(false)
-      }
-    }
-  }
-
-  const handleCopyVA = () => {
-    const vaNumber = transactionData?.va_numbers?.[0]?.va_number || transactionData?.permata_va_number || '';
-    if (vaNumber) {
-      navigator.clipboard.writeText(vaNumber);
-      toast.success('Nomor VA berhasil disalin');
     }
   }
 
@@ -240,37 +194,7 @@ const Checkout = () => {
                 </div>
               </div>
 
-              {/* Metode Pembayaran */}
-              <div className="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
-                <div className="flex items-center gap-2 mb-4">
-                  <CreditCard className="text-primary-600" size={20} />
-                  <h2 className="text-lg font-semibold text-gray-900">Metode Pembayaran</h2>
-                </div>
 
-                <div className="space-y-3">
-                  <label className="flex items-center justify-between p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 font-bold text-xs">BCA</div>
-                      <div>
-                        <p className="font-medium text-gray-900">Transfer Bank BCA</p>
-                        <p className="text-xs text-gray-500">Dicek otomatis</p>
-                      </div>
-                    </div>
-                    <input type="radio" name="payment" value="transfer_bank" checked={paymentMethod === 'transfer_bank'} onChange={(e) => setPaymentMethod(e.target.value)} className="text-primary-600 w-5 h-5" />
-                  </label>
-
-                  <label className="flex items-center justify-between p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-600 font-bold text-xs">GOPAY</div>
-                      <div>
-                        <p className="font-medium text-gray-900">GoPay</p>
-                        <p className="text-xs text-gray-500">Bayar instan</p>
-                      </div>
-                    </div>
-                    <input type="radio" name="payment" value="gopay" checked={paymentMethod === 'gopay'} onChange={(e) => setPaymentMethod(e.target.value)} className="text-primary-600 w-5 h-5" />
-                  </label>
-                </div>
-              </div>
 
             </div>
 
@@ -331,94 +255,7 @@ const Checkout = () => {
 
       <Footer />
 
-      {/* Payment Modal */}
-      <Modal
-        isOpen={showPaymentModal}
-        onClose={() => {}} // Prevent closing by clicking outside to force action
-        title="Pembayaran"
-      >
-        <div className="space-y-6">
-          <div className="text-center">
-            <p className="text-sm text-gray-500 mb-1">Total Pembayaran</p>
-            <p className="text-3xl font-bold text-primary-700">{formatCurrency(totalPembayaran)}</p>
-            <p className="text-xs text-gray-400 mt-2">Order ID: {transactionData?.order_id || transactionData?.id}</p>
-          </div>
 
-          <div className="border-t border-b border-gray-100 py-4">
-            {paymentMethod === 'transfer_bank' ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 font-bold text-sm">BCA</div>
-                  <div>
-                    <p className="font-semibold text-gray-900">Bank BCA</p>
-                    <p className="text-sm text-gray-500">BCA Virtual Account</p>
-                  </div>
-                </div>
-                
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                  <p className="text-sm text-gray-500 mb-1">Nomor Virtual Account</p>
-                  <div className="flex items-center justify-between">
-                    <p className="text-xl font-mono font-bold text-gray-900 tracking-wider">
-                      {transactionData?.va_numbers?.[0]?.va_number || transactionData?.permata_va_number || 'Memuat...'}
-                    </p>
-                    <button 
-                      onClick={handleCopyVA}
-                      className="text-primary-600 hover:text-primary-700 flex items-center gap-1 text-sm font-medium"
-                    >
-                      <Copy size={16} /> Salin
-                    </button>
-                  </div>
-                </div>
-                <p className="text-xs text-gray-500 text-center">
-                  Proses verifikasi otomatis. Bayar sebelum 24 jam.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4 text-center">
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600 font-bold text-sm">GOPAY</div>
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-900">GoPay</p>
-                    <p className="text-sm text-gray-500">Scan QRIS</p>
-                  </div>
-                </div>
-                
-                <div className="bg-white p-4 rounded-2xl border-2 border-gray-100 inline-block mx-auto shadow-sm">
-                  {transactionData?.actions?.find(a => a.name === 'generate-qr-code') ? (
-                    <img 
-                      src={transactionData.actions.find(a => a.name === 'generate-qr-code').url} 
-                      alt="QRIS" 
-                      className="w-48 h-48 object-contain"
-                    />
-                  ) : (
-                    <div className="w-48 h-48 bg-gray-50 rounded-xl flex items-center justify-center">
-                      <QrCode size={120} className="text-gray-400" />
-                    </div>
-                  )}
-                </div>
-                <p className="text-sm text-gray-600">
-                  Buka aplikasi Gojek atau e-wallet lain, lalu scan QR code di atas.
-                </p>
-              </div>
-            )}
-          </div>
-
-          <div className="pt-2">
-            <p className="text-xs text-amber-600 bg-amber-50 p-3 rounded-lg text-center mb-3">
-              Silakan lakukan pembayaran melalui aplikasi perbankan atau e-wallet Anda. Status akan diperbarui otomatis.
-            </p>
-            <button 
-              onClick={() => {
-                setShowPaymentModal(false)
-                navigate('/buyer/orders')
-              }}
-              className="w-full mt-3 text-sm text-gray-500 hover:text-gray-700 font-medium py-2"
-            >
-              Tutup (Lihat Status di Pesanan Saya)
-            </button>
-          </div>
-        </div>
-      </Modal>
     </div>
   )
 }

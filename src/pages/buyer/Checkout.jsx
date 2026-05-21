@@ -35,6 +35,11 @@ const Checkout = () => {
     cargo: 35000
   }
 
+  // Helper: ambil alamat dari berbagai kemungkinan field backend
+  const getUserAddress = () => {
+    return user?.profile?.alamat || user?.profile?.address || user?.alamat || user?.address || ''
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -66,7 +71,7 @@ const Checkout = () => {
   }, [productId, navigate])
 
   const handleCheckout = async () => {
-    if (!user.profile?.alamat && !user.profile?.address && !user.alamat && !user.address) {
+    if (!getUserAddress()) {
       toast.error('Silakan lengkapi alamat pengiriman di profil Anda')
       return
     }
@@ -81,7 +86,7 @@ const Checkout = () => {
         seller_id: product.sellerId,
         harga_final: product.harga, // Sesuaikan dengan kebutuhan backend
         ongkir: ongkir,
-        alamat_pengiriman: user.profile.alamat,
+        alamat_pengiriman: getUserAddress(),
         bank: paymentMethod === 'transfer_bank' ? 'bca' : paymentMethod,
       })
 
@@ -174,7 +179,7 @@ const Checkout = () => {
                     <span className="bg-primary-50 text-primary-700 text-xs font-medium px-2.5 py-1 rounded-full">Utama</span>
                   </div>
                   <p className="text-sm text-gray-700 mt-2">
-                    {user.profile?.alamat || user.profile?.address || user.alamat || user.address || 'Alamat belum diatur. Silakan update profil Anda.'}
+                    {getUserAddress() || 'Alamat belum diatur. Silakan update profil Anda.'}
                   </p>
                 </div>
               </div>
@@ -308,12 +313,12 @@ const Checkout = () => {
                   size="lg" 
                   onClick={handleCheckout}
                   isLoading={isSubmitting}
-                  disabled={isSubmitting || !user.profile?.alamat}
+                  disabled={isSubmitting || !getUserAddress()}
                 >
                   Bayar Sekarang
                 </Button>
                 
-                {!user.profile?.alamat && (
+                {!getUserAddress() && (
                   <p className="text-xs text-red-500 text-center mt-3">
                     Silakan isi alamat pengiriman di profil terlebih dahulu.
                   </p>

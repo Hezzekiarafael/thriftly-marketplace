@@ -44,6 +44,12 @@ const Profile = () => {
     tanggalLahir: user?.profile?.tanggalLahir || '',
   })
 
+  // Address States
+  const [addressForm, setAddressForm] = useState({
+    alamat: user?.profile?.alamat || ''
+  })
+  const [isEditingAddress, setIsEditingAddress] = useState(false)
+
   // Sinkronisasi form jika data user berubah (setelah refreshUser)
   useEffect(() => {
     if (user?.profile) {
@@ -52,6 +58,9 @@ const Profile = () => {
         noTelp: user.profile.noTelp || '',
         jenisKelamin: user.profile.jenisKelamin || 'Laki-laki',
         tanggalLahir: user.profile.tanggalLahir || '',
+      })
+      setAddressForm({
+        alamat: user.profile.alamat || ''
       })
     }
   }, [user])
@@ -112,12 +121,35 @@ const Profile = () => {
         no_telp: profileForm.noTelp,
         date_of_birth: profileForm.tanggalLahir,
         gender: profileForm.jenisKelamin === 'Laki-laki' ? 'L' : 'P',
-        role: user.role
+        role: user.role,
+        alamat: addressForm.alamat || user?.profile?.alamat || '',
       }
       await updateProfile(payload)
       toast.success('Profil berhasil diperbarui')
     } catch (error) {
       toast.error(error.message || 'Gagal memperbarui profil')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleAddressSubmit = async (e) => {
+    e.preventDefault()
+    if (!addressForm.alamat.trim()) {
+      return toast.error('Alamat tidak boleh kosong')
+    }
+    setIsSubmitting(true)
+    try {
+      await updateProfile({
+        name: user.profile.nama,
+        email: user.email,
+        alamat: addressForm.alamat.trim(),
+        address: addressForm.alamat.trim(),
+      })
+      toast.success('Alamat berhasil disimpan')
+      setIsEditingAddress(false)
+    } catch (error) {
+      toast.error(error.message || 'Gagal menyimpan alamat')
     } finally {
       setIsSubmitting(false)
     }
@@ -523,31 +555,90 @@ const Profile = () => {
     <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-sm md:shadow-soft-lg border border-gray-100">
       <div className="flex justify-between items-center mb-4 md:mb-6">
         <h2 className="text-base md:text-xl font-bold text-gray-900">Alamat Saya</h2>
-        <button className="flex items-center gap-1 text-primary-600 font-semibold text-xs md:text-sm hover:text-primary-700">
-          <Plus size={16} /> Tambah Alamat Baru
-        </button>
+        {!isEditingAddress && (
+          <button 
+            onClick={() => setIsEditingAddress(true)}
+            className="flex items-center gap-1 text-primary-600 font-semibold text-xs md:text-sm hover:text-primary-700"
+          >
+            {user?.profile?.alamat ? <Edit2 size={16} /> : <Plus size={16} />}
+            {user?.profile?.alamat ? 'Ubah Alamat' : 'Tambah Alamat Baru'}
+          </button>
+        )}
       </div>
 
-      <div className="space-y-3 md:space-y-4">
-        {/* Address Card */}
-        <div className="p-4 md:p-6 border-2 border-primary-100 bg-primary-50/30 rounded-2xl md:rounded-3xl relative">
-          <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-            <span className="text-xs md:text-sm font-bold text-gray-900">Utama</span>
-            <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[8px] md:text-[9px] font-bold rounded-full">
-              <MapPin size={8} /> TITIK MAP TERPASANG
+      {isEditingAddress ? (
+        <form onSubmit={handleAddressSubmit} className="space-y-4">
+          <div className="space-y-1.5 md:space-y-2">
+            <label className="text-xs md:text-sm font-semibold text-gray-700">Alamat Lengkap</label>
+            <textarea
+              value={addressForm.alamat}
+              onChange={(e) => setAddressForm({ ...addressForm, alamat: e.target.value })}
+              className="w-full px-3 md:px-4 py-2.5 md:py-3 bg-gray-50 border border-gray-200 rounded-xl md:rounded-2xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all min-h-[100px] resize-y"
+              placeholder="Masukkan alamat lengkap (Jalan, RT/RW, Kelurahan, Kecamatan, Kota, Provinsi, Kode Pos)"
+            />
+          </div>
+          <div className="flex gap-3">
+            <Button 
+              type="submit" 
+              isLoading={isSubmitting}
+              className="px-6 md:px-8 bg-primary-600 hover:bg-primary-700 text-white rounded-xl md:rounded-2xl py-2.5 md:py-3 text-xs md:text-sm font-bold"
+            >
+              Simpan Alamat
+            </Button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsEditingAddress(false)
+                setAddressForm({ alamat: user?.profile?.alamat || '' })
+              }}
+              className="px-6 md:px-8 border border-gray-200 text-gray-600 rounded-xl md:rounded-2xl py-2.5 md:py-3 text-xs md:text-sm font-medium hover:bg-gray-50"
+            >
+              Batal
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div className="space-y-3 md:space-y-4">
+          {user?.profile?.alamat ? (
+            <div className="p-4 md:p-6 border-2 border-primary-100 bg-primary-50/30 rounded-2xl md:rounded-3xl relative">
+              <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+                <span className="text-xs md:text-sm font-bold text-gray-900">Utama</span>
+                <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[8px] md:text-[9px] font-bold rounded-full">
+                  <MapPin size={8} /> ALAMAT TERSIMPAN
+                </div>
+              </div>
+              <div className="space-y-1 text-gray-700">
+                <p className="text-sm md:text-base font-bold text-gray-900">{user?.profile?.nama}</p>
+                <p className="text-xs md:text-sm leading-relaxed max-w-lg">
+                  {user.profile.alamat}
+                </p>
+              </div>
+              <button 
+                onClick={() => setIsEditingAddress(true)}
+                className="mt-3 md:mt-4 text-primary-600 font-bold text-xs md:text-sm hover:underline"
+              >
+                Ubah Alamat
+              </button>
             </div>
-          </div>
-          <div className="space-y-1 text-gray-700">
-            <p className="text-sm md:text-base font-bold text-gray-900">{user?.profile?.nama}</p>
-            <p className="text-xs md:text-sm leading-relaxed max-w-lg">
-              {user?.profile?.alamat || 'Jalan Ungaran, Mulyoharjo, Pemalang, Central Java, Java, 52312, Indonesia'}
-            </p>
-          </div>
-          <button className="mt-3 md:mt-4 text-primary-600 font-bold text-xs md:text-sm hover:underline">
-            Ubah Alamat
-          </button>
+          ) : (
+            <div className="border-2 border-dashed border-gray-200 rounded-2xl md:rounded-3xl p-6 md:p-12 text-center flex flex-col items-center justify-center bg-gray-50/50">
+              <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 mb-3 md:mb-4">
+                <MapPin size={24} className="md:w-7 md:h-7" />
+              </div>
+              <h3 className="font-bold text-gray-900 text-xs md:text-sm mb-1">Belum ada alamat</h3>
+              <p className="text-[10px] md:text-xs text-gray-500 max-w-xs leading-relaxed mb-4 md:mb-6">
+                Tambahkan alamat pengiriman agar bisa melakukan checkout.
+              </p>
+              <button 
+                onClick={() => setIsEditingAddress(true)}
+                className="px-4 py-2.5 md:px-6 md:py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl md:rounded-2xl text-[10px] md:text-xs flex items-center gap-1.5 transition-all shadow-md"
+              >
+                <Plus size={14} /> Tambah Alamat Sekarang
+              </button>
+            </div>
+          )}
         </div>
-      </div>
+      )}
     </div>
   )
 

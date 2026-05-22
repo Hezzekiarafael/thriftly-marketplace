@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Package, Clock, CheckCircle2, AlertCircle, Truck } from 'lucide-react'
+import { Package, Clock, CheckCircle2, AlertCircle, Truck, XCircle } from 'lucide-react'
 import Header from '../../components/layout/Header'
 import Footer from '../../components/layout/Footer'
 import Container from '../../components/layout/Container'
@@ -23,6 +23,9 @@ const MyOrders = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [confirmModalOpen, setConfirmModalOpen] = useState(false)
   const [orderToComplete, setOrderToComplete] = useState(null)
+  const [cancelModalOpen, setCancelModalOpen] = useState(false)
+  const [orderToCancel, setOrderToCancel] = useState(null)
+  const [isCancelling, setIsCancelling] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -80,6 +83,27 @@ const MyOrders = () => {
     }
   }
 
+  const handleOpenCancelModal = (order) => {
+    setOrderToCancel(order)
+    setCancelModalOpen(true)
+  }
+
+  const confirmBatalPesanan = async () => {
+    if (!orderToCancel) return
+    setIsCancelling(true)
+    try {
+      await transactionService.markAsCancelled(orderToCancel.id)
+      toast.success('Pesanan berhasil dibatalkan.')
+      loadOrders()
+      setCancelModalOpen(false)
+      setOrderToCancel(null)
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Gagal membatalkan pesanan')
+    } finally {
+      setIsCancelling(false)
+    }
+  }
+
   const getStatusBadge = (status) => {
     switch (status) {
       case 'pending':
@@ -93,6 +117,8 @@ const MyOrders = () => {
         return <Badge variant="success">Selesai</Badge>
       case 'retur':
         return <Badge variant="error">Diretur</Badge>
+      case 'cancelled':
+        return <Badge variant="error">Dibatalkan</Badge>
       default:
         return <Badge>{status}</Badge>
     }
@@ -174,9 +200,18 @@ const MyOrders = () => {
                     </Button>
                     
                     {order.status === 'pending' && (
-                      <Button onClick={() => navigate(`/payment/success/${order.order_id || order.id}`)}>
-                        Bayar Sekarang
-                      </Button>
+                      <>
+                        <button
+                          onClick={() => handleOpenCancelModal(order)}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border-2 border-red-200 text-red-600 font-medium text-sm bg-white hover:bg-red-50 hover:border-red-400 active:scale-95 transition-all duration-150"
+                        >
+                          <XCircle size={16} />
+                          Batal Pesanan
+                        </button>
+                        <Button onClick={() => navigate(`/payment/success/${order.order_id || order.id}`)}>
+                          Bayar Sekarang
+                        </Button>
+                      </>
                     )}
 
                     {order.status === 'shipped' && (
@@ -306,6 +341,44 @@ const MyOrders = () => {
             <Button fullWidth onClick={confirmSelesaikanPesanan}>
               Ya, Selesaikan
             </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal Konfirmasi Batal Pesanan */}
+      <Modal
+        isOpen={cancelModalOpen}
+        onClose={() => setCancelModalOpen(false)}
+        title="Batalkan Pesanan"
+      >
+        <div className="space-y-6">
+          <div className="bg-red-50 border border-red-100 rounded-xl p-4 flex gap-3 text-red-800">
+            <XCircle className="shrink-0 mt-0.5 text-red-500" size={22} />
+            <div>
+              <p className="font-semibold mb-1">Batalkan pesanan ini?</p>
+              <p className="text-sm">
+                Pesanan untuk <span className="font-semibold">{orderToCancel?.product?.nama || 'produk ini'}</span> akan dibatalkan.
+                Tindakan ini <span className="font-semibold">tidak dapat dibatalkan</span> setelah dikonfirmasi.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <Button variant="outline" fullWidth onClick={() => setCancelModalOpen(false)} disabled={isCancelling}>
+              Kembali
+            </Button>
+            <button
+              onClick={confirmBatalPesanan}
+              disabled={isCancelling}
+              className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white font-semibold text-sm active:scale-95 transition-all duration-150"
+            >
+              {isCancelling ? (
+                <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <XCircle size={16} />
+              )}
+              {isCancelling ? 'Membatalkan...' : 'Ya, Batalkan Pesanan'}
+            </button>
           </div>
         </div>
       </Modal>

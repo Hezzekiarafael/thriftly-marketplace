@@ -222,5 +222,10 @@ export const transactionService = {
   // ↩️ Helper: Pengajuan Retur
   async markAsRetur(id, videoUnboxing = '') {
     return this.updateTransactionStatus(id, 'retur', { video_unboxing: videoUnboxing });
+  },
+
+  // ❌ Helper: Batalkan pesanan (hanya bisa jika belum dibayar / pending)
+  async markAsCancelled(id) {
+    return this.updateTransactionStatus(id, 'cancelled');
   }
 };

@@ -4,8 +4,9 @@ import {
   User, MapPin, ShieldCheck, Camera, 
   Calendar, ArrowLeft, Mail, Phone, 
   Lock, CheckCircle, Plus, Edit2, AlertCircle,
-  X, Upload, CreditCard, Locate
+  X, Upload, CreditCard, Locate, Crown, Star, Zap, Clock
 } from 'lucide-react'
+import { subscriptionService } from '../../services/subscriptionService'
 import { useAuth } from '../../context/AuthContext'
 import Header from '../../components/layout/Header'
 import Footer from '../../components/layout/Footer'
@@ -68,17 +69,31 @@ const Profile = () => {
   const fileInputRef = useRef(null)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const [subStatus, setSubStatus] = useState(() => subscriptionService.getStatus())
+  const [subDetail, setSubDetail] = useState(() => subscriptionService.getDetail())
 
   // Jika backend redirect ke /profile?verified=1, refresh data user otomatis
   useEffect(() => {
     if (searchParams.get('verified') === '1') {
       toast.success('Email berhasil diverifikasi! 🎉', { duration: 5000 })
       refreshUser().then(() => {
-        // Bersihkan query param dari URL tanpa reload halaman
         navigate('/profile', { replace: true })
       })
     }
+    // Handle tab dari URL query
+    const tab = searchParams.get('tab')
+    if (tab) setActiveTab(tab)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Listen perubahan status langganan
+  useEffect(() => {
+    const refresh = () => {
+      setSubStatus(subscriptionService.getStatus())
+      setSubDetail(subscriptionService.getDetail())
+    }
+    window.addEventListener('subscription_status_changed', refresh)
+    return () => window.removeEventListener('subscription_status_changed', refresh)
+  }, [])
 
   // Form States
   const [profileForm, setProfileForm] = useState({
@@ -441,6 +456,164 @@ const Profile = () => {
     } finally {
       setVerifyingPhone(false)
     }
+  }
+
+  // ── Render: Tab Langganan ───────────────────────────────────────────────────
+  const renderSubscriptionTab = () => {
+    const isActive  = subStatus === 'active'
+    const isPending = subStatus === 'pending'
+    const isNone    = subStatus === 'none' || !subStatus
+
+    const expiredDate = subDetail?.expiredAt
+      ? new Date(subDetail.expiredAt).toLocaleDateString('id-ID', {
+          day: 'numeric', month: 'long', year: 'numeric',
+        })
+      : '-'
+
+    const activatedDate = subDetail?.activatedAt
+      ? new Date(subDetail.activatedAt).toLocaleDateString('id-ID', {
+          day: 'numeric', month: 'long', year: 'numeric',
+        })
+      : '-'
+
+    return (
+      <div className="space-y-5">
+        {/* Header Card */}
+        <div className={`relative overflow-hidden rounded-3xl p-6 md:p-8 text-white shadow-xl ${
+          isActive  ? 'bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700' :
+          isPending ? 'bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600' :
+                      'bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900'
+        }`}>
+          <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full blur-xl" />
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
+                  isActive ? 'bg-yellow-400/20' : isPending ? 'bg-white/20' : 'bg-white/10'
+                }`}>
+                  <Crown className={`w-5 h-5 ${isActive ? 'text-yellow-300' : 'text-white'}`} />
+                </div>
+                <div>
+                  <p className="text-white/60 text-xs font-semibold uppercase tracking-wider">Thriftly</p>
+                  <h2 className="text-lg font-bold">Premium Membership</h2>
+                </div>
+              </div>
+              <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                isActive  ? 'bg-emerald-400/20 text-emerald-300 border-emerald-400/30' :
+                isPending ? 'bg-white/20 text-white border-white/30 animate-pulse' :
+                            'bg-white/10 text-white/60 border-white/10'
+              }`}>
+                {isActive ? '✓ AKTIF' : isPending ? '⏳ MENUNGGU PEMBAYARAN' : 'TIDAK AKTIF'}
+              </span>
+            </div>
+
+            {isActive && (
+              <div className="bg-white/10 backdrop-blur rounded-2xl p-4 space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-white/60">Aktif sejak</span>
+                  <span className="font-semibold">{activatedDate}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/60">Berlaku hingga</span>
+                  <span className="font-bold text-yellow-300">{expiredDate}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/60">Invoice</span>
+                  <span className="font-mono text-xs">{subDetail?.invoiceId}</span>
+                </div>
+              </div>
+            )}
+
+            {isPending && (
+              <div className="bg-white/10 backdrop-blur rounded-2xl p-4 space-y-2 text-sm">
+                <div className="flex items-center gap-2 text-white/80">
+                  <Clock className="w-4 h-4 text-amber-200" />
+                  <span>Pembayaran belum diselesaikan.</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/60">Invoice</span>
+                  <span className="font-mono text-xs">{subDetail?.invoiceId}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-white/60">Total</span>
+                  <span className="font-bold">Rp {(subDetail?.amount || 50000).toLocaleString('id-ID')}</span>
+                </div>
+              </div>
+            )}
+
+            {isNone && (
+              <p className="text-white/60 text-sm">
+                Kamu belum berlangganan. Aktifkan sekarang dan nikmati keuntungan Premium!
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Benefits */}
+        <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Keuntungan Premium</h3>
+          <div className="space-y-3">
+            {[
+              { icon: Star,  label: 'Badge Premium di profil' },
+              { icon: Zap,   label: 'Produk tampil lebih awal di homepage' },
+              { icon: Crown, label: 'Prioritas layanan pelanggan' },
+            ].map(({ icon: Icon, label }, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                  isActive ? 'bg-violet-100' : 'bg-gray-100'
+                }`}>
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-violet-600' : 'text-gray-400'}`} />
+                </div>
+                <span className={`text-sm font-medium ${isActive ? 'text-gray-800' : 'text-gray-500'}`}>{label}</span>
+                {isActive && <CheckCircle className="w-4 h-4 text-emerald-500 ml-auto shrink-0" />}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA Buttons */}
+        {isPending && (
+          <Link
+            to={`/subscription/payment?invoice=${subDetail?.invoiceId}`}
+            className="w-full flex items-center justify-center gap-2 py-4 px-6 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold rounded-2xl shadow-lg shadow-amber-200 transition-all"
+          >
+            <CreditCard size={18} />
+            Selesaikan Pembayaran
+          </Link>
+        )}
+        {isNone && (
+          <button
+            onClick={() => {
+              subscriptionService.requestSubscription(user.email)
+              subscriptionService.addSubscriptionEmail(user.email)
+              setSubStatus('pending')
+              setSubDetail(subscriptionService.getDetail())
+              toast.success('Cek email kamu ya! Link pembayaran sudah kami kirim 📬')
+            }}
+            className="w-full flex items-center justify-center gap-2 py-4 px-6 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-lg shadow-violet-200 transition-all"
+          >
+            <Crown size={18} />
+            Aktifkan Langganan Premium
+          </button>
+        )}
+        {isActive && (
+          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-sm text-emerald-700 flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 shrink-0" />
+            Langganan kamu aktif hingga <strong className="ml-1">{expiredDate}</strong>
+          </div>
+        )}
+
+        {/* Link ke inbox simulasi */}
+        <Link
+          to="/simulation/mailbox"
+          className="flex items-center justify-center gap-2 text-sm text-primary-600 hover:text-primary-800 font-medium transition-colors"
+        >
+          <Mail size={14} />
+          Lihat email langganan di Inbox Simulasi
+        </Link>
+      </div>
+    )
   }
 
   const renderProfileTab = () => (
@@ -1257,6 +1430,36 @@ const Profile = () => {
                     <Edit2 size={16} className="hidden lg:block opacity-0 group-hover:opacity-100 transition-opacity" />
                   )}
                 </button>
+
+                {/* Langganan - hanya untuk buyer */}
+                {user?.role === 'buyer' && (
+                  <button
+                    onClick={() => setActiveTab('subscription')}
+                    className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-2.5 md:p-3 lg:p-4 rounded-xl lg:rounded-2xl transition-all group ${
+                      activeTab === 'subscription'
+                        ? 'bg-violet-50 text-violet-700'
+                        : 'hover:bg-gray-50 text-gray-500'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 lg:gap-3">
+                      <Crown className={`w-4 h-4 lg:w-5 lg:h-5 ${
+                        activeTab === 'subscription' ? 'text-violet-600' : 'text-gray-400'
+                      }`} />
+                      <span className="font-semibold text-xs md:text-sm lg:text-base">Langganan</span>
+                      {subStatus === 'active' && (
+                        <span className="ml-1 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded-full uppercase">Aktif</span>
+                      )}
+                      {subStatus === 'pending' && (
+                        <span className="ml-1 px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded-full uppercase animate-pulse">Pending</span>
+                      )}
+                    </div>
+                    {activeTab === 'subscription' ? (
+                      <div className="hidden lg:block w-1.5 h-6 bg-violet-600 rounded-full" />
+                    ) : (
+                      <Edit2 size={16} className="hidden lg:block opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </button>
+                )}
               </nav>
             </aside>
 
@@ -1266,6 +1469,7 @@ const Profile = () => {
               {activeTab === 'address' && renderAddressTab()}
               {activeTab === 'rekening' && user?.role === 'seller' && renderRekeningTab()}
               {activeTab === 'security' && renderSecurityTab()}
+              {activeTab === 'subscription' && user?.role === 'buyer' && renderSubscriptionTab()}
             </div>
           </div>
         </Container>

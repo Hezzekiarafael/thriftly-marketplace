@@ -10,6 +10,9 @@ import Homepage from '../pages/guest/Homepage'
 const ProductList = lazy(() => import('../pages/guest/ProductList'))
 const ProductDetail = lazy(() => import('../pages/guest/ProductDetail'))
 const Login = lazy(() => import('../pages/auth/Login'))
+const EmailSimulation = lazy(() => import('../pages/guest/EmailSimulation'))
+const Membership = lazy(() => import('../pages/guest/Membership'))
+const DokuSimulation = lazy(() => import('../pages/buyer/DokuSimulation'))
 const BuyerRegister = lazy(() => import('../pages/buyer/BuyerRegister'))
 const SellerRegister = lazy(() => import('../pages/seller/SellerRegister'))
 const LoginSuccess = lazy(() => import('../pages/auth/LoginSuccess'))
@@ -20,6 +23,9 @@ const BuyerDashboard = lazy(() => import('../pages/buyer/BuyerDashboard'))
 const MyOrders = lazy(() => import('../pages/buyer/MyOrders'))
 const Checkout = lazy(() => import('../pages/buyer/Checkout'))
 const PaymentDetail = lazy(() => import('../pages/buyer/PaymentDetail'))
+const SubscriptionPayment = lazy(() => import('../pages/buyer/SubscriptionPayment'))
+const SubscriptionSuccess = lazy(() => import('../pages/buyer/SubscriptionSuccess'))
+const SimulatedMailbox = lazy(() => import('../pages/buyer/SimulatedMailbox'))
 
 const SellerDashboard = lazy(() => import('../pages/seller/SellerDashboard'))
 const AddProduct = lazy(() => import('../pages/seller/AddProduct'))
@@ -130,6 +136,39 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['buyer']}>
               <PaymentDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscription/payment"
+          element={
+            <ProtectedRoute allowedRoles={['buyer']}>
+              <SubscriptionPayment />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscription/success"
+          element={
+            <ProtectedRoute allowedRoles={['buyer']}>
+              <SubscriptionSuccess />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/simulation/doku"
+          element={
+            <ProtectedRoute allowedRoles={['buyer']}>
+              <DokuSimulation />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/simulation/mailbox"
+          element={
+            <ProtectedRoute allowedRoles={['buyer']}>
+              <SimulatedMailbox />
             </ProtectedRoute>
           }
         />
@@ -275,6 +314,16 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['buyer', 'seller']}>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="/membership" element={<Membership />} />
+        <Route path="/simulation/mailbox" element={<EmailSimulation />} />
+        <Route path="/simulation/doku"
+          element={
+            <ProtectedRoute allowedRoles={['buyer', 'seller']}>
+              <DokuSimulation />
             </ProtectedRoute>
           }
         />

@@ -1,11 +1,12 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { Menu, X, ShoppingBag, User, LogOut, MessageCircle, Package, Search, AlertCircle } from 'lucide-react'
+import { Menu, X, ShoppingBag, User, LogOut, MessageCircle, Package, Search, AlertCircle, Crown } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { useApp } from '../../context/AppContext'
 import Badge from '../common/Badge'
 import Button from '../common/Button'
 import { BUTTONS, PLACEHOLDERS } from '../../constants/copywriting'
+import api from '../../services/api'
 
 const Header = () => {
   const navigate = useNavigate()
@@ -14,7 +15,20 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [isPremium, setIsPremium] = useState(false)
   const userMenuRef = useRef(null)
+
+  useEffect(() => {
+    if (user && user.role === 'buyer') {
+      api.get('/user/newsletter')
+        .then(res => {
+          if (res.data?.data?.status === 'active') {
+            setIsPremium(true)
+          }
+        })
+        .catch(() => {})
+    }
+  }, [user])
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -147,11 +161,18 @@ const Header = () => {
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                     className="flex items-center space-x-2 hover:bg-white/10 p-1 rounded-lg transition-colors"
                   >
-                    <div className="hidden md:flex w-8 h-8 rounded-full overflow-hidden bg-white/20 items-center justify-center border border-white/10">
-                      {user.profile?.avatar ? (
-                        <img src={user.profile.avatar} alt="Profile" className="w-full h-full object-cover" />
-                      ) : (
-                        <User size={18} className="text-white" />
+                    <div className="relative hidden md:flex w-8 h-8 rounded-full bg-white/20 items-center justify-center border border-white/10">
+                      <div className="w-full h-full rounded-full overflow-hidden">
+                        {user.profile?.avatar ? (
+                          <img src={user.profile.avatar} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                          <User size={18} className="text-white" />
+                        )}
+                      </div>
+                      {isPremium && (
+                        <div className="absolute -top-1.5 -right-1.5 bg-yellow-400 text-yellow-900 p-0.5 rounded-full border-2 border-vintage-charcoal shadow-sm z-10" title="Premium Member">
+                          <Crown size={12} />
+                        </div>
                       )}
                     </div>
                     <span className="text-sm font-medium text-white hidden lg:block">

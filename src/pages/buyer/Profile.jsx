@@ -578,7 +578,7 @@ const Profile = () => {
           <div className="space-y-3">
             {[
               { icon: Star,  label: 'Badge Premium di profil' },
-              { icon: Zap,   label: 'Produk tampil lebih awal di homepage' },
+              { icon: Mail,  label: 'Mendapatkan update ke email setiap ada produk baru' },
               { icon: Crown, label: 'Prioritas layanan pelanggan' },
             ].map(({ icon: Icon, label }, i) => (
               <div key={i} className="flex items-center gap-3">
@@ -631,6 +631,12 @@ const Profile = () => {
               </div>
             )}
           </div>
+          {/* Premium Badge Indicator */}
+          {subscription?.status === 'active' && (
+            <div className="absolute -top-1 -right-1 bg-yellow-400 text-yellow-900 p-1 md:p-1.5 rounded-full border-2 border-white shadow-md z-10" title="Premium Member">
+              <Crown className="w-3 h-3 md:w-4 md:h-4" />
+            </div>
+          )}
           <button 
             onClick={() => fileInputRef.current?.click()}
             className="absolute bottom-0 right-0 p-1.5 md:p-2 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-colors"

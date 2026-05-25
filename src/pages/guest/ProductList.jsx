@@ -7,6 +7,7 @@ import Container from '../../components/layout/Container'
 import ProductCard from '../../components/common/ProductCard'
 import ProductCardSkeleton from '../../components/common/ProductCardSkeleton'
 import Button from '../../components/common/Button'
+import CategoryIcon from '../../components/common/CategoryIcon'
 import { productService } from '../../services/productService'
 import { getCategories } from '../../constants/categories'
 import { CONDITIONS } from '../../constants/conditions'
@@ -137,7 +138,10 @@ const ProductList = () => {
                 className="w-4 h-4 text-primary-600 focus:ring-primary-500 border-gray-300"
               />
               <span className={`text-sm flex items-center gap-2 ${selectedCategory === cat.id ? 'text-gray-900 font-medium' : 'text-gray-600 group-hover:text-gray-900'}`}>
-                <span className="text-lg">{cat.icon}</span> {cat.nama}
+                <span className={`${selectedCategory === cat.id ? 'text-primary-600' : 'text-gray-400 group-hover:text-primary-500'}`}>
+                  <CategoryIcon id={cat.id} />
+                </span>
+                {cat.nama}
               </span>
             </label>
           ))}

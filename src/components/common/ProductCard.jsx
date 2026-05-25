@@ -4,6 +4,7 @@ import Badge from './Badge'
 import { formatCurrency } from '../../utils/helpers'
 import { getLocationName } from '../../constants/locations'
 import { getCategoryById } from '../../constants/categories'
+import CategoryIcon from './CategoryIcon'
 import { LABELS } from '../../constants/copywriting'
 
 const ProductCard = ({ product }) => {
@@ -22,8 +23,8 @@ const ProductCard = ({ product }) => {
       onClick={handleClick}
       className="bg-white rounded-2xl shadow-soft hover:shadow-soft-lg border border-gray-100 transition-all duration-300 cursor-pointer overflow-hidden group flex flex-col h-full relative"
     >
-      <div className="absolute top-3 right-3 z-10 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm text-lg" title={category?.nama}>
-        {category?.icon}
+      <div className="absolute top-3 right-3 z-10 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm text-gray-500" title={category?.nama}>
+        <CategoryIcon id={category?.id} />
       </div>
       <div className="relative aspect-[4/3] overflow-hidden bg-gray-50 p-4 flex items-center justify-center">
         <img

@@ -1,8 +1,9 @@
 import { lazy, Suspense } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { Loader2 } from 'lucide-react'
 import PageSkeleton from '../components/common/PageSkeleton'
+import AdminPageSkeleton from '../components/common/AdminPageSkeleton'
 
 // ── Eager load: hanya halaman publik utama ────────────────────────────────────
 import Homepage from '../pages/guest/Homepage'
@@ -62,9 +63,15 @@ const LegalPrivacy = lazy(() => import('../pages/info/LegalPrivacy'))
 const Profile = lazy(() => import('../pages/buyer/Profile'))
 
 // ── Loading Fallback ──────────────────────────────────────────────────────────
-const PageLoader = () => (
-  <PageSkeleton />
-)
+const PageLoader = () => {
+  const location = useLocation()
+  
+  if (location.pathname.startsWith('/admin')) {
+    return <AdminPageSkeleton />
+  }
+  
+  return <PageSkeleton />
+}
 
 const ProtectedRoute = ({ children, allowedRoles, requireVerified = false }) => {
   const { user, loading } = useAuth()

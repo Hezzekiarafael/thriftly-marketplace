@@ -117,30 +117,35 @@ const ProductList = () => {
       </div>
 
       <Accordion title="Kategori">
-        <div className="space-y-2">
-          <label className="flex items-center gap-3 cursor-pointer group">
+        <div className="space-y-1">
+          <label className={`flex items-center gap-3 cursor-pointer group p-2 rounded-xl transition-all duration-300 ${selectedCategory === '' ? 'bg-primary-50 border border-primary-100' : 'hover:bg-gray-50 border border-transparent'}`}>
             <input 
               type="radio" 
               name="category" 
               checked={selectedCategory === ''} 
               onChange={() => setSelectedCategory('')}
-              className="w-4 h-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+              className="hidden"
             />
-            <span className={`text-sm ${selectedCategory === '' ? 'text-gray-900 font-medium' : 'text-gray-600 group-hover:text-gray-900'}`}>Semua Kategori</span>
+            <div className={`p-2 rounded-lg transition-colors duration-300 flex items-center justify-center ${selectedCategory === '' ? 'bg-primary-600 text-white shadow-md shadow-primary-200' : 'bg-gray-100 text-gray-500 group-hover:bg-primary-100 group-hover:text-primary-600'}`}>
+              <CategoryIcon id="all" size={16} />
+            </div>
+            <span className={`text-sm flex-1 ${selectedCategory === '' ? 'text-primary-900 font-semibold' : 'text-gray-600 group-hover:text-gray-900'}`}>
+              Semua Kategori
+            </span>
           </label>
           {categories.map(cat => (
-            <label key={cat.id} className="flex items-center gap-3 cursor-pointer group">
+            <label key={cat.id} className={`flex items-center gap-3 cursor-pointer group p-2 rounded-xl transition-all duration-300 ${selectedCategory === cat.id ? 'bg-primary-50 border border-primary-100' : 'hover:bg-gray-50 border border-transparent'}`}>
               <input 
                 type="radio" 
                 name="category" 
                 checked={selectedCategory === cat.id} 
                 onChange={() => setSelectedCategory(cat.id)}
-                className="w-4 h-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                className="hidden"
               />
-              <span className={`text-sm flex items-center gap-2 ${selectedCategory === cat.id ? 'text-gray-900 font-medium' : 'text-gray-600 group-hover:text-gray-900'}`}>
-                <span className={`${selectedCategory === cat.id ? 'text-primary-600' : 'text-gray-400 group-hover:text-primary-500'}`}>
-                  <CategoryIcon id={cat.id} />
-                </span>
+              <div className={`p-2 rounded-lg transition-colors duration-300 flex items-center justify-center ${selectedCategory === cat.id ? 'bg-primary-600 text-white shadow-md shadow-primary-200' : 'bg-gray-100 text-gray-500 group-hover:bg-primary-100 group-hover:text-primary-600'}`}>
+                <CategoryIcon id={cat.id} size={16} />
+              </div>
+              <span className={`text-sm flex-1 ${selectedCategory === cat.id ? 'text-primary-900 font-semibold' : 'text-gray-600 group-hover:text-gray-900'}`}>
                 {cat.nama}
               </span>
             </label>

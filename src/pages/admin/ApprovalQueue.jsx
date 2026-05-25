@@ -37,6 +37,8 @@ const ApprovalQueue = () => {
   const [products, setProducts] = useState([])
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [showRejectModal, setShowRejectModal] = useState(false)
+  const [showApproveModal, setShowApproveModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [rejectNote, setRejectNote] = useState('')
 
@@ -66,16 +68,22 @@ const ApprovalQueue = () => {
     }
   }
 
-  const handleApprove = async (product) => {
-    if (window.confirm(`Are you sure you want to approve "${product.nama}"?`)) {
-      try {
-        await productService.approveProduct(product.id, 'Approved by admin')
-        toast.success('Product approved successfully')
-        loadProducts()
-        refreshProducts()
-      } catch (error) {
-        toast.error('Admin approval failed')
-      }
+  const handleApproveClick = (product) => {
+    setSelectedProduct(product)
+    setShowApproveModal(true)
+    setShowDetailModal(false) // Close detail if approve is clicked from inside detail
+  }
+
+  const handleApproveSubmit = async () => {
+    try {
+      await productService.approveProduct(selectedProduct.id, 'Approved by admin')
+      toast.success('Product approved successfully')
+      setShowApproveModal(false)
+      setSelectedProduct(null)
+      loadProducts()
+      refreshProducts()
+    } catch (error) {
+      toast.error('Admin approval failed')
     }
   }
 
@@ -108,16 +116,21 @@ const ApprovalQueue = () => {
     }
   }
 
-  const handleDelete = async (product) => {
-    if (window.confirm(`Are you sure you want to completely delete "${product.nama}"? This action cannot be undone.`)) {
-      try {
-        await productService.deleteProduct(product.id)
-        toast.success('Product deleted successfully')
-        loadProducts()
-        refreshProducts()
-      } catch (error) {
-        toast.error('Delete failed')
-      }
+  const handleDeleteClick = (product) => {
+    setSelectedProduct(product)
+    setShowDeleteModal(true)
+  }
+
+  const handleDeleteSubmit = async () => {
+    try {
+      await productService.deleteProduct(selectedProduct.id)
+      toast.success('Product deleted successfully')
+      setShowDeleteModal(false)
+      setSelectedProduct(null)
+      loadProducts()
+      refreshProducts()
+    } catch (error) {
+      toast.error('Delete failed')
     }
   }
 
@@ -188,7 +201,7 @@ const ApprovalQueue = () => {
           {row.status === 'pending' && (
             <>
               <button 
-                onClick={() => handleApprove(row)}
+                onClick={() => handleApproveClick(row)}
                 className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                 title="Approve"
               >
@@ -205,7 +218,7 @@ const ApprovalQueue = () => {
           )}
           
           <button 
-            onClick={() => handleDelete(row)}
+            onClick={() => handleDeleteClick(row)}
             className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             title="Delete"
           >
@@ -277,6 +290,90 @@ const ApprovalQueue = () => {
               onClick={handleRejectSubmit}
             >
               Confirm Rejection
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Approve Modal */}
+      <Modal
+        isOpen={showApproveModal}
+        onClose={() => {
+          setShowApproveModal(false)
+          setSelectedProduct(null)
+        }}
+        title="Approve Product"
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+            <h4 className="font-medium text-emerald-800 mb-1">You are approving:</h4>
+            <p className="text-sm text-emerald-600 font-semibold">{selectedProduct?.nama}</p>
+          </div>
+          
+          <div className="text-sm text-gray-600">
+            <p>Approving this product will make it live and visible to all buyers in the marketplace immediately.</p>
+          </div>
+          
+          <div className="flex gap-3 pt-4 border-t border-gray-100">
+            <Button 
+              variant="secondary" 
+              className="flex-1"
+              onClick={() => {
+                setShowApproveModal(false)
+                setSelectedProduct(null)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              className="flex-1"
+              onClick={handleApproveSubmit}
+            >
+              Confirm Approval
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false)
+          setSelectedProduct(null)
+        }}
+        title="Delete Product"
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="bg-red-50 p-4 rounded-xl border border-red-100">
+            <h4 className="font-medium text-red-800 mb-1">You are deleting:</h4>
+            <p className="text-sm text-red-600 font-semibold">{selectedProduct?.nama}</p>
+          </div>
+          
+          <div className="text-sm text-gray-600">
+            <p className="font-medium text-red-700">Warning: This action is permanent and cannot be undone.</p>
+            <p className="mt-1">This product and all its details will be completely removed from the marketplace database.</p>
+          </div>
+          
+          <div className="flex gap-3 pt-4 border-t border-gray-100">
+            <Button 
+              variant="secondary" 
+              className="flex-1"
+              onClick={() => {
+                setShowDeleteModal(false)
+                setSelectedProduct(null)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="danger" 
+              className="flex-1"
+              onClick={handleDeleteSubmit}
+            >
+              Confirm Delete
             </Button>
           </div>
         </div>
@@ -355,7 +452,7 @@ const ApprovalQueue = () => {
                   <Button variant="danger" className="flex-1" onClick={() => handleRejectClick(selectedProduct)}>
                     <X size={18} className="mr-2" /> Reject Product
                   </Button>
-                  <Button className="flex-1" onClick={() => handleApprove(selectedProduct)}>
+                  <Button className="flex-1" onClick={() => handleApproveClick(selectedProduct)}>
                     <CheckCircle size={18} className="mr-2" /> Approve Product
                   </Button>
                 </>

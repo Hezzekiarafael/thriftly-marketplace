@@ -65,8 +65,8 @@ const Membership = () => {
               
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
-                  <div className="text-teal-500 shrink-0 mt-0.5">
-                    <CheckCircle2 size={20} className="fill-teal-50 text-teal-600" />
+                  <div className="text-primary-500 shrink-0 mt-0.5">
+                    <CheckCircle2 size={20} className="fill-primary-50 text-primary-600" />
                   </div>
                   <p className="text-xs md:text-sm text-gray-600 leading-relaxed">
                     Dapatkan notifikasi <strong className="text-gray-900 font-semibold">detik itu juga</strong> saat barang baru lolos kurasi dan dirilis.
@@ -74,8 +74,8 @@ const Membership = () => {
                 </li>
 
                 <li className="flex items-start gap-3">
-                  <div className="text-teal-500 shrink-0 mt-0.5">
-                    <CheckCircle2 size={20} className="fill-teal-50 text-teal-600" />
+                  <div className="text-primary-500 shrink-0 mt-0.5">
+                    <CheckCircle2 size={20} className="fill-primary-50 text-primary-600" />
                   </div>
                   <p className="text-xs md:text-sm text-gray-600 leading-relaxed">
                     Tidak perlu repot scroll setiap hari, biarkan sistem kami yang mencarikan untuk Anda.
@@ -83,8 +83,8 @@ const Membership = () => {
                 </li>
 
                 <li className="flex items-start gap-3">
-                  <div className="text-teal-500 shrink-0 mt-0.5">
-                    <Zap size={20} className="text-teal-600 fill-teal-50" />
+                  <div className="text-primary-500 shrink-0 mt-0.5">
+                    <Zap size={20} className="text-primary-600 fill-primary-50" />
                   </div>
                   <p className="text-xs md:text-sm text-gray-600 leading-relaxed">
                     Selalu dapat akses barang incaran lebih dulu dibanding pembeli biasa.
@@ -98,7 +98,7 @@ const Membership = () => {
               <button 
                 onClick={handleCheckout}
                 disabled={isSubmitting}
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold py-3.5 px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 text-sm md:text-base flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-extrabold py-3.5 px-8 rounded-2xl shadow-lg hover:shadow-xl shadow-violet-500/30 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 text-sm md:text-base flex items-center justify-center gap-2"
               >
                 {isSubmitting ? 'Memproses...' : 'Lanjut Berlangganan via DOKU'}
               </button>

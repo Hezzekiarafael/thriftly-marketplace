@@ -489,7 +489,29 @@ const Profile = () => {
       return <div className="p-8 text-center text-gray-500 animate-pulse">Memuat data langganan...</div>
     }
 
-    const isActive = subscription && subscription.status !== 'pending'
+    const isActive = subscription && subscription.status === 'active'
+    const isPending = subscription && subscription.status === 'pending'
+
+    let bgClass = 'bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900'
+    let badgeClass = 'bg-white/10 text-white/60 border-white/10'
+    let badgeText = 'TIDAK AKTIF'
+    let iconBgClass = 'bg-white/10'
+    let iconTextClass = 'text-white'
+
+    if (isActive) {
+      bgClass = 'bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700'
+      badgeClass = 'bg-emerald-400/20 text-emerald-300 border-emerald-400/30'
+      badgeText = '✓ AKTIF'
+      iconBgClass = 'bg-yellow-400/20'
+      iconTextClass = 'text-yellow-300'
+    } else if (isPending) {
+      bgClass = 'bg-gradient-to-br from-amber-600 via-orange-600 to-amber-700'
+      badgeClass = 'bg-white/20 text-white font-bold border-white/30'
+      badgeText = '⏳ PENDING'
+      iconBgClass = 'bg-white/20'
+      iconTextClass = 'text-white'
+    }
+
     const expiredDate = subscription?.valid_until 
       ? dayjs(subscription.valid_until).locale('id').format('dddd, D MMMM YYYY') 
       : '-'
@@ -497,30 +519,22 @@ const Profile = () => {
     return (
       <div className="space-y-5">
         {/* Header Card */}
-        <div className={`relative overflow-hidden rounded-3xl p-6 md:p-8 text-white shadow-xl ${
-          isActive  ? 'bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700' :
-                      'bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900'
-        }`}>
+        <div className={`relative overflow-hidden rounded-3xl p-6 md:p-8 text-white shadow-xl ${bgClass}`}>
           <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full blur-xl" />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
-                  isActive ? 'bg-yellow-400/20' : 'bg-white/10'
-                }`}>
-                  <Crown className={`w-5 h-5 ${isActive ? 'text-yellow-300' : 'text-white'}`} />
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${iconBgClass}`}>
+                  <Crown className={`w-5 h-5 ${iconTextClass}`} />
                 </div>
                 <div>
                   <p className="text-white/60 text-xs font-semibold uppercase tracking-wider">Thriftly</p>
                   <h2 className="text-lg font-bold">Premium Membership</h2>
                 </div>
               </div>
-              <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
-                isActive  ? 'bg-emerald-400/20 text-emerald-300 border-emerald-400/30' :
-                            'bg-white/10 text-white/60 border-white/10'
-              }`}>
-                {isActive ? '✓ AKTIF' : 'TIDAK AKTIF'}
+              <span className={`px-3 py-1 rounded-full text-xs font-bold border ${badgeClass}`}>
+                {badgeText}
               </span>
             </div>
 
@@ -531,6 +545,10 @@ const Profile = () => {
                   <span className="font-bold text-yellow-300">{expiredDate}</span>
                 </div>
               </div>
+            ) : isPending ? (
+              <p className="text-white/90 text-sm">
+                Menunggu pembayaran. Silakan cek email Anda untuk melanjutkan pembayaran via DOKU.
+              </p>
             ) : (
               <p className="text-white/60 text-sm">
                 Anda belum terdaftar dalam membership Thriftly.
@@ -561,7 +579,7 @@ const Profile = () => {
           </div>
         </div>
 
-        {!isActive && (
+        {!isActive && !isPending && (
           <button
             onClick={handleSubscribe}
             disabled={isSubscribing}
@@ -569,6 +587,16 @@ const Profile = () => {
           >
             <Crown size={18} />
             {isSubscribing ? 'Mengirim Email...' : 'Gas Langganan Sekarang'}
+          </button>
+        )}
+        {isPending && (
+          <button
+            onClick={handleSubscribe}
+            disabled={isSubscribing}
+            className="w-full flex items-center justify-center gap-2 py-4 px-6 bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold rounded-2xl transition-all disabled:opacity-75 disabled:cursor-not-allowed"
+          >
+            <Mail size={18} />
+            {isSubscribing ? 'Mengirim Ulang...' : 'Kirim Ulang Email Pembayaran'}
           </button>
         )}
       </div>

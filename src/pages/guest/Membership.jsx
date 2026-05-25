@@ -4,7 +4,7 @@ import { ShieldCheck, CheckCircle2, Zap, Search, Bell } from 'lucide-react'
 import Header from '../../components/layout/Header'
 import Footer from '../../components/layout/Footer'
 import Container from '../../components/layout/Container'
-import { subscriptionService } from '../../services/subscriptionService'
+import { newsletterService } from '../../services/newsletterService'
 import { formatCurrency } from '../../utils/helpers'
 import toast from 'react-hot-toast'
 
@@ -15,19 +15,28 @@ const Membership = () => {
   const tokenParam = searchParams.get('token') || ''
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleProceedToDoku = () => {
+  const handleCheckout = async () => {
+    if (!emailParam || !tokenParam) {
+      toast.error('Tautan tidak valid atau telah kedaluwarsa.')
+      return
+    }
+
     setIsSubmitting(true)
-    
-    // Set status to waiting_payment
-    subscriptionService.setStatus('waiting_payment');
-    
-    toast.success('Mengalihkan ke payment gateway DOKU...', { duration: 1500 });
-    
-    setTimeout(() => {
+    try {
+      const response = await newsletterService.checkout(emailParam, tokenParam)
+      const paymentUrl = response.data?.payment_url
+
+      if (paymentUrl) {
+        // Redirect ke layar pembayaran DOKU asli
+        window.location.href = paymentUrl
+      } else {
+        toast.error('Gagal mendapatkan tautan pembayaran.')
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Gagal memproses checkout.')
+    } finally {
       setIsSubmitting(false)
-      // Redirect to simulated Doku Payment Page
-      navigate(`/simulation/doku?email=${encodeURIComponent(emailParam)}&invoice=MEMB-${Date.now()}`)
-    }, 1500)
+    }
   }
 
   return (
@@ -87,7 +96,7 @@ const Membership = () => {
             {/* CTA Action Button */}
             <div className="space-y-4 text-center">
               <button 
-                onClick={handleProceedToDoku}
+                onClick={handleCheckout}
                 disabled={isSubmitting}
                 className="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold py-3.5 px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 text-sm md:text-base flex items-center justify-center gap-2"
               >

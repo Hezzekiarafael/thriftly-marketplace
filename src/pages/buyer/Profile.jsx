@@ -6,7 +6,8 @@ import {
   Lock, CheckCircle, Plus, Edit2, AlertCircle,
   X, Upload, CreditCard, Locate, Crown, Star, Zap, Clock
 } from 'lucide-react'
-import { subscriptionService } from '../../services/subscriptionService'
+import dayjs from 'dayjs'
+import 'dayjs/locale/id'
 import { useAuth } from '../../context/AuthContext'
 import Header from '../../components/layout/Header'
 import Footer from '../../components/layout/Footer'
@@ -69,8 +70,8 @@ const Profile = () => {
   const fileInputRef = useRef(null)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const [subStatus, setSubStatus] = useState(() => subscriptionService.getStatus())
-  const [subDetail, setSubDetail] = useState(() => subscriptionService.getDetail())
+  const [subscription, setSubscription] = useState(null)
+  const [subLoading, setSubLoading] = useState(true)
 
   // Jika backend redirect ke /profile?verified=1, refresh data user otomatis
   useEffect(() => {
@@ -85,15 +86,24 @@ const Profile = () => {
     if (tab) setActiveTab(tab)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Listen perubahan status langganan
+  // Ambil data langganan
   useEffect(() => {
-    const refresh = () => {
-      setSubStatus(subscriptionService.getStatus())
-      setSubDetail(subscriptionService.getDetail())
+    const fetchSubscription = async () => {
+      if (user?.role !== 'buyer') {
+        setSubLoading(false)
+        return
+      }
+      try {
+        const res = await api.get('/user/newsletter')
+        setSubscription(res.data?.data)
+      } catch (error) {
+        console.error('Error fetching subscription:', error)
+      } finally {
+        setSubLoading(false)
+      }
     }
-    window.addEventListener('subscription_status_changed', refresh)
-    return () => window.removeEventListener('subscription_status_changed', refresh)
-  }, [])
+    fetchSubscription()
+  }, [user])
 
   // Form States
   const [profileForm, setProfileForm] = useState({
@@ -460,20 +470,13 @@ const Profile = () => {
 
   // ── Render: Tab Langganan ───────────────────────────────────────────────────
   const renderSubscriptionTab = () => {
-    const isActive  = subStatus === 'active'
-    const isPending = subStatus === 'pending'
-    const isNone    = subStatus === 'none' || !subStatus
+    if (subLoading) {
+      return <div className="p-8 text-center text-gray-500 animate-pulse">Memuat data langganan...</div>
+    }
 
-    const expiredDate = subDetail?.expiredAt
-      ? new Date(subDetail.expiredAt).toLocaleDateString('id-ID', {
-          day: 'numeric', month: 'long', year: 'numeric',
-        })
-      : '-'
-
-    const activatedDate = subDetail?.activatedAt
-      ? new Date(subDetail.activatedAt).toLocaleDateString('id-ID', {
-          day: 'numeric', month: 'long', year: 'numeric',
-        })
+    const isActive = subscription && subscription.status !== 'pending'
+    const expiredDate = subscription?.valid_until 
+      ? dayjs(subscription.valid_until).locale('id').format('dddd, D MMMM YYYY') 
       : '-'
 
     return (
@@ -481,7 +484,6 @@ const Profile = () => {
         {/* Header Card */}
         <div className={`relative overflow-hidden rounded-3xl p-6 md:p-8 text-white shadow-xl ${
           isActive  ? 'bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700' :
-          isPending ? 'bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600' :
                       'bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900'
         }`}>
           <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/5 rounded-full blur-2xl" />
@@ -490,7 +492,7 @@ const Profile = () => {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
-                  isActive ? 'bg-yellow-400/20' : isPending ? 'bg-white/20' : 'bg-white/10'
+                  isActive ? 'bg-yellow-400/20' : 'bg-white/10'
                 }`}>
                   <Crown className={`w-5 h-5 ${isActive ? 'text-yellow-300' : 'text-white'}`} />
                 </div>
@@ -501,50 +503,22 @@ const Profile = () => {
               </div>
               <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
                 isActive  ? 'bg-emerald-400/20 text-emerald-300 border-emerald-400/30' :
-                isPending ? 'bg-white/20 text-white border-white/30 animate-pulse' :
                             'bg-white/10 text-white/60 border-white/10'
               }`}>
-                {isActive ? '✓ AKTIF' : isPending ? '⏳ MENUNGGU PEMBAYARAN' : 'TIDAK AKTIF'}
+                {isActive ? '✓ AKTIF' : 'TIDAK AKTIF'}
               </span>
             </div>
 
-            {isActive && (
+            {isActive ? (
               <div className="bg-white/10 backdrop-blur rounded-2xl p-4 space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-white/60">Aktif sejak</span>
-                  <span className="font-semibold">{activatedDate}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/60">Berlaku hingga</span>
+                  <span className="text-white/60">Berakhir Pada</span>
                   <span className="font-bold text-yellow-300">{expiredDate}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-white/60">Invoice</span>
-                  <span className="font-mono text-xs">{subDetail?.invoiceId}</span>
-                </div>
               </div>
-            )}
-
-            {isPending && (
-              <div className="bg-white/10 backdrop-blur rounded-2xl p-4 space-y-2 text-sm">
-                <div className="flex items-center gap-2 text-white/80">
-                  <Clock className="w-4 h-4 text-amber-200" />
-                  <span>Pembayaran belum diselesaikan.</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/60">Invoice</span>
-                  <span className="font-mono text-xs">{subDetail?.invoiceId}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/60">Total</span>
-                  <span className="font-bold">Rp {(subDetail?.amount || 50000).toLocaleString('id-ID')}</span>
-                </div>
-              </div>
-            )}
-
-            {isNone && (
+            ) : (
               <p className="text-white/60 text-sm">
-                Kamu belum berlangganan. Aktifkan sekarang dan nikmati keuntungan Premium!
+                Anda belum terdaftar dalam membership Thriftly.
               </p>
             )}
           </div>
@@ -572,46 +546,15 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* CTA Buttons */}
-        {isPending && (
+        {!isActive && (
           <Link
-            to={`/subscription/payment?invoice=${subDetail?.invoiceId}`}
-            className="w-full flex items-center justify-center gap-2 py-4 px-6 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold rounded-2xl shadow-lg shadow-amber-200 transition-all"
-          >
-            <CreditCard size={18} />
-            Selesaikan Pembayaran
-          </Link>
-        )}
-        {isNone && (
-          <button
-            onClick={() => {
-              subscriptionService.requestSubscription(user.email)
-              subscriptionService.addSubscriptionEmail(user.email)
-              setSubStatus('pending')
-              setSubDetail(subscriptionService.getDetail())
-              toast.success('Cek email kamu ya! Link pembayaran sudah kami kirim 📬')
-            }}
+            to="/"
             className="w-full flex items-center justify-center gap-2 py-4 px-6 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-lg shadow-violet-200 transition-all"
           >
             <Crown size={18} />
-            Aktifkan Langganan Premium
-          </button>
+            Gas Langganan Sekarang
+          </Link>
         )}
-        {isActive && (
-          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-sm text-emerald-700 flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 shrink-0" />
-            Langganan kamu aktif hingga <strong className="ml-1">{expiredDate}</strong>
-          </div>
-        )}
-
-        {/* Link ke inbox simulasi */}
-        <Link
-          to="/simulation/mailbox"
-          className="flex items-center justify-center gap-2 text-sm text-primary-600 hover:text-primary-800 font-medium transition-colors"
-        >
-          <Mail size={14} />
-          Lihat email langganan di Inbox Simulasi
-        </Link>
       </div>
     )
   }
@@ -1446,11 +1389,8 @@ const Profile = () => {
                         activeTab === 'subscription' ? 'text-violet-600' : 'text-gray-400'
                       }`} />
                       <span className="font-semibold text-xs md:text-sm lg:text-base">Langganan</span>
-                      {subStatus === 'active' && (
+                      {subscription && subscription.status !== 'pending' && (
                         <span className="ml-1 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded-full uppercase">Aktif</span>
-                      )}
-                      {subStatus === 'pending' && (
-                        <span className="ml-1 px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[9px] font-bold rounded-full uppercase animate-pulse">Pending</span>
                       )}
                     </div>
                     {activeTab === 'subscription' ? (

@@ -69,7 +69,7 @@ const Profile = () => {
   const [resending, setResending] = useState(false)
   const [verifyingPhone, setVerifyingPhone] = useState(false)
   const fileInputRef = useRef(null)
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
   const [subscription, setSubscription] = useState(null)
   const [subLoading, setSubLoading] = useState(true)
@@ -85,8 +85,23 @@ const Profile = () => {
     }
     // Handle tab dari URL query
     const tab = searchParams.get('tab')
-    if (tab) setActiveTab(tab)
+    const validTabs = ['profile', 'address', 'rekening', 'security', 'subscription']
+    
+    if (tab === 'newsletter') {
+      setActiveTab('subscription')
+      setSearchParams({ tab: 'subscription' }, { replace: true })
+    } else if (tab && validTabs.includes(tab)) {
+      setActiveTab(tab)
+    } else if (tab) {
+      setActiveTab('profile')
+      setSearchParams({ tab: 'profile' }, { replace: true })
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab)
+    setSearchParams({ tab }, { replace: true })
+  }
 
   // Ambil data langganan
   useEffect(() => {
@@ -1349,7 +1364,7 @@ const Profile = () => {
             <aside className="lg:col-span-3">
               <nav className="bg-white rounded-2xl md:rounded-3xl p-1.5 md:p-2 lg:p-4 shadow-sm md:shadow-soft-lg border border-gray-100 flex flex-row lg:flex-col gap-1 overflow-x-auto hide-scrollbar">
                 <button
-                  onClick={() => setActiveTab('profile')}
+                  onClick={() => handleTabChange('profile')}
                   className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-2.5 md:p-3 lg:p-4 rounded-xl lg:rounded-2xl transition-all group ${
                     activeTab === 'profile' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-500'
                   }`}
@@ -1366,7 +1381,7 @@ const Profile = () => {
                 </button>
 
                 <button
-                  onClick={() => setActiveTab('address')}
+                  onClick={() => handleTabChange('address')}
                   className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-2.5 md:p-3 lg:p-4 rounded-xl lg:rounded-2xl transition-all group ${
                     activeTab === 'address' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-500'
                   }`}
@@ -1384,7 +1399,7 @@ const Profile = () => {
 
                 {user?.role === 'seller' && (
                   <button
-                    onClick={() => setActiveTab('rekening')}
+                    onClick={() => handleTabChange('rekening')}
                     className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-2.5 md:p-3 lg:p-4 rounded-xl lg:rounded-2xl transition-all group ${
                       activeTab === 'rekening' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-500'
                     }`}
@@ -1402,7 +1417,7 @@ const Profile = () => {
                 )}
 
                 <button
-                  onClick={() => setActiveTab('security')}
+                  onClick={() => handleTabChange('security')}
                   className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-2.5 md:p-3 lg:p-4 rounded-xl lg:rounded-2xl transition-all group ${
                     activeTab === 'security' ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-500'
                   }`}
@@ -1421,7 +1436,7 @@ const Profile = () => {
                 {/* Langganan - hanya untuk buyer */}
                 {user?.role === 'buyer' && (
                   <button
-                    onClick={() => setActiveTab('subscription')}
+                    onClick={() => handleTabChange('subscription')}
                     className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-2.5 md:p-3 lg:p-4 rounded-xl lg:rounded-2xl transition-all group ${
                       activeTab === 'subscription'
                         ? 'bg-violet-50 text-violet-700'

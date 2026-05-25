@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { userService } from '../../services/userService'
 import { complaintService } from '../../services/complaintService'
+import { productService } from '../../services/productService'
+import { Package } from 'lucide-react'
 
 const AdminHeader = () => {
   const { user, logout } = useAuth()
@@ -11,6 +13,7 @@ const AdminHeader = () => {
   const [showDropdown, setShowDropdown] = useState(false)
   const [pendingSellers, setPendingSellers] = useState([])
   const [openComplaints, setOpenComplaints] = useState([])
+  const [pendingProducts, setPendingProducts] = useState([])
   const [showNotifications, setShowNotifications] = useState(false)
 
   useEffect(() => {
@@ -24,6 +27,9 @@ const AdminHeader = () => {
         const allComplaints = complaintService.getAllComplaints()
         const open = allComplaints.filter(c => c.status === 'open')
         setOpenComplaints(open)
+
+        const pProducts = await productService.getPendingProducts()
+        setPendingProducts(pProducts)
       } catch (error) {
         console.error('Failed to load notifications:', error)
       }
@@ -61,7 +67,7 @@ const AdminHeader = () => {
             className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-full hover:bg-gray-100"
           >
             <Bell size={20} />
-            {(pendingSellers.length > 0 || openComplaints.length > 0) && (
+            {(pendingSellers.length > 0 || openComplaints.length > 0 || pendingProducts.length > 0) && (
               <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
             )}
           </button>
@@ -75,16 +81,36 @@ const AdminHeader = () => {
               <div className="absolute right-0 mt-3 w-80 bg-white rounded-3xl shadow-xl border border-gray-100 p-4 z-50 animate-in fade-in slide-in-from-top-4 duration-200">
                 <div className="flex justify-between items-center mb-4 border-b border-gray-50 pb-2">
                   <h4 className="font-bold text-gray-900 text-sm">Notifikasi</h4>
-                  {(pendingSellers.length > 0 || openComplaints.length > 0) && (
+                  {(pendingSellers.length > 0 || openComplaints.length > 0 || pendingProducts.length > 0) && (
                     <span className="bg-indigo-50 text-indigo-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      {pendingSellers.length + openComplaints.length} Baru
+                      {pendingSellers.length + openComplaints.length + pendingProducts.length} Baru
                     </span>
                   )}
                 </div>
 
                 <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {(pendingSellers.length > 0 || openComplaints.length > 0) ? (
+                  {(pendingSellers.length > 0 || openComplaints.length > 0 || pendingProducts.length > 0) ? (
                     <>
+                      {pendingProducts.map(product => (
+                        <div 
+                          key={`p-${product.id}`}
+                          onClick={() => {
+                            setShowNotifications(false)
+                            navigate('/admin/approval')
+                          }}
+                          className="flex gap-3 p-3 rounded-2xl hover:bg-gray-50 transition-colors cursor-pointer text-left"
+                        >
+                          <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0 border border-blue-100">
+                            <Package size={18} />
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-gray-900">Produk Menunggu Approval</p>
+                            <p className="text-[11px] text-gray-500 mt-0.5">{product.nama}</p>
+                            <span className="text-[10px] font-semibold text-blue-600 hover:text-blue-800 mt-1 block">Klik untuk review</span>
+                          </div>
+                        </div>
+                      ))}
+
                       {openComplaints.map(complaint => (
                         <div 
                           key={`c-${complaint.id}`}
@@ -132,7 +158,7 @@ const AdminHeader = () => {
                   )}
                 </div>
 
-                {(pendingSellers.length > 0 || openComplaints.length > 0) && (
+                {(pendingSellers.length > 0 || openComplaints.length > 0 || pendingProducts.length > 0) && (
                   <button 
                     onClick={() => {
                       setShowNotifications(false)

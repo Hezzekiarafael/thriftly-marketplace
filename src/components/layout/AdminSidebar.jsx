@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { complaintService } from '../../services/complaintService'
 import { useApp } from '../../context/AppContext'
 import { 
   LayoutDashboard, 
@@ -58,7 +59,19 @@ const BOTTOM_NAV_LIMIT = 4
 const AdminSidebar = () => {
   const location = useLocation()
   const [showMore, setShowMore] = useState(false)
+  const [openComplaintsCount, setOpenComplaintsCount] = useState(0)
   const { pendingCount } = useApp()
+
+  useEffect(() => {
+    const fetchComplaints = () => {
+      const allComplaints = complaintService.getAllComplaints()
+      const open = allComplaints.filter(c => c.status === 'open')
+      setOpenComplaintsCount(open.length)
+    }
+    fetchComplaints()
+    const interval = setInterval(fetchComplaints, 10000)
+    return () => clearInterval(interval)
+  }, [])
 
   const isActive = (path) =>
     location.pathname === path ||
@@ -107,6 +120,11 @@ const AdminSidebar = () => {
                       {pendingCount}
                     </span>
                   )}
+                  {item.title === 'Komplain' && openComplaintsCount > 0 && (
+                    <span className="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center shadow-lg animate-pulse">
+                      {openComplaintsCount}
+                    </span>
+                  )}
                 </Link>
               )
             })}
@@ -141,6 +159,11 @@ const AdminSidebar = () => {
                     {pendingCount}
                   </span>
                 )}
+                {item.title === 'Komplain' && openComplaintsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-white text-[9px] flex items-center justify-center rounded-full border-2 border-slate-900 font-bold">
+                    {openComplaintsCount}
+                  </span>
+                )}
               </div>
               <span className={`text-[10px] leading-none ${active ? 'font-semibold' : 'font-medium'}`}>
                 {item.title}
@@ -163,9 +186,12 @@ const AdminSidebar = () => {
               moreItems.some(i => isActive(i.path)) ? 'bg-indigo-500/20' : ''
             }`}>
               <MoreHorizontal size={20} />
-              {moreItems.some(i => i.title === 'Approval') && pendingCount > 0 && (
+              {(
+                (moreItems.some(i => i.title === 'Approval') && pendingCount > 0) ||
+                (moreItems.some(i => i.title === 'Komplain') && openComplaintsCount > 0)
+              ) && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[9px] flex items-center justify-center rounded-full border-2 border-slate-900 font-bold">
-                  {pendingCount}
+                  !
                 </span>
               )}
             </div>
@@ -212,7 +238,17 @@ const AdminSidebar = () => {
                     <div className={`${active ? 'text-indigo-400' : 'text-slate-400'}`}>
                       <Icon size={20} />
                     </div>
-                    <span className="text-sm">{item.title}</span>
+                    <span className="text-sm flex-1">{item.title}</span>
+                    {item.title === 'Approval' && pendingCount > 0 && (
+                      <span className="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center shadow-lg">
+                        {pendingCount}
+                      </span>
+                    )}
+                    {item.title === 'Komplain' && openComplaintsCount > 0 && (
+                      <span className="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center shadow-lg">
+                        {openComplaintsCount}
+                      </span>
+                    )}
                   </Link>
                 )
               })}

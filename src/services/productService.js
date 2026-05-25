@@ -14,7 +14,7 @@ const toBackendCondition = (id) => CONDITION_TO_BACKEND[id] || 'Bekas - Bagus';
 export const mapLaravelProduct = (p) => {
   if (!p) return null;
   const name = p.name || p.nama || p.product_name || p.nama_produk || 'Produk';
-  const price = p.price || p.harga || p.harga_final || 0;
+  const price = Math.round(Number(p.price || p.harga || p.harga_final || 0));
   const sellerId = p.user_id || p.seller_id || p.sellerId || 2;
 
   // Normalisasi kondisi agar sesuai dengan ID di CONDITIONS (like-new, bagus, oke)
@@ -37,7 +37,7 @@ export const mapLaravelProduct = (p) => {
     tipeJual: 'titip',
     opsiHarga: 'sendiri',
     nama: name,
-    harga: Number(price),
+    harga: price,
     hargaLama: null,
     kategori: p.category || p.kategori,
     kondisi: rawKondisi,
@@ -167,7 +167,7 @@ export const productService = {
       // Mapping untuk backend format jika berbeda
       const payload = {
         name: productData.nama,
-        price: productData.harga,
+        price: Math.round(Number(productData.harga)),
         category: productData.kategori,
         description: productData.deskripsi,
         location: productData.lokasi,
@@ -192,7 +192,7 @@ export const productService = {
       // Jika updates pakai format React, kita map ke format Laravel
       const payload = { ...updates };
       if (updates.nama) payload.name = updates.nama;
-      if (updates.harga) payload.price = updates.harga;
+      if (updates.harga) payload.price = Math.round(Number(updates.harga));
       if (updates.kategori) payload.category = updates.kategori;
       if (updates.deskripsi) payload.description = updates.deskripsi;
       if (updates.lokasi) payload.location = updates.lokasi;

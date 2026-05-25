@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-hot-toast';
-import { Loader2 } from 'lucide-react';
+import PageSkeleton from '../../components/common/PageSkeleton';
 
 const LoginSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -54,17 +54,7 @@ const LoginSuccess = () => {
     handleCallback();
   }, [searchParams, navigate, refreshUser]);
 
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
-      <div className="flex flex-col items-center gap-4">
-        <Loader2 className="w-12 h-12 text-primary-600 animate-spin" />
-        <div className="text-center">
-          <h2 className="text-xl font-bold text-gray-900">Memproses Login...</h2>
-          <p className="text-gray-500 mt-1 text-sm">Mohon tunggu sebentar, Anda akan segera dialihkan.</p>
-        </div>
-      </div>
-    </div>
-  );
+  return <PageSkeleton />;
 };
 
 export default LoginSuccess;

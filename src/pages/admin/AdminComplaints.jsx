@@ -70,11 +70,12 @@ const AdminComplaints = () => {
     }
   }
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (row) => {
+    const status = row.status
     const styles = {
-      open: 'bg-amber-100 text-amber-700 border-amber-200',
-      in_progress: 'bg-blue-100 text-blue-700 border-blue-200',
-      resolved: 'bg-emerald-100 text-emerald-700 border-emerald-200'
+      open: 'bg-amber-100 text-amber-700 border-amber-200 cursor-pointer hover:bg-amber-200 transition-colors',
+      in_progress: 'bg-blue-100 text-blue-700 border-blue-200 cursor-pointer hover:bg-blue-200 transition-colors',
+      resolved: 'bg-emerald-100 text-emerald-700 border-emerald-200 cursor-pointer hover:bg-emerald-200 transition-colors'
     }
     const labels = {
       open: 'Open',
@@ -82,9 +83,12 @@ const AdminComplaints = () => {
       resolved: 'Resolved'
     }
     return (
-      <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${styles[status]}`}>
+      <button 
+        onClick={() => handleOpenModal(row)}
+        className={`px-3 py-1.5 text-xs font-semibold rounded-full border shadow-sm ${styles[status]}`}
+      >
         {labels[status]}
-      </span>
+      </button>
     )
   }
 
@@ -121,7 +125,7 @@ const AdminComplaints = () => {
     {
       header: 'Status',
       accessor: 'status',
-      render: (row) => getStatusBadge(row.status)
+      render: (row) => getStatusBadge(row)
     },
     {
       header: 'Actions',

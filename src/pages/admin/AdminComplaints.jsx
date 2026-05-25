@@ -23,16 +23,18 @@ const AdminComplaints = () => {
     loadComplaints()
   }, [])
 
-  const loadComplaints = () => {
+  const loadComplaints = async () => {
     const allComplaints = complaintService.getAllComplaints()
     // Enrich with user data
-    const enriched = allComplaints.map(c => {
-      const user = userService.getUserById(c.userId)
+    const enriched = await Promise.all(allComplaints.map(async c => {
+      const user = await userService.getUserById(c.userId)
       return {
         ...c,
-        userName: user?.profile?.nama || user?.email || 'Unknown User'
+        userName: user?.name || user?.profile?.nama || user?.email || 'Unknown User'
       }
-    }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    }))
+    
+    enriched.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     
     setComplaints(enriched)
   }

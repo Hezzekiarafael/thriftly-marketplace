@@ -14,6 +14,7 @@ import toast from 'react-hot-toast'
 import axios from 'axios'
 import { useEffect } from 'react'
 import { reverseGeocode } from '../../utils/geolocation'
+import BuyerDashboardSkeleton from '../../components/common/BuyerDashboardSkeleton'
 
 // Perbaikan bug icon marker default di React Leaflet dengan Vite
 delete L.Icon.Default.prototype._getIconUrl
@@ -70,15 +71,7 @@ const BuyerDashboard = () => {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Header />
-        <Container className="flex-grow flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-        </Container>
-        <Footer />
-      </div>
-    )
+    return <BuyerDashboardSkeleton />
   }
 
   return (

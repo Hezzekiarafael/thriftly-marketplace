@@ -2,7 +2,9 @@ import { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-hot-toast';
-import PageSkeleton from '../../components/common/PageSkeleton';
+import BuyerDashboardSkeleton from '../../components/common/BuyerDashboardSkeleton';
+
+
 
 const LoginSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -54,7 +56,7 @@ const LoginSuccess = () => {
     handleCallback();
   }, [searchParams, navigate, refreshUser]);
 
-  return <PageSkeleton />;
+  return <BuyerDashboardSkeleton />;
 };
 
 export default LoginSuccess;

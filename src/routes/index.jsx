@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { Loader2 } from 'lucide-react'
 import PageSkeleton from '../components/common/PageSkeleton'
 import AdminPageSkeleton from '../components/common/AdminPageSkeleton'
+import BuyerDashboardSkeleton from '../components/common/BuyerDashboardSkeleton'
 
 // ── Eager load: hanya halaman publik utama ────────────────────────────────────
 import Homepage from '../pages/guest/Homepage'
@@ -68,6 +69,10 @@ const PageLoader = () => {
   
   if (location.pathname.startsWith('/admin')) {
     return <AdminPageSkeleton />
+  }
+  
+  if (location.pathname === '/buyer/dashboard' || location.pathname === '/login-success') {
+    return <BuyerDashboardSkeleton />
   }
   
   return <PageSkeleton />

@@ -253,7 +253,7 @@ export const userService = {
   },
 
   async sendOtp(email, noTelp) {
-    console.log('Sending OTP Request (Trying Multiple Phone Fields):', { noTelp });
+
     try {
       const response = await api.post('/otp/send', { 
         // Kita tidak kirim email agar tidak lari ke email
@@ -262,7 +262,7 @@ export const userService = {
         number: noTelp,
         whatsapp: noTelp
       });
-      console.log('OTP Send Response:', response.data);
+
       return response.data;
     } catch (error) {
       console.error('OTP Send Error Response:', error.response?.data || error.message);
@@ -271,13 +271,13 @@ export const userService = {
   },
 
   async verifyOtp(email, noTelp, otpCode) {
-    console.log('Verifying OTP (Backend Fixed):', { no_telp: noTelp, code: otpCode });
+
     try {
       const response = await api.post('/otp/verify', { 
         no_telp: noTelp,
         code: otpCode
       });
-      console.log('OTP Verify Success Response:', response.data);
+
       return response.data;
     } catch (error) {
       console.error('OTP Verify Error:', error.response?.data || error.message);

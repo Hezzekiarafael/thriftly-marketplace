@@ -45,7 +45,7 @@ export const AppProvider = ({ children }) => {
     if (user) {
       try {
         const count = await messageService.getUnreadCount(user.id)
-        console.log('UNREAD COUNT STATE:', count);
+
         setUnreadCount(count)
       } catch (error) {
         console.error('Failed to refresh unread count', error)

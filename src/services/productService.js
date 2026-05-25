@@ -19,12 +19,6 @@ export const mapLaravelProduct = (p) => {
 
   // Normalisasi kondisi agar sesuai dengan ID di CONDITIONS (like-new, bagus, oke)
   const rawValue = p.condition || p.kondisi || p.product_condition || p.status_barang || null;
-  // DEBUG: Lihat apa yang dikirim backend untuk kondisi
-  if (rawValue !== null) {
-    console.log(`[DEBUG Product ${p.id}] condition raw =`, rawValue, '→ slug:', String(rawValue).toLowerCase().trim());
-  } else {
-    console.warn(`[DEBUG Product ${p.id}] TIDAK ADA field condition dari API!`);
-  }
   const slug = String(rawValue || 'bagus').toLowerCase().trim();
 
   let rawKondisi = 'bagus'; // default
@@ -35,7 +29,6 @@ export const mapLaravelProduct = (p) => {
   } else if (slug.includes('bagus') || slug.includes('good')) {
     rawKondisi = 'bagus';
   }
-  console.log(`[DEBUG Product ${p.id}] kondisi mapped =`, rawKondisi);
 
 
   return {
@@ -81,18 +74,19 @@ export const productService = {
   },
 
 
-  async getBUProducts() {
+  async getBUProducts(limit = 8) {
     if (import.meta.env.VITE_USE_MOCK_API === 'true') {
       const localProducts = storage.get(STORAGE_KEYS.PRODUCTS) || []
-      return localProducts.filter(p => p.isBU === true)
+      return localProducts.filter(p => p.isBU === true).slice(0, limit)
     }
 
     try {
-      const response = await api.get('/products')
+      // Tambahkan parameter limit dan is_bu agar backend bisa membatasi query jika mendukung
+      const response = await api.get('/products', { params: { is_bu: 1, limit } })
       const products = response.data.data || response.data || []
       const mapped = products.map(mapLaravelProduct)
       // Asumsi backend punya properti isBU atau kita filter manual
-      return mapped.filter(p => p.isBU === true)
+      return mapped.filter(p => p.isBU === true).slice(0, limit)
     } catch (error) {
       console.error('Failed to get BU products', error)
       return []
@@ -106,7 +100,8 @@ export const productService = {
     }
 
     try {
-      const response = await api.get('/products')
+      // Tambahkan parameter limit dan sort agar backend bisa membatasi query jika mendukung
+      const response = await api.get('/products', { params: { limit, sort: 'latest' } })
       let products = response.data.data || response.data || []
       const mapped = products.map(mapLaravelProduct)
       return mapped.slice(0, limit)

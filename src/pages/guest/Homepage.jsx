@@ -16,6 +16,7 @@ import { newsletterService } from '../../services/newsletterService'
 import { subscriptionService } from '../../services/subscriptionService'
 import { useAuth } from '../../context/AuthContext'
 import { toast } from 'react-hot-toast'
+import api from '../../services/api'
 
 // ── Daftar gambar slide hero ──────────────────────────────────────────────────
 const HERO_SLIDES = [
@@ -48,6 +49,7 @@ const Homepage = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [isSubscribing, setIsSubscribing] = useState(false)
+  const [isSubscribed, setIsSubscribed] = useState(false)
   const [activeSlide, setActiveSlide] = useState(0)
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [loadingBlog, setLoadingBlog] = useState(true)
@@ -55,6 +57,23 @@ const Homepage = () => {
   const categoriesRef = useRef(null)
   const blogRef = useRef(null)
   const categories = getCategories()
+
+  // Cek status langganan saat komponen dimuat
+  useEffect(() => {
+    if (user) {
+      const checkSubscription = async () => {
+        try {
+          const res = await api.get('/user/newsletter')
+          if (res.data?.data?.status === 'active') {
+            setIsSubscribed(true)
+          }
+        } catch (error) {
+          console.error("Gagal mengecek status langganan", error)
+        }
+      }
+      checkSubscription()
+    }
+  }, [user])
 
   const scrollCarousel = (direction) => {
     if (!carouselRef.current) return
@@ -128,25 +147,18 @@ const Homepage = () => {
 
   const handleSubscribe = async (e) => {
     if (e?.preventDefault) e.preventDefault()
-    // Jika belum login → alert
     if (!user) {
-      toast.error('Anda belum login. Silakan login terlebih dahulu untuk berlangganan.', {
-        duration: 4000,
-        icon: '🔒',
-      })
+      toast.error('Silakan login terlebih dahulu untuk berlangganan.', { duration: 4000, icon: '🔒' })
+      navigate('/login')
       return
     }
-    // Jika buyer: tidak butuh email input, pakai email dari akun
+    
     setIsSubscribing(true)
     try {
-      await subscriptionService.requestSubscription(user.email)
-      subscriptionService.addSubscriptionEmail(user.email)
-      toast.success('Cek email kamu ya! Link pembayaran sudah kami kirim 📬', {
-        duration: 5000,
-      })
-      setNewsletterEmail('')
+      const response = await newsletterService.subscribe(user.email)
+      toast.success(response.data?.message || 'Cek email Anda untuk konfirmasi langganan!')
     } catch (error) {
-      toast.error(error.message || 'Gagal berlangganan. Coba lagi.')
+      toast.error(error.response?.data?.message || 'Gagal memproses langganan.')
     } finally {
       setIsSubscribing(false)
     }
@@ -349,47 +361,52 @@ const Homepage = () => {
               : 'Langganan newsletter kita biar nggak ketinggalan update barang-barang premium yang baru masuk.'}
           </p>
 
-          {/* Guest: tampilkan form email */}
-          {!user && (
-            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 md:gap-3 max-w-lg mx-auto p-1.5 md:p-2 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl">
-              <input
-                type="email"
-                value={newsletterEmail}
-                onChange={(e) => setNewsletterEmail(e.target.value)}
-                placeholder="Masukin email kamu"
-                required
-                disabled={isSubscribing}
-                className="flex-1 px-4 md:px-5 py-2.5 md:py-3.5 rounded-xl bg-transparent text-white text-sm md:text-base placeholder-gray-500 focus:outline-none transition-all"
-              />
-              <Button
-                type="submit"
-                size="md"
-                loading={isSubscribing}
-                className="rounded-xl whitespace-nowrap bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 border-none shadow-lg shadow-primary-950/20 text-sm md:text-base py-2.5 md:py-3.5"
-              >
-                Gas Langganan
-              </Button>
-            </form>
-          )}
+          {/* Tampilkan kotak penawaran langganan HANYA JIKA isSubscribed = false */}
+          {!isSubscribed && (
+            <>
+              {/* Guest: tampilkan form email */}
+              {!user && (
+                <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 md:gap-3 max-w-lg mx-auto p-1.5 md:p-2 bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl">
+                  <input
+                    type="email"
+                    value={newsletterEmail}
+                    onChange={(e) => setNewsletterEmail(e.target.value)}
+                    placeholder="Masukin email kamu"
+                    required
+                    disabled={isSubscribing}
+                    className="flex-1 px-4 md:px-5 py-2.5 md:py-3.5 rounded-xl bg-transparent text-white text-sm md:text-base placeholder-gray-500 focus:outline-none transition-all"
+                  />
+                  <Button
+                    type="submit"
+                    size="md"
+                    loading={isSubscribing}
+                    className="rounded-xl whitespace-nowrap bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 border-none shadow-lg shadow-primary-950/20 text-sm md:text-base py-2.5 md:py-3.5"
+                  >
+                    Gas Langganan
+                  </Button>
+                </form>
+              )}
 
-          {/* Buyer (logged in): hanya tampilkan tombol tanpa form email */}
-          {user && (
-            <div className="flex flex-col items-center gap-4">
-              <Button
-                onClick={handleSubscribe}
-                size="lg"
-                loading={isSubscribing}
-                className="rounded-2xl px-10 py-4 bg-gradient-to-r from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700 border-none shadow-xl shadow-violet-950/30 text-base font-bold"
-              >
-                🚀 Gas Langganan Premium
-              </Button>
-              <p className="text-gray-500 text-xs">
-                Sudah berlangganan?{' '}
-                <a href="/profile?tab=subscription" className="text-primary-400 hover:text-primary-300 underline underline-offset-2 transition-colors">
-                  Cek status langganan kamu
-                </a>
-              </p>
-            </div>
+              {/* Buyer (logged in): hanya tampilkan tombol tanpa form email */}
+              {user && (
+                <div className="flex flex-col items-center gap-4">
+                  <Button
+                    onClick={handleSubscribe}
+                    size="lg"
+                    loading={isSubscribing}
+                    className="rounded-2xl px-10 py-4 bg-gradient-to-r from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700 border-none shadow-xl shadow-violet-950/30 text-base font-bold"
+                  >
+                    🚀 Gas Langganan Premium
+                  </Button>
+                  <p className="text-gray-500 text-xs">
+                    Sudah berlangganan?{' '}
+                    <a href="/profile?tab=subscription" className="text-primary-400 hover:text-primary-300 underline underline-offset-2 transition-colors">
+                      Cek status langganan kamu
+                    </a>
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

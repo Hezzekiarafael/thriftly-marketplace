@@ -1,17 +1,20 @@
-import api from './api';
+import api from './api'
 
 export const newsletterService = {
-  async subscribe(email) {
-    try {
-      // Mengirim data email ke tabel newsletters di backend
-      const response = await api.post('/newsletters', { email });
-      return response.data;
-    } catch (error) {
-      // Ambil pesan error dari backend jika ada (misal: "Email sudah terdaftar")
-      const serverMessage = error.response?.data?.message;
-      const customError = new Error(serverMessage || 'Gagal berlangganan');
-      customError.status = error.response?.status;
-      throw customError;
-    }
+  // Pendaftaran awal langganan (dikirim ke email)
+  subscribe(email) {
+    const frontendUrl = window.location.origin
+    return api.post('/newsletter/subscribe', { email, frontend_url: frontendUrl })
+  },
+
+  // Membuka halaman checkout DOKU
+  checkout(email, token) {
+    const frontendUrl = window.location.origin
+    return api.post('/newsletter/checkout', { email, token, frontend_url: frontendUrl })
+  },
+
+  // Mendapatkan semua subscriber (Khusus Admin Dashboard)
+  getAll() {
+    return api.get('/admin/newsletters')
   }
-};
+}

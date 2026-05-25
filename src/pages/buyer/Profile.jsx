@@ -16,6 +16,7 @@ import Button from '../../components/common/Button'
 import { toast } from 'react-hot-toast'
 import api from '../../services/api'
 import { userService } from '../../services/userService'
+import { newsletterService } from '../../services/newsletterService'
 
 import Modal from '../../components/common/Modal'
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet'
@@ -72,6 +73,7 @@ const Profile = () => {
   const navigate = useNavigate()
   const [subscription, setSubscription] = useState(null)
   const [subLoading, setSubLoading] = useState(true)
+  const [isSubscribing, setIsSubscribing] = useState(false)
 
   // Jika backend redirect ke /profile?verified=1, refresh data user otomatis
   useEffect(() => {
@@ -469,6 +471,19 @@ const Profile = () => {
   }
 
   // ── Render: Tab Langganan ───────────────────────────────────────────────────
+  const handleSubscribe = async () => {
+    if (!user) return
+    setIsSubscribing(true)
+    try {
+      const response = await newsletterService.subscribe(user.email)
+      toast.success(response.data?.message || 'Cek email kamu ya! Link pembayaran sudah kami kirim 📬')
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Gagal mengirim email langganan')
+    } finally {
+      setIsSubscribing(false)
+    }
+  }
+
   const renderSubscriptionTab = () => {
     if (subLoading) {
       return <div className="p-8 text-center text-gray-500 animate-pulse">Memuat data langganan...</div>
@@ -547,13 +562,14 @@ const Profile = () => {
         </div>
 
         {!isActive && (
-          <Link
-            to="/"
-            className="w-full flex items-center justify-center gap-2 py-4 px-6 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-lg shadow-violet-200 transition-all"
+          <button
+            onClick={handleSubscribe}
+            disabled={isSubscribing}
+            className="w-full flex items-center justify-center gap-2 py-4 px-6 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-lg shadow-violet-200 transition-all disabled:opacity-75 disabled:cursor-not-allowed"
           >
             <Crown size={18} />
-            Gas Langganan Sekarang
-          </Link>
+            {isSubscribing ? 'Mengirim Email...' : 'Gas Langganan Sekarang'}
+          </button>
         )}
       </div>
     )

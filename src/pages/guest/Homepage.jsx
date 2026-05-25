@@ -5,6 +5,8 @@ import Header from '../../components/layout/Header'
 import Footer from '../../components/layout/Footer'
 import Container from '../../components/layout/Container'
 import ProductCard from '../../components/common/ProductCard'
+import ProductCardSkeleton from '../../components/common/ProductCardSkeleton'
+import BlogCardSkeleton from '../../components/common/BlogCardSkeleton'
 import Button from '../../components/common/Button'
 import { productService } from '../../services/productService'
 import { blogService } from '../../services/blogService'
@@ -46,6 +48,7 @@ const Homepage = () => {
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [isSubscribing, setIsSubscribing] = useState(false)
   const [activeSlide, setActiveSlide] = useState(0)
+  const [loadingProducts, setLoadingProducts] = useState(true)
   const [loadingBlog, setLoadingBlog] = useState(true)
   const carouselRef = useRef(null)
   const categoriesRef = useRef(null)
@@ -71,24 +74,36 @@ const Homepage = () => {
   }
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProducts = async () => {
       try {
-        const bu = await productService.getBUProducts();
+        setLoadingProducts(true);
+        const [bu, latest] = await Promise.all([
+          productService.getBUProducts(),
+          productService.getLatestProducts(8)
+        ]);
         setBuProducts(bu.slice(0, 4));
-
-        const latest = await productService.getLatestProducts(8);
         setLatestProducts(latest);
-
-        // Ambil data blog dari DB
-        const blogs = await blogService.getAllPosts();
-        setBlogPosts(blogs.slice(0, 6)); // Ambil 6 terbaru untuk carousel
       } catch (error) {
-        console.error('Failed to load homepage data');
+        console.error('Failed to load products');
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    const fetchBlogs = async () => {
+      try {
+        setLoadingBlog(true);
+        const blogs = await blogService.getAllPosts();
+        setBlogPosts(blogs.slice(0, 6)); 
+      } catch (error) {
+        console.error('Failed to load blogs');
       } finally {
         setLoadingBlog(false);
       }
     };
-    fetchData();
+
+    fetchProducts();
+    fetchBlogs();
   }, [])
 
   // Auto-play slideshow
@@ -270,7 +285,7 @@ const Homepage = () => {
         </section>
 
         {/* Hot Deals (BU) */}
-        {buProducts.length > 0 && (
+        {(buProducts.length > 0 || loadingProducts) && (
           <section className="mb-8 md:mb-20">
             <div className="flex items-center justify-between mb-4 md:mb-8">
               <div className="flex items-center gap-3">
@@ -284,9 +299,11 @@ const Homepage = () => {
               </Link>
             </div>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-              {buProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+              {loadingProducts
+                ? Array(4).fill(0).map((_, i) => <ProductCardSkeleton key={i} />)
+                : buProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
             </div>
           </section>
         )}
@@ -314,11 +331,17 @@ const Homepage = () => {
           </div>
 
           <div ref={carouselRef} className="flex overflow-x-auto gap-6 pb-8 snap-x hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
-            {latestProducts.map((product) => (
-              <div key={product.id} className="min-w-[280px] w-[280px] md:min-w-[300px] md:w-[300px] snap-start">
-                <ProductCard product={product} />
-              </div>
-            ))}
+            {loadingProducts
+              ? Array(4).fill(0).map((_, i) => (
+                  <div key={i} className="min-w-[280px] w-[280px] md:min-w-[300px] md:w-[300px] snap-start">
+                    <ProductCardSkeleton />
+                  </div>
+                ))
+              : latestProducts.map((product) => (
+                  <div key={product.id} className="min-w-[280px] w-[280px] md:min-w-[300px] md:w-[300px] snap-start">
+                    <ProductCard product={product} />
+                  </div>
+                ))}
           </div>
         </section>
       </Container>
@@ -393,10 +416,7 @@ const Homepage = () => {
 
           <div ref={blogRef} className="flex overflow-x-auto gap-6 pb-8 snap-x hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
             {loadingBlog ? (
-              <div className="w-full flex flex-col items-center justify-center py-20 bg-gray-50 rounded-3xl border border-gray-100">
-                <Loader2 className="w-8 h-8 text-primary-600 animate-spin mb-2" />
-                <p className="text-gray-500 text-sm">Memuat cerita seru...</p>
-              </div>
+              Array(4).fill(0).map((_, i) => <BlogCardSkeleton key={i} />)
             ) : blogPosts.length === 0 ? (
               <div className="w-full text-center py-20 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
                 <p className="text-gray-500 text-sm">Belum ada cerita yang dibagikan.</p>

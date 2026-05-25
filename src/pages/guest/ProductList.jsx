@@ -5,6 +5,7 @@ import Header from '../../components/layout/Header'
 import Footer from '../../components/layout/Footer'
 import Container from '../../components/layout/Container'
 import ProductCard from '../../components/common/ProductCard'
+import ProductCardSkeleton from '../../components/common/ProductCardSkeleton'
 import Button from '../../components/common/Button'
 import { productService } from '../../services/productService'
 import { getCategories } from '../../constants/categories'
@@ -34,6 +35,7 @@ const ProductList = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [products, setProducts] = useState([])
   const [filteredProducts, setFilteredProducts] = useState([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '')
   const categories = getCategories()
   
@@ -49,10 +51,13 @@ const ProductList = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true)
         const allProducts = await productService.getAllProducts()
         setProducts(allProducts)
       } catch (error) {
         console.error('Failed to load products');
+      } finally {
+        setLoading(false)
       }
     };
     fetchProducts();
@@ -253,7 +258,13 @@ const ProductList = () => {
 
           {/* Product Grid */}
           <main className="flex-1">
-            {filteredProducts.length === 0 ? (
+            {loading ? (
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+                {Array(8).fill(0).map((_, i) => (
+                  <ProductCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : filteredProducts.length === 0 ? (
               <div className="text-center py-20 bg-gray-50 rounded-2xl border border-gray-100 border-dashed">
                 <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
                   <Search className="text-gray-400" size={24} />

@@ -31,6 +31,14 @@ export const mapLaravelProduct = (p) => {
   }
 
 
+  // Cek apakah seller produk ini adalah premium seller
+  const isPremiumSeller = Boolean(
+    p.seller?.is_premium ||
+    p.seller?.isPremium ||
+    p.is_premium_seller ||
+    p.seller_is_premium
+  );
+
   return {
     id: p.id,
     sellerId: Number(sellerId),
@@ -51,7 +59,8 @@ export const mapLaravelProduct = (p) => {
     createdAt: p.created_at || p.createdAt,
     approvedAt: p.updated_at || p.approved_at,
     soldAt: p.sold_at,
-    seller: p.seller || null
+    seller: p.seller || null,
+    isPremiumSeller,
   };
 };
 

@@ -101,8 +101,13 @@ const Homepage = () => {
           productService.getBUProducts(),
           productService.getLatestProducts(8)
         ]);
-        setBuProducts(bu.slice(0, 4));
-        setLatestProducts(latest);
+        const sortPremiumFirst = (arr) => [...arr].sort((a, b) => {
+          if (a.isPremiumSeller && !b.isPremiumSeller) return -1
+          if (!a.isPremiumSeller && b.isPremiumSeller) return 1
+          return 0
+        })
+        setBuProducts(sortPremiumFirst(bu).slice(0, 4));
+        setLatestProducts(sortPremiumFirst(latest));
       } catch (error) {
         console.error('Failed to load products');
       } finally {

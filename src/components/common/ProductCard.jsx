@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { MapPin, Star } from 'lucide-react'
+import { MapPin, Star, Crown } from 'lucide-react'
 import Badge from './Badge'
 import { formatCurrency } from '../../utils/helpers'
 import { getLocationName } from '../../constants/locations'
@@ -18,23 +18,38 @@ const ProductCard = ({ product }) => {
   const rating = (4.0 + Math.random()).toFixed(1)
   const category = getCategoryById(product.kategori)
 
+  const isPremium = product.isPremiumSeller
+
   return (
     <div
       onClick={handleClick}
-      className="bg-white rounded-2xl shadow-soft hover:shadow-soft-lg border border-gray-100 transition-all duration-300 cursor-pointer overflow-hidden group flex flex-col h-full relative"
+      className={`bg-white rounded-2xl shadow-soft hover:shadow-soft-lg border transition-all duration-300 cursor-pointer overflow-hidden group flex flex-col h-full relative ${
+        isPremium
+          ? 'border-amber-300 shadow-amber-100 hover:shadow-amber-200 hover:shadow-lg'
+          : 'border-gray-100'
+      }`}
     >
       <div className="absolute top-3 right-3 z-10 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-sm text-gray-500" title={category?.nama}>
         <CategoryIcon id={category?.id} />
       </div>
       <div className="relative aspect-[4/3] overflow-hidden bg-gray-50 p-4 flex items-center justify-center">
+        {isPremium && (
+          <div className="absolute inset-0 bg-gradient-to-t from-amber-50/40 to-transparent z-[1] pointer-events-none" />
+        )}
         <img
           src={product.fotos && product.fotos.length > 0 ? product.fotos[0] : (product.image || product.image_url || 'https://via.placeholder.com/300?text=No+Image')}
           alt={product.nama}
-          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-md"
+          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-md relative z-0"
           loading="lazy"
         />
         
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
+        <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+          {isPremium && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400 text-amber-900 shadow-sm">
+              <Crown size={9} />
+              Premium
+            </span>
+          )}
           {product.isBU && (
             <Badge variant="bu" size="sm">{LABELS.bu}</Badge>
           )}

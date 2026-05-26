@@ -91,6 +91,13 @@ const ProductList = () => {
       filtered = filtered.filter(p => p.isBU)
     }
 
+    // Produk dari Premium Seller selalu muncul paling atas
+    filtered.sort((a, b) => {
+      if (a.isPremiumSeller && !b.isPremiumSeller) return -1
+      if (!a.isPremiumSeller && b.isPremiumSeller) return 1
+      return 0
+    })
+
     setFilteredProducts(filtered)
   }, [products, debouncedSearch, selectedCategory, selectedCondition, selectedLocation, isBU])
 

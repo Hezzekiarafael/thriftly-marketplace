@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react'
 import PageSkeleton from '../components/common/PageSkeleton'
 import AdminPageSkeleton from '../components/common/AdminPageSkeleton'
 import BuyerDashboardSkeleton from '../components/common/BuyerDashboardSkeleton'
+import SellerDashboardSkeleton from '../components/common/SellerDashboardSkeleton'
 
 // ── Eager load: hanya halaman publik utama ────────────────────────────────────
 import Homepage from '../pages/guest/Homepage'
@@ -73,6 +74,10 @@ const PageLoader = () => {
   
   if (location.pathname === '/buyer/dashboard' || location.pathname === '/login-success') {
     return <BuyerDashboardSkeleton />
+  }
+  
+  if (location.pathname === '/seller/dashboard') {
+    return <SellerDashboardSkeleton />
   }
   
   return <PageSkeleton />

@@ -344,21 +344,40 @@ const Homepage = () => {
       </Container>
 
       {/* CTA Panel */}
-      <section className="relative py-12 md:py-20 px-4 mt-auto overflow-hidden bg-slate-950">
+      <section className={`relative py-12 md:py-20 px-4 mt-auto overflow-hidden ${
+        user?.role === 'seller' ? 'bg-gradient-to-br from-amber-500 to-amber-600' : 'bg-slate-950'
+      }`}>
         {/* Abstract background blobs with slow random movement */}
-        <div className="absolute top-0 left-0 w-96 h-96 bg-primary-600/25 rounded-full blur-[100px] animate-blob-1" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent-600/15 rounded-full blur-[100px] animate-blob-2" />
-        <div className="absolute top-1/2 left-1/4 w-80 h-80 bg-indigo-500/15 rounded-full blur-[110px] animate-blob-1 [animation-delay:4s]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-br from-primary-900/15 via-transparent to-accent-900/10 pointer-events-none" />
+        <div className={`absolute top-0 left-0 w-96 h-96 rounded-full blur-[100px] animate-blob-1 ${
+          user?.role === 'seller' ? 'bg-amber-300/30' : 'bg-primary-600/25'
+        }`} />
+        <div className={`absolute bottom-0 right-0 w-96 h-96 rounded-full blur-[100px] animate-blob-2 ${
+          user?.role === 'seller' ? 'bg-amber-200/30' : 'bg-accent-600/15'
+        }`} />
+        <div className={`absolute top-1/2 left-1/4 w-80 h-80 rounded-full blur-[110px] animate-blob-1 [animation-delay:4s] ${
+          user?.role === 'seller' ? 'bg-yellow-100/20' : 'bg-indigo-500/15'
+        }`} />
+        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none ${
+          user?.role === 'seller' ? 'bg-gradient-to-br from-amber-400/20 via-transparent to-amber-700/10' : 'bg-gradient-to-br from-primary-900/15 via-transparent to-accent-900/10'
+        }`} />
 
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-2xl md:text-5xl font-bold text-white mb-4 md:mb-6 tracking-tight leading-tight">
-            Siap Berburu <span className="bg-gradient-to-r from-primary-400 via-indigo-400 to-primary-400 bg-clip-text text-transparent">Barang Baru?</span>
+            {user?.role === 'seller' ? (
+              'Tingkatkan Penjualan Anda!'
+            ) : (
+              <>Siap Berburu <span className="bg-gradient-to-r from-primary-400 via-indigo-400 to-primary-400 bg-clip-text text-transparent">Barang Baru?</span></>
+            )}
           </h2>
-          <p className="text-gray-400 mb-6 md:mb-10 max-w-2xl mx-auto text-sm md:text-xl font-light">
-            {user
-              ? 'Berlangganan Premium sekarang dan nikmati keuntungan eksklusif sebagai member!'
-              : 'Langganan newsletter kita biar nggak ketinggalan update barang-barang premium yang baru masuk.'}
+          <p className={`mb-6 md:mb-10 max-w-2xl mx-auto text-sm md:text-xl font-light ${
+            user?.role === 'seller' ? 'text-amber-100' : 'text-gray-400'
+          }`}>
+            {user?.role === 'seller' 
+              ? 'Berlangganan Premium Seller sekarang dan jadikan produk Anda tampil di urutan paling atas secara eksklusif.'
+              : user 
+                ? 'Berlangganan Premium sekarang dan nikmati keuntungan eksklusif sebagai member!'
+                : 'Langganan newsletter kita biar nggak ketinggalan update barang-barang premium yang baru masuk.'
+            }
           </p>
 
           {/* Tampilkan kotak penawaran langganan HANYA JIKA isSubscribed = false */}
@@ -387,20 +406,34 @@ const Homepage = () => {
                 </form>
               )}
 
-              {/* Buyer (logged in): hanya tampilkan tombol tanpa form email */}
+              {/* Buyer & Seller (logged in): hanya tampilkan tombol */}
               {user && (
                 <div className="flex flex-col items-center gap-4">
-                  <Button
-                    onClick={handleSubscribe}
-                    size="lg"
-                    loading={isSubscribing}
-                    className="rounded-2xl px-10 py-4 bg-gradient-to-r from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700 border-none shadow-xl shadow-violet-950/30 text-base font-bold"
-                  >
-                    🚀 Gas Langganan Premium
-                  </Button>
-                  <p className="text-gray-500 text-xs">
+                  {user.role === 'seller' ? (
+                    <Button
+                      onClick={handleSubscribe}
+                      loading={isSubscribing}
+                      variant="outline"
+                      size="lg"
+                      className="rounded-full px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-amber-600 font-bold transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]"
+                    >
+                      🚀 Upgrade Sekarang
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleSubscribe}
+                      size="lg"
+                      loading={isSubscribing}
+                      className="rounded-2xl px-10 py-4 bg-gradient-to-r from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700 border-none shadow-xl shadow-violet-950/30 text-base font-bold"
+                    >
+                      🚀 Gas Langganan Premium
+                    </Button>
+                  )}
+                  <p className={`text-xs ${user.role === 'seller' ? 'text-amber-200' : 'text-gray-500'}`}>
                     Sudah berlangganan?{' '}
-                    <a href="/profile?tab=subscription" className="text-primary-400 hover:text-primary-300 underline underline-offset-2 transition-colors">
+                    <a href="/profile?tab=subscription" className={`underline underline-offset-2 transition-colors ${
+                      user.role === 'seller' ? 'text-white hover:text-amber-100' : 'text-primary-400 hover:text-primary-300'
+                    }`}>
                       Cek status langganan kamu
                     </a>
                   </p>
@@ -410,35 +443,6 @@ const Homepage = () => {
           )}
         </div>
       </section>
-
-      {/* Banner Call to Action (Hanya untuk Seller) */}
-      {(user && user.role === 'seller' && !isSubscribed) && (
-        <section className="py-20 mt-12 mb-8 relative overflow-hidden bg-gradient-to-br from-amber-500 to-amber-600 rounded-[3rem] mx-4 md:mx-8 shadow-2xl">
-          {/* Background Decorations */}
-          <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20 pointer-events-none">
-            <div className="absolute -top-24 -left-24 w-96 h-96 bg-amber-400 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
-            <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-amber-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
-          </div>
-
-          <div className="container mx-auto px-6 relative z-10 text-center">
-            <div className="max-w-2xl mx-auto text-white">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Tingkatkan Penjualan Anda!</h2>
-              <p className="text-amber-100 mb-10 text-lg md:text-xl">
-                Berlangganan Premium Seller sekarang dan jadikan produk Anda tampil di urutan paling atas secara eksklusif.
-              </p>
-              <Button
-                onClick={handleSubscribe}
-                loading={isSubscribing}
-                variant="outline"
-                size="lg"
-                className="rounded-full px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-amber-600 font-bold transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]"
-              >
-                Upgrade Sekarang
-              </Button>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ── Blog Section ─────────────────────────────────────────────────── */}
       <section className="py-20 bg-white">

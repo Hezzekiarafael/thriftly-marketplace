@@ -7,8 +7,10 @@ import Container from '../../components/layout/Container'
 import { newsletterService } from '../../services/newsletterService'
 import { formatCurrency } from '../../utils/helpers'
 import toast from 'react-hot-toast'
+import { useAuth } from '../../context/AuthContext'
 
 const Membership = () => {
+  const { user } = useAuth()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const emailParam = searchParams.get('email') || ''
@@ -53,7 +55,7 @@ const Membership = () => {
                 Aktifkan Membership Anda
               </h1>
               <p className="text-gray-500 text-sm md:text-base mt-3 max-w-lg mx-auto">
-                Selesaikan pembayaran sebesar <span className="font-bold text-gray-900">Rp 10.000</span> (sekali bayar) untuk mulai menerima notifikasi barang langka secara eksklusif.
+                Selesaikan pembayaran sebesar <span className="font-bold text-gray-900">Rp {user?.role === 'seller' ? '50.000' : '10.000'}</span> (sekali bayar) untuk {user?.role === 'seller' ? 'mulai memprioritaskan produk Anda di urutan teratas' : 'mulai menerima notifikasi barang langka secara eksklusif'}.
               </p>
             </div>
 

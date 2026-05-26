@@ -411,6 +411,35 @@ const Homepage = () => {
         </div>
       </section>
 
+      {/* Banner Call to Action (Hanya untuk Seller) */}
+      {(user && user.role === 'seller' && !isSubscribed) && (
+        <section className="py-20 mt-12 mb-8 relative overflow-hidden bg-gradient-to-br from-amber-500 to-amber-600 rounded-[3rem] mx-4 md:mx-8 shadow-2xl">
+          {/* Background Decorations */}
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20 pointer-events-none">
+            <div className="absolute -top-24 -left-24 w-96 h-96 bg-amber-400 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
+            <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-amber-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+          </div>
+
+          <div className="container mx-auto px-6 relative z-10 text-center">
+            <div className="max-w-2xl mx-auto text-white">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Tingkatkan Penjualan Anda!</h2>
+              <p className="text-amber-100 mb-10 text-lg md:text-xl">
+                Berlangganan Premium Seller sekarang dan jadikan produk Anda tampil di urutan paling atas secara eksklusif.
+              </p>
+              <Button
+                onClick={handleSubscribe}
+                loading={isSubscribing}
+                variant="outline"
+                size="lg"
+                className="rounded-full px-8 py-4 border-2 border-white text-white hover:bg-white hover:text-amber-600 font-bold transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]"
+              >
+                Upgrade Sekarang
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ── Blog Section ─────────────────────────────────────────────────── */}
       <section className="py-20 bg-white">
         <Container>

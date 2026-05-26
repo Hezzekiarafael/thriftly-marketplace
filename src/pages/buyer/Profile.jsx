@@ -106,7 +106,7 @@ const Profile = () => {
   // Ambil data langganan
   useEffect(() => {
     const fetchSubscription = async () => {
-      if (user?.role !== 'buyer') {
+      if (!user) {
         setSubLoading(false)
         return
       }
@@ -1476,32 +1476,32 @@ const Profile = () => {
                   )}
                 </button>
 
-                {/* Langganan - hanya untuk buyer */}
-                {user?.role === 'buyer' && (
-                  <button
-                    onClick={() => handleTabChange('subscription')}
-                    className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-2.5 md:p-3 lg:p-4 rounded-xl lg:rounded-2xl transition-all group ${
-                      activeTab === 'subscription'
-                        ? 'bg-violet-50 text-violet-700'
-                        : 'hover:bg-gray-50 text-gray-500'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 lg:gap-3">
-                      <Crown className={`w-4 h-4 lg:w-5 lg:h-5 ${
-                        activeTab === 'subscription' ? 'text-violet-600' : 'text-gray-400'
-                      }`} />
-                      <span className="font-semibold text-xs md:text-sm lg:text-base">Langganan</span>
-                      {subscription && subscription.status !== 'pending' && (
-                        <span className="ml-1 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded-full uppercase">Aktif</span>
-                      )}
-                    </div>
-                    {activeTab === 'subscription' ? (
-                      <div className="hidden lg:block w-1.5 h-6 bg-violet-600 rounded-full" />
-                    ) : (
-                      <Edit2 size={16} className="hidden lg:block opacity-0 group-hover:opacity-100 transition-opacity" />
+                {/* Langganan - Buyer & Seller */}
+                <button
+                  onClick={() => handleTabChange('subscription')}
+                  className={`flex-1 lg:w-full min-w-max flex items-center justify-between p-2.5 md:p-3 lg:p-4 rounded-xl lg:rounded-2xl transition-all group ${
+                    activeTab === 'subscription'
+                      ? 'bg-violet-50 text-violet-700'
+                      : 'hover:bg-gray-50 text-gray-500'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 lg:gap-3">
+                    <Crown className={`w-4 h-4 lg:w-5 lg:h-5 ${
+                      activeTab === 'subscription' ? 'text-violet-600' : 'text-gray-400'
+                    }`} />
+                    <span className="font-semibold text-xs md:text-sm lg:text-base">
+                      {user?.role === 'seller' ? 'Premium Seller' : 'Langganan'}
+                    </span>
+                    {subscription && subscription.status !== 'pending' && (
+                      <span className="ml-1 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded-full uppercase">Aktif</span>
                     )}
-                  </button>
-                )}
+                  </div>
+                  {activeTab === 'subscription' ? (
+                    <div className="hidden lg:block w-1.5 h-6 bg-violet-600 rounded-full" />
+                  ) : (
+                    <Edit2 size={16} className="hidden lg:block opacity-0 group-hover:opacity-100 transition-opacity" />
+                  )}
+                </button>
               </nav>
             </aside>
 
@@ -1511,7 +1511,7 @@ const Profile = () => {
               {activeTab === 'address' && renderAddressTab()}
               {activeTab === 'rekening' && user?.role === 'seller' && renderRekeningTab()}
               {activeTab === 'security' && renderSecurityTab()}
-              {activeTab === 'subscription' && user?.role === 'buyer' && renderSubscriptionTab()}
+              {activeTab === 'subscription' && renderSubscriptionTab()}
             </div>
           </div>
         </Container>

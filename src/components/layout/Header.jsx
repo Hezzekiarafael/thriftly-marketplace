@@ -162,7 +162,7 @@ const Header = () => {
                     className="flex items-center space-x-2 hover:bg-white/10 p-1 rounded-lg transition-colors"
                   >
                     <div className="relative hidden md:flex w-8 h-8 rounded-full bg-white/20 items-center justify-center border border-white/10">
-                      <div className="w-full h-full rounded-full overflow-hidden">
+                      <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center">
                         {user.profile?.avatar ? (
                           <img src={user.profile.avatar} alt="Profile" className="w-full h-full object-cover" />
                         ) : (

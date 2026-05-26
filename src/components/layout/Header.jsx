@@ -19,7 +19,7 @@ const Header = () => {
   const userMenuRef = useRef(null)
 
   useEffect(() => {
-    if (user && user.role === 'buyer') {
+    if (user) {
       api.get('/user/newsletter')
         .then(res => {
           if (res.data?.data?.status === 'active') {

@@ -6,6 +6,7 @@ import PageSkeleton from '../components/common/PageSkeleton'
 import AdminPageSkeleton from '../components/common/AdminPageSkeleton'
 import BuyerDashboardSkeleton from '../components/common/BuyerDashboardSkeleton'
 import SellerDashboardSkeleton from '../components/common/SellerDashboardSkeleton'
+import ProfileSkeleton from '../components/common/ProfileSkeleton'
 
 // ── Eager load: hanya halaman publik utama ────────────────────────────────────
 import Homepage from '../pages/guest/Homepage'
@@ -78,6 +79,10 @@ const PageLoader = () => {
   
   if (location.pathname === '/seller/dashboard') {
     return <SellerDashboardSkeleton />
+  }
+  
+  if (location.pathname === '/profile') {
+    return <ProfileSkeleton />
   }
   
   return <PageSkeleton />

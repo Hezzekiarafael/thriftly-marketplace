@@ -576,11 +576,15 @@ const Profile = () => {
         <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
           <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Keuntungan Premium</h3>
           <div className="space-y-3">
-            {[
+            {(user?.role === 'seller' ? [
+              { icon: Star,  label: 'Badge Premium Seller di profil' },
+              { icon: Crown, label: 'Prioritas tampil paling atas di beranda' },
+              { icon: Mail,  label: 'Mendapatkan laporan performa toko ke email' },
+            ] : [
               { icon: Star,  label: 'Badge Premium di profil' },
               { icon: Mail,  label: 'Mendapatkan update ke email setiap ada produk baru' },
               { icon: Crown, label: 'Prioritas layanan pelanggan' },
-            ].map(({ icon: Icon, label }, i) => (
+            ]).map(({ icon: Icon, label }, i) => (
               <div key={i} className="flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
                   isActive ? 'bg-violet-100' : 'bg-gray-100'

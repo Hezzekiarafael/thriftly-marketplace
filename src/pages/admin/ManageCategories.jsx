@@ -4,6 +4,7 @@ import Button from '../../components/common/Button'
 import Modal from '../../components/common/Modal'
 import { categoryService } from '../../services/categoryService'
 import { Edit, Trash2 } from 'lucide-react'
+import CategoryIcon from '../../components/common/CategoryIcon'
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 
@@ -76,7 +77,8 @@ const ManageCategories = () => {
     {
       header: 'Icon',
       accessor: 'icon',
-      className: 'w-16 text-center text-2xl',
+      className: 'w-16 text-center',
+      render: (row) => <div className="flex justify-center text-gray-500"><CategoryIcon id={row.id} size={24} /></div>
     },
     {
       header: 'Category Name',

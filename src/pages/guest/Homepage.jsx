@@ -8,6 +8,7 @@ import ProductCard from '../../components/common/ProductCard'
 import ProductCardSkeleton from '../../components/common/ProductCardSkeleton'
 import BlogCardSkeleton from '../../components/common/BlogCardSkeleton'
 import Button from '../../components/common/Button'
+import CategoryIcon from '../../components/common/CategoryIcon'
 import { productService } from '../../services/productService'
 import { blogService } from '../../services/blogService'
 import { getCategories } from '../../constants/categories'
@@ -277,8 +278,8 @@ const Homepage = () => {
                 draggable="false"
                 className="group flex-shrink-0 w-[100px] sm:w-[130px] md:w-[200px] bg-gray-50 rounded-2xl p-3 md:p-8 text-center hover:bg-white hover:border-primary-500 transition-all duration-300 border border-gray-100 shadow-sm snap-start select-none"
               >
-                <div className="w-10 h-10 md:w-20 md:h-20 mx-auto bg-white rounded-full flex items-center justify-center text-lg md:text-3xl mb-2 md:mb-5 shadow-sm group-hover:bg-primary-600 group-hover:text-white transition-all duration-300">
-                  {category.icon}
+                <div className="w-10 h-10 md:w-20 md:h-20 mx-auto bg-white rounded-full flex items-center justify-center mb-2 md:mb-5 shadow-sm group-hover:bg-primary-600 text-primary-600 group-hover:text-white transition-all duration-300">
+                  <CategoryIcon id={category.id} className="w-5 h-5 md:w-8 md:h-8" />
                 </div>
                 <h3 className="font-bold text-gray-900 text-[10px] md:text-base group-hover:text-primary-600 transition-colors truncate">{category.nama}</h3>
               </Link>

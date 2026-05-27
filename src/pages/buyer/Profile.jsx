@@ -129,9 +129,10 @@ const Profile = () => {
   // Form States
   const [profileForm, setProfileForm] = useState({
     nama: user?.profile?.nama || '',
-    noTelp: user?.profile?.noTelp || '',
-    jenisKelamin: user?.profile?.jenisKelamin || 'Laki-laki',
+    email: user?.email || '',
+    noTelp: user?.profile?.noTelp || '-',
     tanggalLahir: user?.profile?.tanggalLahir || '',
+    jenisKelamin: user?.profile?.jenisKelamin || 'Laki-laki',
   })
 
   // Address States
@@ -211,7 +212,7 @@ const Profile = () => {
       const payload = {
         ...profileForm,
         name: profileForm.nama,
-        email: user.email,
+        email: profileForm.email,
         no_telp: profileForm.noTelp,
         date_of_birth: profileForm.tanggalLahir,
         gender: profileForm.jenisKelamin === 'Laki-laki' ? 'L' : 'P',
@@ -820,9 +821,10 @@ const Profile = () => {
                 </div>
                 <input
                   type="email"
-                  value={user?.email || ''}
-                  disabled
-                  className="w-full pl-10 md:pl-12 pr-4 py-2.5 md:py-3 bg-gray-100 border border-gray-200 rounded-xl md:rounded-2xl text-xs md:text-sm text-gray-500 cursor-not-allowed"
+                  value={profileForm.email}
+                  onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                  className="w-full pl-10 md:pl-12 pr-4 py-2.5 md:py-3 bg-gray-50 border border-gray-200 rounded-xl md:rounded-2xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-all"
+                  placeholder="Masukkan alamat email"
                 />
               </div>
               {user?.emailVerifiedAt ? (

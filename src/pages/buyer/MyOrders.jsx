@@ -218,11 +218,11 @@ const MyOrders = () => {
                     </div>
                   )}
 
-                  <div className="flex flex-wrap justify-end gap-3 pt-4 border-t border-gray-100">
-                    <Button variant="outline" onClick={() => handleOpenDetail(order)}>
+                  <div className="flex flex-wrap justify-end gap-2 sm:gap-3 pt-4 border-t border-gray-100">
+                    <Button variant="outline" size="sm" onClick={() => handleOpenDetail(order)}>
                       Detail
                     </Button>
-                    <Button variant="outline" onClick={() => navigate(`/chat?product=${order.productId}&user=${order.sellerId}`)}>
+                    <Button variant="outline" size="sm" onClick={() => navigate(`/chat?product=${order.productId}&user=${order.sellerId}`)}>
                       Chat Penjual
                     </Button>
                     
@@ -230,24 +230,24 @@ const MyOrders = () => {
                       <>
                         <button
                           onClick={() => handleOpenCancelModal(order)}
-                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border-2 border-red-200 text-red-600 font-medium text-sm bg-white hover:bg-red-50 hover:border-red-400 active:scale-95 transition-all duration-150"
+                          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 rounded-xl border-2 border-red-200 text-red-600 font-medium text-xs sm:text-sm bg-white hover:bg-red-50 hover:border-red-400 active:scale-95 transition-all duration-150"
                         >
-                          <XCircle size={16} />
+                          <XCircle size={14} className="sm:w-4 sm:h-4" />
                           Batal Pesanan
                         </button>
-                        <Button onClick={() => navigate(`/payment/success/${order.order_id || order.id}`)}>
+                        <Button size="sm" onClick={() => navigate(`/payment/success/${order.order_id || order.id}`)}>
                           Bayar Sekarang
                         </Button>
                       </>
                     )}
 
                     {order.status === 'shipped' && (
-                      <Button onClick={() => handleOpenConfirmModal(order.id)}>
+                      <Button size="sm" onClick={() => handleOpenConfirmModal(order.id)}>
                         Selesaikan Pesanan
                       </Button>
                     )}
                     {order.status === 'completed' && (
-                      <Button variant="secondary" onClick={() => navigate(`/products/${order.productId}`)}>
+                      <Button variant="secondary" size="sm" onClick={() => navigate(`/products/${order.productId}`)}>
                         Beli Lagi
                       </Button>
                     )}

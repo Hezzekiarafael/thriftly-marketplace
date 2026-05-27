@@ -106,6 +106,8 @@ const SellerOrders = () => {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'menunggu_konfirmasi_penjual': return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">⏳ Perlu Konfirmasi Ongkir</span>
+      case 'menunggu_konfirmasi_pembeli':
+      case 'menunggu_pembayaran':
       case 'pending': return <Badge variant="warning">Menunggu Pembayaran</Badge>
       case 'paid':
       case 'settlement': return <Badge variant="info">Perlu Dikirim</Badge>

@@ -161,6 +161,7 @@ const Profile = () => {
 
   const [isRekeningModalOpen, setIsRekeningModalOpen] = useState(false)
   const [deleteRekeningIndex, setDeleteRekeningIndex] = useState(null) // index to confirm delete
+  const [deleteRekeningIndex, setDeleteRekeningIndex] = useState(null) // index to confirm delete
   const [bankForm, setBankForm] = useState({
     namaBank: 'BCA',
     nomorRekening: '',
@@ -180,21 +181,16 @@ const Profile = () => {
   const videoRef = useRef(null)
   const streamRef = useRef(null)
 
-  // Helper: localStorage key untuk daftar rekening user ini
-  const REKENING_KEY = `rekening_list_${user?.id || 'guest'}`
-
-  // Helper: ambil daftar rekening dari localStorage
+  // Helper: parse noRekening → array of {namaBank, nomorRekening, namaPemilik}
   const parseRekeningList = () => {
+    if (!user?.profile?.noRekening) return []
     try {
-      const stored = localStorage.getItem(REKENING_KEY)
-      if (stored) return JSON.parse(stored)
+      const parsed = JSON.parse(user.profile.noRekening)
+      if (Array.isArray(parsed)) return parsed
     } catch {}
-    // Fallback: baca dari backend (format lama single string)
-    if (user?.profile?.noRekening) {
-      const parts = user.profile.noRekening.split(' - ')
-      return [{ namaBank: parts[0] || 'Bank', nomorRekening: parts[1] || user.profile.noRekening, namaPemilik: parts[2] || '' }]
-    }
-    return []
+    // Legacy: single string format "BCA - 1234 - Nama"
+    const parts = user.profile.noRekening.split(' - ')
+    return [{ namaBank: parts[0] || 'Bank', nomorRekening: parts[1] || user.profile.noRekening, namaPemilik: parts[2] || '' }]
   }
 
   const handleProfileSubmit = async (e) => {
@@ -291,24 +287,17 @@ const Profile = () => {
         namaPemilik: bankForm.namaPemilik.trim()
       }
       const updatedList = [...existingList, newEntry]
-
-      // Simpan daftar lengkap di localStorage
-      localStorage.setItem(REKENING_KEY, JSON.stringify(updatedList))
-
-      // Sinkronkan HANYA rekening utama (pertama) ke backend dalam format pendek
-      const primary = updatedList[0]
-      const shortValue = `${primary.namaBank} - ${primary.nomorRekening} - ${primary.namaPemilik}`
+      
       await updateProfile({
         name: user.profile.nama,
         email: user.email,
-        no_rekening: shortValue
+        no_rekening: JSON.stringify(updatedList)
       })
-
-      toast.success('Rekening bank berhasil ditambahkan')
+      toast.success('Rekening bank berhasil disimpan')
       setIsRekeningModalOpen(false)
       setBankForm({ namaBank: 'BCA', nomorRekening: '', namaPemilik: user?.profile?.nama || '' })
     } catch (error) {
-      toast.error(error.message || 'Gagal menyimpan rekening bank')
+      toast.error(error.message || 'Gagal menyimpan rekening bank. Jika muncul error limit 50 karakter, minta backend matikan validasi tersebut.')
     } finally {
       setIsSubmitting(false)
     }
@@ -319,26 +308,12 @@ const Profile = () => {
     try {
       const existingList = parseRekeningList()
       const updatedList = existingList.filter((_, i) => i !== index)
-
-      if (updatedList.length === 0) {
-        localStorage.removeItem(REKENING_KEY)
-        await updateProfile({
-          name: user.profile.nama,
-          email: user.email,
-          no_rekening: null
-        })
-      } else {
-        localStorage.setItem(REKENING_KEY, JSON.stringify(updatedList))
-        // Update backend dengan rekening utama baru
-        const primary = updatedList[0]
-        const shortValue = `${primary.namaBank} - ${primary.nomorRekening} - ${primary.namaPemilik}`
-        await updateProfile({
-          name: user.profile.nama,
-          email: user.email,
-          no_rekening: shortValue
-        })
-      }
-
+      
+      await updateProfile({
+        name: user.profile.nama,
+        email: user.email,
+        no_rekening: updatedList.length > 0 ? JSON.stringify(updatedList) : null
+      })
       toast.success('Rekening bank berhasil dihapus')
       setDeleteRekeningIndex(null)
     } catch (error) {

@@ -33,6 +33,8 @@ const MyOrders = () => {
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
   const [orderToCancel, setOrderToCancel] = useState(null)
   const [isCancelling, setIsCancelling] = useState(false)
+  const [trackingData, setTrackingData] = useState(null)
+  const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -66,6 +68,20 @@ const MyOrders = () => {
     }
   }
 
+  const handleTrack = async (order) => {
+    setIsTrackingModalOpen(true)
+    setTrackingData(null)
+    
+    try {
+      const courierCode = order.courier ? order.courier.split(' ')[0].toLowerCase() : 'jnt'
+      const data = await transactionService.trackShipment(order.resi_number || order.id, courierCode)
+      setTrackingData(data)
+    } catch (error) {
+      toast.error(error?.response?.data?.message || 'Gagal melacak pengiriman')
+      setIsTrackingModalOpen(false)
+    }
+  }
+
   const handlePaymentRedirect = async (order) => {
     if (order.payment_url) {
       window.location.href = order.payment_url;
@@ -73,6 +89,7 @@ const MyOrders = () => {
     }
 
     // Semua pesanan sekarang melalui alur nego
+
     try {
       toast.loading('Mengambil link pembayaran...', { id: 'payment' });
       const res = await api.post(`/transactions/nego-pay/${order.id}`, {
@@ -320,9 +337,14 @@ const MyOrders = () => {
                     )}
 
                     {order.status === 'shipped' && (
-                      <Button className="!px-2.5 !py-1.5 !text-[11px] sm:!px-4 sm:!py-2 sm:!text-sm whitespace-nowrap shrink-0" onClick={() => handleOpenConfirmModal(order.id)}>
-                        Selesaikan
-                      </Button>
+                      <>
+                        <Button variant="outline" className="!px-2.5 !py-1.5 !text-[11px] sm:!px-4 sm:!py-2 sm:!text-sm whitespace-nowrap shrink-0 !text-primary-600 !border-primary-600 hover:!bg-primary-50" onClick={() => handleTrack(order)}>
+                          Lacak Pengiriman
+                        </Button>
+                        <Button className="!px-2.5 !py-1.5 !text-[11px] sm:!px-4 sm:!py-2 sm:!text-sm whitespace-nowrap shrink-0" onClick={() => handleOpenConfirmModal(order.id)}>
+                          Selesaikan
+                        </Button>
+                      </>
                     )}
                     {order.status === 'completed' && (
                       <Button variant="secondary" className="!px-2.5 !py-1.5 !text-[11px] sm:!px-4 sm:!py-2 sm:!text-sm whitespace-nowrap shrink-0" onClick={() => navigate(`/products/${order.productId}`)}>
@@ -486,6 +508,44 @@ const MyOrders = () => {
             </button>
           </div>
         </div>
+      </Modal>
+
+      {/* Modal Lacak Pengiriman */}
+      <Modal
+        isOpen={isTrackingModalOpen}
+        onClose={() => setIsTrackingModalOpen(false)}
+        title="Lacak Pengiriman"
+      >
+        {!trackingData ? (
+          <div className="flex justify-center p-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {trackingData.history && trackingData.history.length > 0 ? (
+              <div className="relative pl-6 border-l-2 border-gray-200 space-y-6">
+                {trackingData.history.map((item, idx) => (
+                  <div key={idx} className="relative">
+                    <div className="absolute -left-[31px] w-4 h-4 rounded-full bg-white border-4 border-primary-300"></div>
+                    <p className="text-xs text-gray-500 mb-1">{item.updated_at}</p>
+                    <div className="bg-gray-50 border border-gray-100 rounded-lg p-3">
+                      <p className="text-sm text-gray-800">{item.note}</p>
+                      <p className="text-xs font-semibold text-primary-600 mt-2">{item.status}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-gray-500">
+                <p>Data pelacakan belum tersedia.</p>
+                <p className="text-xs mt-1">Silakan coba beberapa saat lagi.</p>
+              </div>
+            )}
+            <div className="flex justify-end pt-4">
+              <Button onClick={() => setIsTrackingModalOpen(false)}>Tutup</Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   )

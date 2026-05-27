@@ -2,25 +2,17 @@ import React from 'react'
 import { Laptop, Shirt, Car, Home, Dumbbell, BookOpen, Box, LayoutGrid } from 'lucide-react'
 
 const CategoryIcon = ({ id, size = 18, className = "" }) => {
-  const commonProps = {
-    size,
-    strokeWidth: 2,
-    stroke: "#1e293b", // slate-800
-    fill: "#fcd34d",   // amber-300
-    className
-  }
-
-  if (id === 'all') return <LayoutGrid {...commonProps} />
+  if (id === 'all') return <LayoutGrid size={size} className={className} />
   
   const icons = {
-    'elektronik-gadget': <Laptop {...commonProps} />,
-    'fashion-aksesoris': <Shirt {...commonProps} />,
-    'kendaraan': <Car {...commonProps} />,
-    'rumah-tangga': <Home {...commonProps} />,
-    'hobi-olahraga': <Dumbbell {...commonProps} />,
-    'buku-alat-tulis': <BookOpen {...commonProps} />
+    'elektronik-gadget': <Laptop size={size} className={className} />,
+    'fashion-aksesoris': <Shirt size={size} className={className} />,
+    'kendaraan': <Car size={size} className={className} />,
+    'rumah-tangga': <Home size={size} className={className} />,
+    'hobi-olahraga': <Dumbbell size={size} className={className} />,
+    'buku-alat-tulis': <BookOpen size={size} className={className} />
   }
-  return icons[id] || <Box {...commonProps} />
+  return icons[id] || <Box size={size} className={className} />
 }
 
 export default CategoryIcon

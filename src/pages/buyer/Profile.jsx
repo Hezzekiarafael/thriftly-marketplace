@@ -180,16 +180,21 @@ const Profile = () => {
   const videoRef = useRef(null)
   const streamRef = useRef(null)
 
-  // Helper: parse noRekening → array of {namaBank, nomorRekening, namaPemilik}
-  const parseRekeningList = (noRekening) => {
-    if (!noRekening) return []
+  // Helper: localStorage key untuk daftar rekening user ini
+  const REKENING_KEY = `rekening_list_${user?.id || 'guest'}`
+
+  // Helper: ambil daftar rekening dari localStorage
+  const parseRekeningList = () => {
     try {
-      const parsed = JSON.parse(noRekening)
-      if (Array.isArray(parsed)) return parsed
+      const stored = localStorage.getItem(REKENING_KEY)
+      if (stored) return JSON.parse(stored)
     } catch {}
-    // Legacy: single string format "BCA - 1234 - Nama"
-    const parts = noRekening.split(' - ')
-    return [{ namaBank: parts[0] || 'Bank', nomorRekening: parts[1] || noRekening, namaPemilik: parts[2] || '' }]
+    // Fallback: baca dari backend (format lama single string)
+    if (user?.profile?.noRekening) {
+      const parts = user.profile.noRekening.split(' - ')
+      return [{ namaBank: parts[0] || 'Bank', nomorRekening: parts[1] || user.profile.noRekening, namaPemilik: parts[2] || '' }]
+    }
+    return []
   }
 
   const handleProfileSubmit = async (e) => {
@@ -279,19 +284,26 @@ const Profile = () => {
     }
     setIsSubmitting(true)
     try {
-      // Ambil list yang sudah ada, tambahkan rekening baru
-      const existingList = parseRekeningList(user?.profile?.noRekening)
+      const existingList = parseRekeningList()
       const newEntry = {
         namaBank: bankForm.namaBank,
         nomorRekening: bankForm.nomorRekening.trim(),
         namaPemilik: bankForm.namaPemilik.trim()
       }
       const updatedList = [...existingList, newEntry]
+
+      // Simpan daftar lengkap di localStorage
+      localStorage.setItem(REKENING_KEY, JSON.stringify(updatedList))
+
+      // Sinkronkan HANYA rekening utama (pertama) ke backend dalam format pendek
+      const primary = updatedList[0]
+      const shortValue = `${primary.namaBank} - ${primary.nomorRekening} - ${primary.namaPemilik}`
       await updateProfile({
         name: user.profile.nama,
         email: user.email,
-        no_rekening: JSON.stringify(updatedList)
+        no_rekening: shortValue
       })
+
       toast.success('Rekening bank berhasil ditambahkan')
       setIsRekeningModalOpen(false)
       setBankForm({ namaBank: 'BCA', nomorRekening: '', namaPemilik: user?.profile?.nama || '' })
@@ -305,13 +317,28 @@ const Profile = () => {
   const handleRemoveRekening = async (index) => {
     setIsSubmitting(true)
     try {
-      const existingList = parseRekeningList(user?.profile?.noRekening)
+      const existingList = parseRekeningList()
       const updatedList = existingList.filter((_, i) => i !== index)
-      await updateProfile({
-        name: user.profile.nama,
-        email: user.email,
-        no_rekening: updatedList.length > 0 ? JSON.stringify(updatedList) : null
-      })
+
+      if (updatedList.length === 0) {
+        localStorage.removeItem(REKENING_KEY)
+        await updateProfile({
+          name: user.profile.nama,
+          email: user.email,
+          no_rekening: null
+        })
+      } else {
+        localStorage.setItem(REKENING_KEY, JSON.stringify(updatedList))
+        // Update backend dengan rekening utama baru
+        const primary = updatedList[0]
+        const shortValue = `${primary.namaBank} - ${primary.nomorRekening} - ${primary.namaPemilik}`
+        await updateProfile({
+          name: user.profile.nama,
+          email: user.email,
+          no_rekening: shortValue
+        })
+      }
+
       toast.success('Rekening bank berhasil dihapus')
       setDeleteRekeningIndex(null)
     } catch (error) {
@@ -997,7 +1024,7 @@ const Profile = () => {
   )
 
   const renderRekeningTab = () => {
-    const rekeningList = parseRekeningList(user?.profile?.noRekening)
+    const rekeningList = parseRekeningList()
     const hasRekening = rekeningList.length > 0
 
     return (

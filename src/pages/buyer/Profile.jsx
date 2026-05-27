@@ -164,7 +164,6 @@ const Profile = () => {
 
   const [isRekeningModalOpen, setIsRekeningModalOpen] = useState(false)
   const [deleteRekeningIndex, setDeleteRekeningIndex] = useState(null) // index to confirm delete
-  const [deleteRekeningIndex, setDeleteRekeningIndex] = useState(null) // index to confirm delete
   const [bankForm, setBankForm] = useState({
     namaBank: 'BCA',
     nomorRekening: '',

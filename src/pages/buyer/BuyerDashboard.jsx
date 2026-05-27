@@ -12,7 +12,6 @@ import 'leaflet/dist/leaflet.css'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 import axios from 'axios'
-import { useEffect } from 'react'
 import { reverseGeocode } from '../../utils/geolocation'
 import BuyerDashboardSkeleton from '../../components/common/BuyerDashboardSkeleton'
 

@@ -1,18 +1,20 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Search, ShoppingBag, Package, Truck, CheckCircle, XCircle } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { ShoppingBag, Truck, Clock } from 'lucide-react'
 import Header from '../../components/layout/Header'
 import Footer from '../../components/layout/Footer'
 import Container from '../../components/layout/Container'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
 import Badge from '../../components/common/Badge'
+import Modal from '../../components/common/Modal'
 import { useAuth } from '../../context/AuthContext'
 import { transactionService } from '../../services/transactionService'
 import { productService } from '../../services/productService'
 import { userService } from '../../services/userService'
 import { formatCurrency, formatDate } from '../../utils/helpers'
 import toast from 'react-hot-toast'
+import api from '../../services/api'
 
 const SellerOrders = () => {
   const { user } = useAuth()
@@ -20,6 +22,11 @@ const SellerOrders = () => {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({ perluDiproses: 0, telahDiproses: 0, batal: 0, pendapatan: 0 })
+
+  // State untuk modal konfirmasi ongkir
+  const [konfirmasiOrder, setKonfirmasiOrder] = useState(null) // order yang sedang dikonfirmasi
+  const [pilihanOngkir, setPilihanOngkir] = useState('pembeli') // 'pembeli' atau 'penjual'
+  const [isSubmittingKonfirmasi, setIsSubmittingKonfirmasi] = useState(false)
 
   const tabs = ['Semua', 'Perlu Diproses', 'Telah Diproses', 'Pembatalan']
 
@@ -63,6 +70,27 @@ const SellerOrders = () => {
     }
   }
 
+  const handleKonfirmasiOngkir = async () => {
+    if (!konfirmasiOrder) return
+    setIsSubmittingKonfirmasi(true)
+    try {
+      await api.post(`/transactions/${konfirmasiOrder.id}/nego/seller`, {
+        nego_ongkir_by: pilihanOngkir // 'pembeli' atau 'penjual'
+      })
+      toast.success(
+        pilihanOngkir === 'pembeli'
+          ? 'Ongkir ditanggung pembeli. Pembeli akan segera membayar!'
+          : 'Ongkir gratis untuk pembeli! Pesanan menunggu konfirmasi pembayaran.'
+      )
+      setKonfirmasiOrder(null)
+      loadOrders()
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Gagal mengkonfirmasi ongkir')
+    } finally {
+      setIsSubmittingKonfirmasi(false)
+    }
+  }
+
   const handleKirim = (id) => {
     if (window.confirm('Proses pengiriman pesanan ini?')) {
         try {
@@ -77,6 +105,7 @@ const SellerOrders = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
+      case 'menunggu_konfirmasi_penjual': return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">⏳ Perlu Konfirmasi Ongkir</span>
       case 'pending': return <Badge variant="warning">Menunggu Pembayaran</Badge>
       case 'paid':
       case 'settlement': return <Badge variant="info">Perlu Dikirim</Badge>
@@ -244,6 +273,17 @@ const SellerOrders = () => {
                     <Button variant="outline" onClick={() => window.location.href = `/chat?product=${order.productId}&user=${order.buyerId}`}>
                       Chat Pembeli
                     </Button>
+                    {order.status === 'menunggu_konfirmasi_penjual' && (
+                      <Button
+                        onClick={() => {
+                          setKonfirmasiOrder(order)
+                          setPilihanOngkir('pembeli')
+                        }}
+                        className="!bg-emerald-600 hover:!bg-emerald-700"
+                      >
+                        Konfirmasi Ongkir
+                      </Button>
+                    )}
                     {(order.status === 'paid' || order.status === 'settlement') && (
                       <Button onClick={() => handleKirim(order.id)}>
                         Kirim Pesanan
@@ -258,6 +298,57 @@ const SellerOrders = () => {
       </main>
 
       <Footer />
+
+      {/* Modal Konfirmasi Ongkir */}
+      <Modal
+        isOpen={!!konfirmasiOrder}
+        onClose={() => !isSubmittingKonfirmasi && setKonfirmasiOrder(null)}
+        title="Siapa yang Tanggung Ongkir?"
+        size="sm"
+      >
+        {konfirmasiOrder && (
+          <div>
+            {/* Rincian Pengiriman */}
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5">
+              <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-2">Rincian Pengiriman Diajukan Pembeli</p>
+              <p className="text-sm text-gray-700">Layanan: <span className="font-semibold">{konfirmasiOrder.courier || '-'}</span></p>
+              <p className="text-sm text-gray-700 mt-1">Biaya ongkir: <span className="font-bold text-amber-700">{formatCurrency(konfirmasiOrder.ongkir || 0)}</span></p>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-4">Pembeli telah membuat pesanan dan mengajukan ongkos kirim di atas. Silakan tentukan siapa yang akan menanggung ongkos kirim tersebut.</p>
+
+            {/* Pilihan */}
+            <div className="space-y-3 mb-6">
+              <label
+                className={`flex items-start gap-3 border rounded-xl p-4 cursor-pointer transition-all ${pilihanOngkir === 'pembeli' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'}`}
+                onClick={() => setPilihanOngkir('pembeli')}
+              >
+                <input type="radio" name="pilihanOngkir" checked={pilihanOngkir === 'pembeli'} readOnly className="mt-0.5 text-primary-600" />
+                <div>
+                  <p className="font-semibold text-gray-900">Tanggung Pembeli (Sistem DOKU)</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Pembeli akan memilih ekspedisi dan ongkir ditambahkan ke tagihan sistem mereka.</p>
+                </div>
+              </label>
+
+              <label
+                className={`flex items-start gap-3 border rounded-xl p-4 cursor-pointer transition-all ${pilihanOngkir === 'penjual' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'}`}
+                onClick={() => setPilihanOngkir('penjual')}
+              >
+                <input type="radio" name="pilihanOngkir" checked={pilihanOngkir === 'penjual'} readOnly className="mt-0.5 text-primary-600" />
+                <div>
+                  <p className="font-semibold text-gray-900">Tanggung Penjual (Gratis Ongkir)</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Anda akan membayarkan ongkir ke kurir menggunakan uang Anda sendiri saat mengirim barang.</p>
+                </div>
+              </label>
+            </div>
+
+            <Button fullWidth isLoading={isSubmittingKonfirmasi} onClick={handleKonfirmasiOngkir}>
+              Konfirmasi
+            </Button>
+          </div>
+        )}
+      </Modal>
+
     </div>
   )
 }

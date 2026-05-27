@@ -30,8 +30,7 @@ const Checkout = () => {
   const [selectedShipping, setSelectedShipping] = useState(null)
   const [loadingShipping, setLoadingShipping] = useState(false)
 
-  // State untuk fitur Nego Ongkir
-  const [ongkirDitanggung, setOngkirDitanggung] = useState('buyer') // 'buyer' atau 'seller'
+  // State untuk fitur Nego Ongkir - dihapus, penjual yang menentukan
 
   // Mengambil daftar semua alamat user
   const userAddresses = useMemo(() => {
@@ -133,53 +132,31 @@ const Checkout = () => {
     fetchData()
   }, [productId, navigate])
 
+  // Checkout selalu melalui alur Nego: kirim request ke penjual, penjual konfirmasi ongkir
   const handleCheckout = async () => {
+    if (!selectedShipping) {
+      toast.error('Pilih opsi pengiriman terlebih dahulu')
+      return
+    }
     setIsSubmitting(true)
-    
-    // Jika ditanggung penjual, ongkir di total adalah 0
-    const finalOngkir = ongkirDitanggung === 'buyer' ? (selectedShipping?.price || 0) : 0;
-    
     try {
-      if (ongkirDitanggung === 'seller') {
-        // --- 1. ALUR NEGOSIASI ONGKIR ---
-        const response = await api.post('/transactions/nego/request', {
-            product_id: product.id,
-            price: product.harga,
-            seller_id: seller?.id || product.user_id,
-            alamat_pengiriman: getUserAddress() || '-',
-            ongkir: selectedShipping?.price || 0, // Kirim nominal aslinya walau ditanggung penjual
-            courier: selectedShipping?.courier_name || 'JNE'
-        });
+      const response = await api.post('/transactions/nego/request', {
+        product_id: product.id,
+        price: product.harga,
+        seller_id: seller?.id || product.user_id,
+        alamat_pengiriman: getUserAddress() || '-',
+        ongkir: selectedShipping?.price || 0,
+        courier: `${selectedShipping?.courier_name || ''} ${selectedShipping?.type || ''}`.trim()
+      })
 
-        if (response.data.success || response.status === 200 || response.status === 201) {
-            toast.success('Pesanan dibuat, menunggu konfirmasi ongkir penjual');
-            navigate('/buyer/orders');
-        } else {
-            throw new Error(response.data.message || 'Gagal membuat pesanan nego');
-        }
+      if (response.data.success || response.status === 200 || response.status === 201) {
+        toast.success('Pesanan berhasil dibuat! Menunggu konfirmasi ongkir dari penjual.')
+        navigate('/buyer/orders')
       } else {
-        // --- 2. ALUR NORMAL (Langsung ke DOKU) ---
-        const response = await api.post('/payment/token', {
-          product_id: product.id,
-          price: product.harga,
-          seller_id: seller?.id || product.user_id,
-          alamat_pengiriman: getUserAddress() || '-',
-          ongkir: finalOngkir,
-          courier: selectedShipping?.courier_name || 'JNE',
-          return_url: `${window.location.origin}/buyer/orders`,
-          callback_url: `${window.location.origin}/buyer/orders`
-        });
-
-        // REDIRECT LANGSUNG KE PAYMENT PAGE DOKU
-        if (response.data.payment_url || response.data.doku) {
-          window.location.href = response.data.payment_url || response.data.doku;
-          return;
-        } else {
-          toast.error('Gagal mendapatkan link pembayaran dari Doku');
-        }
+        throw new Error(response.data.message || 'Gagal membuat pesanan')
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message || 'Gagal memproses pembayaran');
+      toast.error(error.response?.data?.message || error.message || 'Gagal memproses pesanan')
     } finally {
       setIsSubmitting(false)
     }
@@ -248,8 +225,7 @@ const Checkout = () => {
   }
 
   const ongkirNominal = selectedShipping?.price || 0
-  const ongkirTampil = ongkirDitanggung === 'buyer' ? ongkirNominal : 0
-  const totalPembayaran = product.harga + ongkirTampil + 2500 // 2500 is service fee
+  const totalPembayaran = product.harga + ongkirNominal + 2500
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 pb-16 md:pb-0">
@@ -304,35 +280,7 @@ const Checkout = () => {
                 </div>
               </div>
 
-              {/* Siapa yang menanggung ongkir */}
-              <div className="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Siapa yang menanggung Ongkir?</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <label 
-                    className={`border rounded-xl p-4 cursor-pointer transition-all ${ongkirDitanggung === 'buyer' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'}`}
-                    onClick={() => setOngkirDitanggung('buyer')}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-gray-900">Saya Sendiri</span>
-                      <input type="radio" name="tanggungOngkir" checked={ongkirDitanggung === 'buyer'} readOnly className="text-primary-600" />
-                    </div>
-                    <p className="text-xs text-gray-500">Bayar ongkir sesuai tarif normal.</p>
-                  </label>
-                  
-                  <label 
-                    className={`border rounded-xl p-4 cursor-pointer transition-all ${ongkirDitanggung === 'seller' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'}`}
-                    onClick={() => setOngkirDitanggung('seller')}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-gray-900">Tanyakan Penjual (Nego)</span>
-                      <input type="radio" name="tanggungOngkir" checked={ongkirDitanggung === 'seller'} readOnly className="text-primary-600" />
-                    </div>
-                    <p className="text-xs text-gray-500">Tunggu persetujuan penjual. Checkout ditunda.</p>
-                  </label>
-                </div>
-              </div>
 
-              {/* Opsi Pengiriman */}
               <div className="bg-white rounded-2xl p-6 shadow-soft border border-gray-100">
                 <div className="flex items-center gap-2 mb-4">
                   <Truck className="text-primary-600" size={20} />
@@ -399,12 +347,8 @@ const Checkout = () => {
                     <span className="font-medium text-gray-900">{formatCurrency(product.harga)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Total Ongkos Kirim</span>
-                    {ongkirDitanggung === 'seller' ? (
-                      <span className="font-medium text-green-600">Nego (Rp 0)</span>
-                    ) : (
-                      <span className="font-medium text-gray-900">{formatCurrency(ongkirTampil)}</span>
-                    )}
+                    <span className="text-gray-600">Ongkos Kirim (Sementara)</span>
+                    <span className="font-medium text-gray-500 italic">Menunggu Konfirmasi Penjual</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Biaya Layanan Platform</span>
@@ -415,8 +359,9 @@ const Checkout = () => {
                 <div className="border-t border-gray-100 pt-4 mb-6">
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-gray-900">Total Tagihan</span>
-                    <span className="text-xl font-bold text-primary-700">{formatCurrency(totalPembayaran)}</span>
+                    <span className="text-xl font-bold text-primary-700">{formatCurrency(product.harga + 2500)}</span>
                   </div>
+                  <p className="text-xs text-gray-400 mt-1 text-right">*Ongkir ditentukan oleh penjual</p>
                 </div>
 
                 <div className="bg-emerald-50 rounded-xl p-3 flex items-start gap-3 mb-6">
@@ -431,9 +376,9 @@ const Checkout = () => {
                   size="lg" 
                   onClick={handleCheckout}
                   isLoading={isSubmitting}
-                  disabled={isSubmitting || !getUserAddress()}
+                  disabled={isSubmitting || !getUserAddress() || !selectedShipping}
                 >
-                  {ongkirDitanggung === 'seller' ? 'Pesan Sekarang' : 'Bayar Sekarang'}
+                  Pesan Sekarang
                 </Button>
                 
                 {!getUserAddress() && (

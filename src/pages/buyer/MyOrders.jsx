@@ -61,61 +61,45 @@ const MyOrders = () => {
   }
 
   const handlePaymentRedirect = async (order) => {
-    // If we already have the URL from backend
     if (order.payment_url) {
       window.location.href = order.payment_url;
       return;
     }
 
-    // Jika ini adalah pesanan Nego (biasanya ada flag is_nego dari backend)
-    if (order.is_nego || order.tipe === 'nego' || order.type === 'nego') {
-      try {
-        toast.loading('Mengambil link pembayaran...', { id: 'payment' });
-        const res = await api.post(`/transactions/nego-pay/${order.id}`, {
-            frontend_url: window.location.origin
-        });
-        
-        toast.dismiss('payment');
-        if (res.data?.payment_url) {
-            window.location.href = res.data.payment_url;
-        } else {
-            toast.error('Gagal mendapatkan link pembayaran dari Doku');
-        }
-      } catch (e) {
-        toast.dismiss('payment');
-        console.error('Gagal memproses pembayaran DOKU:', e);
-        toast.error('Gagal memproses pembayaran: ' + (e.response?.data?.message || e.message));
-      }
-      return;
-    }
-    
-    // Otherwise, generate a fresh token from API just like Checkout.jsx
+    // Semua pesanan sekarang melalui alur nego
     try {
       toast.loading('Mengambil link pembayaran...', { id: 'payment' });
-      // hargaFinal di DB sudah berisi total harga + ongkir + fee.
-      // Endpoint /payment/token di backend akan otomatis menambah ongkir + 2500 lagi.
-      // Jadi kita harus mengirim harga dasar produk saja agar tidak double-counting.
-      const hargaDasarProduk = (order.hargaFinal || 0) - (order.ongkir || 0) - 2500;
-      
-      const response = await api.post('/payment/token', {
-        product_id: order.productId,
-        price: hargaDasarProduk,
-        seller_id: order.sellerId,
-        alamat_pengiriman: order.alamatPengiriman || '-',
-        ongkir: order.ongkir || 0,
-        return_url: `${window.location.origin}/buyer/orders`,
-        callback_url: `${window.location.origin}/buyer/orders`
+      const res = await api.post(`/transactions/nego-pay/${order.id}`, {
+        frontend_url: window.location.origin
       });
-
       toast.dismiss('payment');
-      if (response.data?.payment_url) {
-        window.location.href = response.data.payment_url;
+      if (res.data?.payment_url) {
+        window.location.href = res.data.payment_url;
       } else {
         toast.error('Gagal mendapatkan link pembayaran dari Doku');
       }
-    } catch (error) {
+    } catch (e) {
       toast.dismiss('payment');
-      toast.error(error.response?.data?.message || 'Gagal memproses pembayaran');
+      // Fallback ke payment/token
+      try {
+        const hargaDasar = (order.hargaFinal || 0) - (order.ongkir || 0) - 2500;
+        const response = await api.post('/payment/token', {
+          product_id: order.productId,
+          price: hargaDasar,
+          seller_id: order.sellerId,
+          alamat_pengiriman: order.alamatPengiriman || '-',
+          ongkir: order.ongkir || 0,
+          return_url: `${window.location.origin}/buyer/orders`,
+          callback_url: `${window.location.origin}/buyer/orders`
+        });
+        if (response.data?.payment_url) {
+          window.location.href = response.data.payment_url;
+        } else {
+          toast.error('Gagal mendapatkan link pembayaran dari Doku');
+        }
+      } catch (fallbackErr) {
+        toast.error('Gagal memproses pembayaran: ' + (fallbackErr.response?.data?.message || fallbackErr.message));
+      }
     }
   }
 
@@ -166,6 +150,8 @@ const MyOrders = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
+      case 'menunggu_konfirmasi_penjual':
+        return <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">⏳ Menunggu Ongkir</span>
       case 'pending':
         return <Badge variant="warning">Menunggu Pembayaran</Badge>
       case 'paid':
@@ -268,6 +254,16 @@ const MyOrders = () => {
                     </div>
                   </div>
 
+                  {order.status === 'menunggu_konfirmasi_penjual' && (
+                    <div className="bg-amber-50 rounded-xl p-4 mb-4 flex items-start gap-3 border border-amber-100">
+                      <Clock className="text-amber-600 shrink-0 mt-0.5" size={18} />
+                      <div>
+                        <p className="text-sm font-medium text-amber-900">Menunggu Konfirmasi Ongkir</p>
+                        <p className="text-xs text-amber-700 mt-1">Penjual sedang meninjau pesananmu dan akan menentukan siapa yang menanggung ongkir. Mohon tunggu sebentar.</p>
+                      </div>
+                    </div>
+                  )}
+
                   {order.status === 'shipped' && (
                     <div className="bg-blue-50 rounded-xl p-4 mb-4 flex items-start gap-3 border border-blue-100">
                       <Truck className="text-blue-600 shrink-0 mt-0.5" size={18} />
@@ -286,6 +282,16 @@ const MyOrders = () => {
                       Chat Penjual
                     </Button>
                     
+                    {order.status === 'menunggu_konfirmasi_penjual' && (
+                      <button
+                        onClick={() => handleOpenCancelModal(order)}
+                        className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl border border-red-200 text-red-600 font-medium text-[11px] sm:text-sm bg-white hover:bg-red-50 hover:border-red-400 active:scale-95 transition-all duration-150 whitespace-nowrap shrink-0"
+                      >
+                        <XCircle size={12} className="sm:w-4 sm:h-4" />
+                        Batal
+                      </button>
+                    )}
+
                     {order.status === 'pending' && (
                       <>
                         <button

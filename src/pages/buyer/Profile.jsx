@@ -130,7 +130,7 @@ const Profile = () => {
   const [profileForm, setProfileForm] = useState({
     nama: user?.profile?.nama || '',
     email: user?.email || '',
-    noTelp: user?.profile?.noTelp || '-',
+    noTelp: user?.profile?.noTelp && user?.profile?.noTelp !== '-' ? user.profile.noTelp : '',
     tanggalLahir: user?.profile?.tanggalLahir || '',
     jenisKelamin: user?.profile?.jenisKelamin || 'Laki-laki',
   })
@@ -219,7 +219,8 @@ const Profile = () => {
         role: user.role,
         alamat: addressForm.alamat || user?.profile?.alamat || '',
       }
-      await updateProfile(payload)
+      const result = await updateProfile(payload)
+      if (result && !result.success) return
       toast.success('Profil berhasil diperbarui')
     } catch (error) {
       toast.error(error.message || 'Gagal memperbarui profil')

@@ -235,7 +235,7 @@ const MyOrders = () => {
                           <XCircle size={12} className="sm:w-4 sm:h-4" />
                           Batal
                         </button>
-                        <Button className="!px-2.5 !py-1.5 !text-[11px] sm:!px-4 sm:!py-2 sm:!text-sm whitespace-nowrap shrink-0" onClick={() => navigate(`/payment/success/${order.order_id || order.id}`)}>
+                        <Button className="!px-2.5 !py-1.5 !text-[11px] sm:!px-4 sm:!py-2 sm:!text-sm whitespace-nowrap shrink-0" onClick={() => navigate(`/simulation/doku?amount=${(order.hargaFinal || 0) + (order.ongkir || 0) + 2500}&invoice=${order.order_id || order.id}&type=order&callback=${encodeURIComponent('/buyer/orders')}`)}>
                           Bayar
                         </Button>
                       </>

@@ -65,17 +65,13 @@ const DokuSimulation = () => {
         }
       } else {
         // Flow pembayaran order biasa
-        subscriptionService.setStatus('active')
-        subscriptionService.addEmail(
-          'Thriftly Official <thriftlydev@gmail.com>',
-          'Hore! Langganan Thriftly Aktif 🎉',
-          `Halo! Selamat, pembayaran Anda telah berhasil diverifikasi.\n\nAkun Anda telah aktif. Silakan klik tombol di bawah untuk melihat status.`,
-          '/profile?tab=subscription',
-          'Lihat Status Akun Saya'
-        )
-        toast.success('Pembayaran sukses! 🎉', { duration: 5000 })
+        toast.success('Pembayaran sukses diproses! 🎉', { duration: 5000 })
         setIsVerifying(false)
-        navigate('/profile?tab=subscription')
+        if (callbackParam) {
+          window.location.href = decodeURIComponent(callbackParam)
+        } else {
+          navigate('/buyer/orders')
+        }
       }
     }, 2000)
   }

@@ -66,6 +66,28 @@ const MyOrders = () => {
       window.location.href = order.payment_url;
       return;
     }
+
+    // Jika ini adalah pesanan Nego (biasanya ada flag is_nego dari backend)
+    if (order.is_nego || order.tipe === 'nego' || order.type === 'nego') {
+      try {
+        toast.loading('Mengambil link pembayaran...', { id: 'payment' });
+        const res = await api.post(`/transactions/nego-pay/${order.id}`, {
+            frontend_url: window.location.origin
+        });
+        
+        toast.dismiss('payment');
+        if (res.data?.payment_url) {
+            window.location.href = res.data.payment_url;
+        } else {
+            toast.error('Gagal mendapatkan link pembayaran dari Doku');
+        }
+      } catch (e) {
+        toast.dismiss('payment');
+        console.error('Gagal memproses pembayaran DOKU:', e);
+        toast.error('Gagal memproses pembayaran: ' + (e.response?.data?.message || e.message));
+      }
+      return;
+    }
     
     // Otherwise, generate a fresh token from API just like Checkout.jsx
     try {

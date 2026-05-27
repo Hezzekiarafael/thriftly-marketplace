@@ -52,16 +52,13 @@ const Checkout = () => {
       const originPostal = extractPostal(sellerAddress)
       const destPostal = extractPostal(buyerAddress)
 
+      const parsedWeight = Math.max(1, Number(productData.berat) || 1000);
+
       const response = await api.post('/shipping/cost', {
         origin_postal_code: originPostal,
         destination_postal_code: destPostal,
-        couriers: 'jne,jnt,sicepat',
-        items: [{
-          name: productData.nama || 'Produk',
-          value: productData.harga || 0,
-          weight: productData.berat || 1000,
-          quantity: 1
-        }]
+        weight: parsedWeight,
+        courier: 'jne,jnt,sicepat'
       })
 
       const rates = response.data?.pricing || response.data?.data?.pricing || response.data || []

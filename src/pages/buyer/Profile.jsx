@@ -376,7 +376,8 @@ const Profile = () => {
       await updateProfile({
         name: user.profile.nama,
         email: user.email,
-        no_rekening: updatedList.length > 0 ? `${updatedList[0].namaBank} - ${updatedList[0].nomorRekening} - ${updatedList[0].namaPemilik}` : null
+        no_rekening: updatedList.length > 0 ? `${updatedList[0].namaBank} - ${updatedList[0].nomorRekening} - ${updatedList[0].namaPemilik}` : null,
+        bank_accounts: updatedList // Send full array for backend bank_accounts table
       })
       toast.success('Rekening bank berhasil disimpan')
       setIsRekeningModalOpen(false)
@@ -403,7 +404,8 @@ const Profile = () => {
       await updateProfile({
         name: user.profile.nama,
         email: user.email,
-        no_rekening: updatedList.length > 0 ? `${updatedList[0].namaBank} - ${updatedList[0].nomorRekening} - ${updatedList[0].namaPemilik}` : null
+        no_rekening: updatedList.length > 0 ? `${updatedList[0].namaBank} - ${updatedList[0].nomorRekening} - ${updatedList[0].namaPemilik}` : null,
+        bank_accounts: updatedList // Send full array for backend bank_accounts table
       })
       toast.success('Rekening bank berhasil dihapus')
       setDeleteRekeningIndex(null)

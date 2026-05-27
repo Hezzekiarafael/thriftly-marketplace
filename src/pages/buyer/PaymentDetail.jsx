@@ -64,11 +64,30 @@ const PaymentDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="min-h-screen flex flex-col bg-gray-50 pb-16 md:pb-0">
         <Header />
-        <Container className="flex-grow flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-        </Container>
+        <main className="flex-grow py-8">
+          <Container maxWidth="max-w-2xl">
+            <div className="animate-pulse">
+              <div className="h-4 bg-gray-200 rounded w-40 mb-6"></div>
+              <div className="bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden">
+                <div className="bg-gray-300 p-6 text-center">
+                  <div className="h-7 bg-gray-400/30 rounded w-56 mx-auto mb-2"></div>
+                  <div className="h-4 bg-gray-400/30 rounded w-40 mx-auto"></div>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div className="h-20 bg-gray-200 rounded-xl"></div>
+                  <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+                    <div className="h-4 bg-gray-200 rounded w-24"></div>
+                    <div className="h-7 bg-gray-200 rounded w-32"></div>
+                  </div>
+                  <div className="h-20 bg-gray-200 rounded-xl"></div>
+                  <div className="h-12 bg-gray-300 rounded-xl w-full"></div>
+                </div>
+              </div>
+            </div>
+          </Container>
+        </main>
         <Footer />
       </div>
     )

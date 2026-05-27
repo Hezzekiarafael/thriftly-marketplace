@@ -126,11 +126,38 @@ const MyOrders = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="min-h-screen flex flex-col bg-gray-50 pb-16 md:pb-0">
         <Header />
-        <Container className="flex-grow flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-        </Container>
+        <main className="flex-grow py-8">
+          <Container maxWidth="max-w-4xl">
+            <div className="animate-pulse space-y-6">
+              <div className="h-8 bg-gray-200 rounded-lg w-48"></div>
+              {[1, 2, 3].map(i => (
+                <div key={i} className="bg-white rounded-2xl p-6 shadow-soft border border-gray-100 space-y-4">
+                  <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <div className="h-4 bg-gray-200 rounded w-40"></div>
+                      <div className="h-4 bg-gray-200 rounded w-24"></div>
+                    </div>
+                    <div className="h-6 bg-gray-200 rounded-full w-28"></div>
+                  </div>
+                  <div className="flex gap-4">
+                    <div className="w-20 h-20 bg-gray-200 rounded-xl shrink-0"></div>
+                    <div className="flex-1 space-y-2">
+                      <div className="h-5 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-24"></div>
+                      <div className="h-5 bg-gray-200 rounded w-32"></div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                    <div className="h-10 bg-gray-200 rounded-xl w-24"></div>
+                    <div className="h-10 bg-gray-200 rounded-xl w-28"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Container>
+        </main>
         <Footer />
       </div>
     )

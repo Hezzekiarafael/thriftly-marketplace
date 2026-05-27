@@ -112,11 +112,46 @@ const EditProduct = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="min-h-screen flex flex-col bg-gray-50 pb-16 md:pb-0">
         <Header />
-        <Container className="flex-grow flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-        </Container>
+        <main className="flex-grow py-8">
+          <Container maxWidth="max-w-3xl">
+            <div className="animate-pulse">
+              <div className="h-5 bg-gray-200 rounded w-44 mb-6"></div>
+              <div className="bg-white rounded-2xl shadow-soft p-6 md:p-8 space-y-8">
+                <div>
+                  <div className="h-7 bg-gray-200 rounded w-40 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-64"></div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="aspect-square bg-gray-200 rounded-xl"></div>
+                  ))}
+                  <div className="aspect-square bg-gray-100 rounded-xl border-2 border-dashed border-gray-200"></div>
+                </div>
+                <div className="space-y-4 pt-6 border-t border-gray-100">
+                  <div className="h-5 bg-gray-200 rounded w-40 mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+                  <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                  <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+                  <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                </div>
+                <div className="space-y-4 pt-6 border-t border-gray-100">
+                  <div className="h-5 bg-gray-200 rounded w-40 mb-4"></div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="h-12 bg-gray-200 rounded-xl"></div>
+                    <div className="h-12 bg-gray-200 rounded-xl"></div>
+                  </div>
+                  <div className="h-32 bg-gray-200 rounded-xl w-full"></div>
+                </div>
+                <div className="flex gap-4 pt-6 border-t border-gray-100">
+                  <div className="h-12 bg-gray-200 rounded-xl flex-1"></div>
+                  <div className="h-12 bg-gray-300 rounded-xl flex-1"></div>
+                </div>
+              </div>
+            </div>
+          </Container>
+        </main>
         <Footer />
       </div>
     )

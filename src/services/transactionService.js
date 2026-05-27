@@ -212,7 +212,7 @@ export const transactionService = {
   // 🚚 Helper: Tandai sudah dikirim
   async markAsShipped(id, courier, resiNumber, videoUrl = null) {
     try {
-      const response = await api.put(`/transactions/${id}/status`, {
+      const response = await api.post(`/transactions/${id}/status`, {
         status: 'shipped',
         courier: courier,
         resi_number: resiNumber,

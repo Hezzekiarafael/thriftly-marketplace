@@ -242,7 +242,11 @@ export const userService = {
         }
       }
 
-      const response = await api.post('/user/verify-ktp', fd);
+      const response = await api.post('/user/verify-ktp', fd, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       const resData = response.data.user || response.data;
       return mapLaravelUser(resData) || resData;
     } catch (error) {

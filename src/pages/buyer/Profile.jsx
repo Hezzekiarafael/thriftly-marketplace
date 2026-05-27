@@ -258,7 +258,8 @@ const Profile = () => {
         email: user.email,
         alamat: updatedList.length > 0 ? updatedList[0].alamat : '',
         address: updatedList.length > 0 ? updatedList[0].alamat : '', // legacy compatibility
-        lokasi: lokasiValue // keep primary location in this field
+        lokasi: lokasiValue, // keep primary location in this field
+        addresses: updatedList // Send full array for backend user_addresses table
       })
       toast.success('Alamat berhasil disimpan')
       setIsEditingAddress(false)
@@ -290,7 +291,8 @@ const Profile = () => {
         email: user.email,
         alamat: updatedList.length > 0 ? updatedList[0].alamat : '',
         address: updatedList.length > 0 ? updatedList[0].alamat : '',
-        lokasi: newPrimary.lokasi || user?.profile?.lokasi
+        lokasi: newPrimary.lokasi || user?.profile?.lokasi,
+        addresses: updatedList // Send full array for backend user_addresses table
       })
       toast.success('Alamat utama berhasil diubah')
     } catch (error) {
@@ -317,7 +319,8 @@ const Profile = () => {
         email: user.email,
         alamat: updatedList.length > 0 ? updatedList[0].alamat : null,
         address: updatedList.length > 0 ? updatedList[0].alamat : null,
-        lokasi: updatedList.length > 0 ? updatedList[0].lokasi : null
+        lokasi: updatedList.length > 0 ? updatedList[0].lokasi : null,
+        addresses: updatedList // Send full array for backend user_addresses table
       })
       toast.success('Alamat berhasil dihapus')
       setDeleteAddressIndex(null)

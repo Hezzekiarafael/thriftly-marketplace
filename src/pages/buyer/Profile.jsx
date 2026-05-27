@@ -39,8 +39,8 @@ const LocationSelector = ({ position, setPosition, setAddress }) => {
   const map = useMap()
 
   useEffect(() => {
-    if (position) {
-      map.flyTo(position, map.getZoom(), { animate: true })
+    if (position && position[0] && position[1]) {
+      map.setView(position, 16)
     }
   }, [position, map])
 

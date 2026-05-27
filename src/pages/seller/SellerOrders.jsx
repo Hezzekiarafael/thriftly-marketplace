@@ -291,6 +291,11 @@ const SellerOrders = () => {
                         Kirim Pesanan
                       </Button>
                     )}
+                    {order.status === 'shipped' && (
+                      <Button variant="outline" className="border-primary-500 text-primary-600 hover:bg-primary-50" onClick={() => toast('Fitur lacak pengiriman sedang dalam pengembangan', { icon: '🚚' })}>
+                        Lacak Pengiriman
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}

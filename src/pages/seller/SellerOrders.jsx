@@ -394,7 +394,7 @@ const SellerOrders = () => {
         {selectedOrderToShip && (
           <div className="space-y-5">
             {/* Opsi Resi Otomatis */}
-            <label className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all ${isAutoResi ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:border-emerald-300'}`}>
+            <label className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all ${isAutoResi ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'}`}>
               <input 
                 type="checkbox" 
                 checked={isAutoResi} 
@@ -402,7 +402,7 @@ const SellerOrders = () => {
                   setIsAutoResi(e.target.checked)
                   if (e.target.checked) setResiNumber('')
                 }}
-                className="mt-1 w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                className="mt-1 w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
               />
               <div>
                 <p className="font-semibold text-gray-900">Gunakan Resi Otomatis (Biteship)</p>
@@ -431,7 +431,7 @@ const SellerOrders = () => {
                   type="text"
                   value={resiNumber}
                   onChange={(e) => setResiNumber(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
+                  className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
                   placeholder="Masukkan nomor resi..."
                 />
               </div>
@@ -440,13 +440,13 @@ const SellerOrders = () => {
             <div className="flex justify-end gap-3 pt-4">
               <Button 
                 variant="outline" 
-                className="!text-emerald-600 !border-emerald-600 hover:!bg-emerald-50"
+                className="!text-primary-600 !border-primary-600 hover:!bg-primary-50"
                 onClick={() => !isShippingSubmitting && setIsShippingModalOpen(false)}
               >
                 Batal
               </Button>
               <Button 
-                className="!bg-emerald-600 hover:!bg-emerald-700 text-white"
+                className="!bg-primary-600 hover:!bg-primary-700 text-white"
                 isLoading={isShippingSubmitting} 
                 onClick={confirmKirimBarang}
               >

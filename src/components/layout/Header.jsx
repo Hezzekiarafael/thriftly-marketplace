@@ -58,6 +58,7 @@ const Header = () => {
   }
 
   return (
+    <>
     <header className="bg-gradient-to-r from-vintage-charcoal via-gray-800 to-vintage-charcoal shadow-2xl sticky top-0 z-50 border-stitched transition-all duration-300">
       {/* Texture Layer */}
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-paper-texture z-0" />
@@ -275,6 +276,8 @@ const Header = () => {
         </div>
       </div>
     </header>
+    <VerificationModal />
+    </>
   )
 }
 

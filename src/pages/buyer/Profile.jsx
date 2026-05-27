@@ -150,7 +150,8 @@ const Profile = () => {
     if (user?.profile) {
       setProfileForm({
         nama: user.profile.nama || '',
-        noTelp: user.profile.noTelp || '',
+        email: user.email || '',
+        noTelp: user.profile.noTelp && user.profile.noTelp !== '-' ? user.profile.noTelp : '',
         jenisKelamin: user.profile.jenisKelamin || 'Laki-laki',
         tanggalLahir: user.profile.tanggalLahir || '',
       })

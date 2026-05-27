@@ -145,6 +145,27 @@ const Profile = () => {
   const [mapPosition, setMapPosition] = useState([-6.9932, 110.4229]) // Default: Semarang
   const [isLocating, setIsLocating] = useState(false)
 
+  const [rekeningList, setRekeningList] = useState([])
+  const [isLoadingRekening, setIsLoadingRekening] = useState(false)
+
+  const fetchRekeningList = async () => {
+    setIsLoadingRekening(true)
+    try {
+      const data = await userService.getBankAccounts()
+      const list = Array.isArray(data) ? data : (data.data || [])
+      setRekeningList(list.map(rek => ({
+        id: rek.id,
+        namaBank: rek.bank_name,
+        nomorRekening: rek.account_number,
+        namaPemilik: rek.account_holder
+      })))
+    } catch (e) {
+      console.error('Failed to load bank accounts', e)
+    } finally {
+      setIsLoadingRekening(false)
+    }
+  }
+
   // Sinkronisasi form jika data user berubah (setelah refreshUser)
   useEffect(() => {
     if (user?.profile) {
@@ -158,6 +179,7 @@ const Profile = () => {
       setAddressForm({
         alamat: getPrimaryValue(user?.profile?.alamat, 'alamat', user?.id) || ''
       })
+      fetchRekeningList()
     }
   }, [user])
 
@@ -187,23 +209,6 @@ const Profile = () => {
   const [isCameraOpen, setIsCameraOpen] = useState(false)
   const videoRef = useRef(null)
   const streamRef = useRef(null)
-
-  // Helper: parse noRekening → array of {namaBank, nomorRekening, namaPemilik}
-  const parseRekeningList = () => {
-    const local = localStorage.getItem(`rekening_${user?.id}`)
-    if (local) {
-      try { return JSON.parse(local) } catch (e) {}
-    }
-
-    if (!user?.profile?.noRekening) return []
-    try {
-      const parsed = JSON.parse(user.profile.noRekening)
-      if (Array.isArray(parsed)) return parsed
-    } catch {}
-    // Legacy: single string format "BCA - 1234 - Nama"
-    const parts = user.profile.noRekening.split(' - ')
-    return [{ namaBank: parts[0] || 'Bank', nomorRekening: parts[1] || user.profile.noRekening, namaPemilik: parts[2] || '' }]
-  }
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault()
@@ -365,52 +370,32 @@ const Profile = () => {
     }
     setIsSubmitting(true)
     try {
-      const existingList = parseRekeningList()
-      const newEntry = {
-        namaBank: bankForm.namaBank,
-        nomorRekening: bankForm.nomorRekening.trim(),
-        namaPemilik: bankForm.namaPemilik.trim()
-      }
-      const updatedList = [...existingList, newEntry]
-      
-      localStorage.setItem(`rekening_${user.id}`, JSON.stringify(updatedList))
-      
-      await updateProfile({
-        name: user.profile.nama,
-        email: user.email,
-        no_rekening: updatedList.length > 0 ? `${updatedList[0].namaBank} - ${updatedList[0].nomorRekening} - ${updatedList[0].namaPemilik}` : null,
-        bank_accounts: updatedList // Send full array for backend bank_accounts table
+      await userService.addBankAccount({
+        bank_name: bankForm.namaBank,
+        account_number: bankForm.nomorRekening.trim(),
+        account_holder: bankForm.namaPemilik.trim()
       })
       toast.success('Rekening bank berhasil disimpan')
       setIsRekeningModalOpen(false)
       setBankForm({ namaBank: 'BCA', nomorRekening: '', namaPemilik: user?.profile?.nama || '' })
+      fetchRekeningList()
     } catch (error) {
-      toast.error(error.message || 'Gagal menyimpan rekening bank. Jika muncul error limit 50 karakter, minta backend matikan validasi tersebut.')
+      toast.error(error.message || 'Gagal menyimpan rekening bank.')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   const handleRemoveRekening = async (index) => {
+    const rek = rekeningList[index]
+    if (!rek || !rek.id) return toast.error('ID rekening tidak valid, silakan refresh halaman')
+
     setIsSubmitting(true)
     try {
-      const existingList = parseRekeningList()
-      const updatedList = existingList.filter((_, i) => i !== index)
-      
-      if (updatedList.length > 0) {
-        localStorage.setItem(`rekening_${user.id}`, JSON.stringify(updatedList))
-      } else {
-        localStorage.removeItem(`rekening_${user.id}`)
-      }
-      
-      await updateProfile({
-        name: user.profile.nama,
-        email: user.email,
-        no_rekening: updatedList.length > 0 ? `${updatedList[0].namaBank} - ${updatedList[0].nomorRekening} - ${updatedList[0].namaPemilik}` : null,
-        bank_accounts: updatedList // Send full array for backend bank_accounts table
-      })
+      await userService.deleteBankAccount(rek.id)
       toast.success('Rekening bank berhasil dihapus')
       setDeleteRekeningIndex(null)
+      fetchRekeningList()
     } catch (error) {
       toast.error(error.message || 'Gagal menghapus rekening bank')
     } finally {
@@ -1167,7 +1152,6 @@ const Profile = () => {
   )}
 
   const renderRekeningTab = () => {
-    const rekeningList = parseRekeningList()
     const hasRekening = rekeningList.length > 0
 
     return (

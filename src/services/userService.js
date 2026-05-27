@@ -184,6 +184,33 @@ export const userService = {
     }
   },
 
+  async getBankAccounts() {
+    try {
+      const response = await api.get('/bank-accounts');
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Gagal memuat daftar rekening');
+    }
+  },
+
+  async addBankAccount(data) {
+    try {
+      const response = await api.post('/bank-accounts', data);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Gagal menambahkan rekening');
+    }
+  },
+
+  async deleteBankAccount(id) {
+    try {
+      const response = await api.delete(`/bank-accounts/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Gagal menghapus rekening');
+    }
+  },
+
 
 
 

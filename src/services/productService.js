@@ -219,7 +219,7 @@ export const productService = {
 
   async markAsSold(id) {
     try {
-      const response = await api.put(`/products/${id}/sold`)
+      const response = await api.post(`/products/${id}/sold`)
       return mapLaravelProduct(response.data.product || response.data.data || response.data)
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Gagal menandai terjual')
@@ -228,7 +228,7 @@ export const productService = {
 
   async markAsAvailable(id) {
     try {
-      const response = await api.put(`/products/${id}/available`)
+      const response = await api.post(`/products/${id}/available`)
       return mapLaravelProduct(response.data.product || response.data.data || response.data)
     } catch (error) {
       throw new Error(error.response?.data?.message || 'Gagal mengaktifkan kembali produk')

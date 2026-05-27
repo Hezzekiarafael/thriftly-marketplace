@@ -76,7 +76,9 @@ const Checkout = () => {
         price: product.harga,  // kirim harga bersih saja, backend yang tambah ongkir+fee
         seller_id: seller?.id || product.user_id,
         alamat_pengiriman: user.alamat || user.profile?.alamat || '-',
-        ongkir: ongkir
+        ongkir: ongkir,
+        return_url: `${window.location.origin}/buyer/orders`,
+        callback_url: `${window.location.origin}/buyer/orders`
       });
 
       // REDIRECT LANGSUNG KE PAYMENT PAGE DOKU

@@ -80,7 +80,9 @@ const MyOrders = () => {
         price: hargaDasarProduk,
         seller_id: order.sellerId,
         alamat_pengiriman: order.alamatPengiriman || '-',
-        ongkir: order.ongkir || 0
+        ongkir: order.ongkir || 0,
+        return_url: `${window.location.origin}/buyer/orders`,
+        callback_url: `${window.location.origin}/buyer/orders`
       });
 
       toast.dismiss('payment');

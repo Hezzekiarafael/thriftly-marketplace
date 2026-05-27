@@ -40,7 +40,10 @@ const LocationSelector = ({ position, setPosition, setAddress }) => {
 
   useEffect(() => {
     if (position && position[0] && position[1]) {
-      map.setView(position, 16)
+      map.flyTo(position, 16, {
+        animate: true,
+        duration: 1.5 // animasi terbang selama 1.5 detik
+      })
     }
   }, [position, map])
 

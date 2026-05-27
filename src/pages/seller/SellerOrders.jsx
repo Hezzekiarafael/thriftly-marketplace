@@ -392,23 +392,9 @@ const SellerOrders = () => {
         title="Kirim Pesanan"
       >
         {selectedOrderToShip && (
-          <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-100 p-3 rounded-lg text-sm text-blue-800">
-              Silakan atur resi pengiriman untuk <strong>{selectedOrderToShip.product?.nama}</strong>.
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Kurir Pengiriman</label>
-              <input
-                type="text"
-                value={courierCode.toUpperCase()}
-                onChange={(e) => setCourierCode(e.target.value.toLowerCase())}
-                className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
-                placeholder="Contoh: JNT, SICEPAT"
-              />
-            </div>
-
-            <label className="flex items-center gap-2 cursor-pointer mt-2">
+          <div className="space-y-5">
+            {/* Opsi Resi Otomatis */}
+            <label className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all ${isAutoResi ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:border-emerald-300'}`}>
               <input 
                 type="checkbox" 
                 checked={isAutoResi} 
@@ -416,27 +402,55 @@ const SellerOrders = () => {
                   setIsAutoResi(e.target.checked)
                   if (e.target.checked) setResiNumber('')
                 }}
-                className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+                className="mt-1 w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
               />
-              <span className="text-sm font-medium text-gray-700">Gunakan Resi Otomatis</span>
+              <div>
+                <p className="font-semibold text-gray-900">Gunakan Resi Otomatis (Biteship)</p>
+                <p className="text-xs text-gray-500 mt-1">Sistem akan secara otomatis memanggil kurir untuk melakukan pick-up ke alamat Anda.</p>
+              </div>
             </label>
 
+            {/* Pilihan Kurir */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Kurir Pengiriman (Pilihan Pembeli)</label>
+              <select
+                disabled
+                value={courierCode.toUpperCase()}
+                className="w-full border border-gray-300 rounded-lg p-2.5 bg-gray-50 text-gray-700 appearance-none outline-none"
+              >
+                <option value={courierCode.toUpperCase()}>{courierCode.toUpperCase()}</option>
+              </select>
+              <p className="text-xs text-gray-500 mt-2">Kurir telah dikunci sesuai dengan pilihan yang dibayar oleh pembeli.</p>
+            </div>
+
+            {/* Input Resi Manual */}
             {!isAutoResi && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nomor Resi</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nomor Resi Manual</label>
                 <input
                   type="text"
                   value={resiNumber}
                   onChange={(e) => setResiNumber(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+                  className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all"
                   placeholder="Masukkan nomor resi..."
                 />
               </div>
             )}
 
-            <div className="pt-2">
-              <Button fullWidth isLoading={isShippingSubmitting} onClick={confirmKirimBarang}>
-                Konfirmasi Kirim
+            <div className="flex justify-end gap-3 pt-4">
+              <Button 
+                variant="outline" 
+                className="!text-emerald-600 !border-emerald-600 hover:!bg-emerald-50"
+                onClick={() => !isShippingSubmitting && setIsShippingModalOpen(false)}
+              >
+                Batal
+              </Button>
+              <Button 
+                className="!bg-emerald-600 hover:!bg-emerald-700 text-white"
+                isLoading={isShippingSubmitting} 
+                onClick={confirmKirimBarang}
+              >
+                Kirim Sekarang
               </Button>
             </div>
           </div>

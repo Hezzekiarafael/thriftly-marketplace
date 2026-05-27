@@ -13,6 +13,7 @@ import { productService } from '../../services/productService'
 import { userService } from '../../services/userService'
 import { formatCurrency, formatDate } from '../../utils/helpers'
 import toast from 'react-hot-toast'
+import api from '../../services/api'
 
 const MyOrders = () => {
   const { user } = useAuth()
@@ -56,6 +57,38 @@ const MyOrders = () => {
       toast.error('Gagal memuat pesanan')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handlePaymentRedirect = async (order) => {
+    // If we already have the URL from backend
+    if (order.payment_url) {
+      window.location.href = order.payment_url;
+      return;
+    }
+    
+    // Otherwise, generate a fresh token from API just like Checkout.jsx
+    try {
+      toast.loading('Mengambil link pembayaran...', { id: 'payment' });
+      const totalPembayaran = (order.hargaFinal || 0) + (order.ongkir || 0) + 2500;
+      
+      const response = await api.post('/payment/token', {
+        product_id: order.productId,
+        price: totalPembayaran,
+        seller_id: order.sellerId,
+        alamat_pengiriman: order.alamatPengiriman || '-',
+        ongkir: order.ongkir || 0
+      });
+
+      toast.dismiss('payment');
+      if (response.data?.payment_url) {
+        window.location.href = response.data.payment_url;
+      } else {
+        toast.error('Gagal mendapatkan link pembayaran dari Doku');
+      }
+    } catch (error) {
+      toast.dismiss('payment');
+      toast.error(error.response?.data?.message || 'Gagal memproses pembayaran');
     }
   }
 
@@ -235,7 +268,10 @@ const MyOrders = () => {
                           <XCircle size={12} className="sm:w-4 sm:h-4" />
                           Batal
                         </button>
-                        <Button className="!px-2.5 !py-1.5 !text-[11px] sm:!px-4 sm:!py-2 sm:!text-sm whitespace-nowrap shrink-0" onClick={() => navigate(`/simulation/doku?amount=${(order.hargaFinal || 0) + (order.ongkir || 0) + 2500}&invoice=${order.order_id || order.id}&type=order&callback=${encodeURIComponent('/buyer/orders')}`)}>
+                        <Button 
+                          className="!px-2.5 !py-1.5 !text-[11px] sm:!px-4 sm:!py-2 sm:!text-sm whitespace-nowrap shrink-0" 
+                          onClick={() => handlePaymentRedirect(order)}
+                        >
                           Bayar
                         </Button>
                       </>

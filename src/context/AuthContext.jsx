@@ -70,6 +70,13 @@ export const AuthProvider = ({ children }) => {
       const updated = await userService.updateUser(user.id, updatedData)
       const userWithoutPassword = { ...updated }
       delete userWithoutPassword.password
+      
+      // FIX: If email is changed, it is no longer verified
+      if (updatedData.email && user && updatedData.email !== user.email) {
+        userWithoutPassword.emailVerifiedAt = null
+        userWithoutPassword.email_verified_at = null
+      }
+      
       setUser(userWithoutPassword)
       return { success: true, user: userWithoutPassword }
     } catch (error) {
@@ -83,6 +90,13 @@ export const AuthProvider = ({ children }) => {
       const updated = await userService.updateProfile(user.id, profileData)
       const userWithoutPassword = { ...updated }
       delete userWithoutPassword.password
+      
+      // FIX: If email is changed, it is no longer verified
+      if (profileData.email && user && profileData.email !== user.email) {
+        userWithoutPassword.emailVerifiedAt = null
+        userWithoutPassword.email_verified_at = null
+      }
+      
       setUser(userWithoutPassword)
       return { success: true, user: userWithoutPassword }
     } catch (error) {

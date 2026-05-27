@@ -4,13 +4,28 @@ import { CHATBOT_CONFIG, QUICK_REPLIES, KNOWLEDGE_BASE, findAnswer } from '../..
 
 const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false)
-  const [messages, setMessages] = useState([])
+  const [messages, setMessages] = useState(() => {
+    const saved = localStorage.getItem('thriftly_chat_history')
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch (e) {
+        return []
+      }
+    }
+    return []
+  })
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [showScrollBtn, setShowScrollBtn] = useState(false)
   const messagesEndRef = useRef(null)
   const messagesContainerRef = useRef(null)
   const inputRef = useRef(null)
+
+  // Simpan ke localStorage setiap kali messages berubah
+  useEffect(() => {
+    localStorage.setItem('thriftly_chat_history', JSON.stringify(messages))
+  }, [messages])
 
   // Initial greeting saat pertama kali dibuka
   const initChat = useCallback(() => {

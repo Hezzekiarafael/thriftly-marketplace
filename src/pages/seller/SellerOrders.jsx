@@ -35,7 +35,8 @@ const SellerOrders = () => {
   const [resiNumber, setResiNumber] = useState('')
   const [courierCode, setCourierCode] = useState('jnt')
   const [isShippingSubmitting, setIsShippingSubmitting] = useState(false)
-
+  const [trackingData, setTrackingData] = useState(null)
+  const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false)
   const tabs = ['Semua', 'Perlu Diproses', 'Telah Diproses', 'Pembatalan']
 
   useEffect(() => {
@@ -144,6 +145,20 @@ const SellerOrders = () => {
       case 'completed': return <Badge variant="success">Selesai</Badge>
       case 'retur': return <Badge variant="error">Dibatalkan/Retur</Badge>
       default: return <Badge>{status}</Badge>
+    }
+  }
+
+  const handleTrack = async (order) => {
+    setIsTrackingModalOpen(true)
+    setTrackingData(null)
+    
+    try {
+      const courierCode = order.courier ? order.courier.split(' ')[0].toLowerCase() : 'jnt'
+      const data = await transactionService.trackShipment(order.resi_number || order.id, courierCode)
+      setTrackingData(data)
+    } catch (error) {
+      toast.error(error?.response?.data?.message || 'Gagal melacak pengiriman')
+      setIsTrackingModalOpen(false)
     }
   }
 
@@ -321,7 +336,7 @@ const SellerOrders = () => {
                       </Button>
                     )}
                     {order.status === 'shipped' && (
-                      <Button variant="outline" className="border-primary-500 text-primary-600 hover:bg-primary-50" onClick={() => toast('Fitur lacak pengiriman sedang dalam pengembangan', { icon: '🚚' })}>
+                      <Button variant="outline" className="border-primary-500 text-primary-600 hover:bg-primary-50" onClick={() => handleTrack(order)}>
                         Lacak Pengiriman
                       </Button>
                     )}
@@ -457,6 +472,43 @@ const SellerOrders = () => {
         )}
       </Modal>
 
+      {/* Modal Lacak Pengiriman */}
+      <Modal
+        isOpen={isTrackingModalOpen}
+        onClose={() => setIsTrackingModalOpen(false)}
+        title="Lacak Pengiriman"
+      >
+        {!trackingData ? (
+          <div className="flex justify-center p-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {trackingData.history && trackingData.history.length > 0 ? (
+              <div className="relative pl-6 border-l-2 border-gray-200 space-y-6">
+                {trackingData.history.map((item, idx) => (
+                  <div key={idx} className="relative">
+                    <div className="absolute -left-[31px] w-4 h-4 rounded-full bg-white border-4 border-primary-300"></div>
+                    <p className="text-xs text-gray-500 mb-1">{item.updated_at}</p>
+                    <div className="bg-gray-50 border border-gray-100 rounded-lg p-3">
+                      <p className="text-sm text-gray-800">{item.note}</p>
+                      <p className="text-xs font-semibold text-primary-600 mt-2">{item.status}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-gray-500">
+                <p>Data pelacakan belum tersedia.</p>
+                <p className="text-xs mt-1">Silakan coba beberapa saat lagi.</p>
+              </div>
+            )}
+            <div className="flex justify-end pt-4">
+              <Button onClick={() => setIsTrackingModalOpen(false)}>Tutup</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

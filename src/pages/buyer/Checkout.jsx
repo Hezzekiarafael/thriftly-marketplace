@@ -73,7 +73,7 @@ const Checkout = () => {
     try {
       const response = await api.post('/payment/token', {
         product_id: product.id,
-        price: totalPembayaran,
+        price: product.harga,  // kirim harga bersih saja, backend yang tambah ongkir+fee
         seller_id: seller?.id || product.user_id,
         alamat_pengiriman: user.alamat || user.profile?.alamat || '-',
         ongkir: ongkir

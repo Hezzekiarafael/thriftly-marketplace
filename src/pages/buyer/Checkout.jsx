@@ -23,19 +23,72 @@ const Checkout = () => {
   const [seller, setSeller] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  
-  const [shippingOption, setShippingOption] = useState('reguler')
 
-  const shippingRates = {
-    reguler: 15000,
-    next_day: 25000,
-    cargo: 35000
-  }
+  // State untuk ongkir real-time dari Biteship
+  const [shippingOptions, setShippingOptions] = useState([])
+  const [selectedShipping, setSelectedShipping] = useState(null)
+  const [loadingShipping, setLoadingShipping] = useState(false)
 
   // Helper: ambil alamat dari berbagai kemungkinan field backend
   const getUserAddress = () => {
     const rawAlamat = user?.alamat || user?.profile?.alamat || ''
     return getPrimaryValue(rawAlamat, 'alamat')
+  }
+
+  // Helper: ekstrak kode pos 5 digit dari string alamat
+  const extractPostal = (address) => {
+    const match = address?.match(/\b\d{5}\b/g)
+    return match ? match[match.length - 1] : '50131' // default Semarang
+  }
+
+  // Fetch ongkir real-time dari Biteship via backend
+  const getBiteshipRates = async (productData, sellerData) => {
+    const buyerAddress = getUserAddress()
+    if (!buyerAddress || !productData || !sellerData) return
+
+    setLoadingShipping(true)
+    try {
+      const sellerAddress = sellerData?.profile?.alamat || sellerData?.alamat || ''
+      const originPostal = extractPostal(sellerAddress)
+      const destPostal = extractPostal(buyerAddress)
+
+      const response = await api.post('/shipping/cost', {
+        origin_postal_code: originPostal,
+        destination_postal_code: destPostal,
+        couriers: 'jne,jnt,sicepat',
+        items: [{
+          name: productData.nama || 'Produk',
+          value: productData.harga || 0,
+          weight: productData.berat || 1000,
+          quantity: 1
+        }]
+      })
+
+      const rates = response.data?.pricing || response.data?.data?.pricing || response.data || []
+      if (Array.isArray(rates) && rates.length > 0) {
+        setShippingOptions(rates)
+        setSelectedShipping(rates[0]) // default pilih yang pertama
+      } else {
+        // Fallback ke opsi default jika Biteship tidak mengembalikan data
+        const fallback = [
+          { courier_name: 'JNE', type: 'REG', description: 'Reguler', price: 15000, shipment_duration_range: '2-3', shipment_duration_unit: 'days' },
+          { courier_name: 'JNT', type: 'REG', description: 'Reguler', price: 18000, shipment_duration_range: '2-4', shipment_duration_unit: 'days' },
+        ]
+        setShippingOptions(fallback)
+        setSelectedShipping(fallback[0])
+      }
+    } catch (error) {
+      console.error('Gagal ambil ongkir Biteship:', error)
+      // Fallback agar checkout tetap bisa berjalan
+      const fallback = [
+        { courier_name: 'JNE', type: 'REG', description: 'Reguler', price: 15000, shipment_duration_range: '2-3', shipment_duration_unit: 'days' },
+        { courier_name: 'JNT', type: 'REG', description: 'Reguler', price: 18000, shipment_duration_range: '2-4', shipment_duration_unit: 'days' },
+      ]
+      setShippingOptions(fallback)
+      setSelectedShipping(fallback[0])
+    } finally {
+      setLoadingShipping(false)
+    }
   }
 
   useEffect(() => {
@@ -58,6 +111,9 @@ const Checkout = () => {
         
         const s = await userService.getUserById(p.sellerId)
         setSeller(s)
+
+        // Setelah produk & seller ada, fetch ongkir real-time dari Biteship
+        await getBiteshipRates(p, s)
       } catch (error) {
         toast.error('Gagal memuat data')
       } finally {
@@ -157,7 +213,7 @@ const Checkout = () => {
     )
   }
 
-  const ongkir = shippingRates[shippingOption]
+  const ongkir = selectedShipping?.price || 0
   const totalPembayaran = product.harga + ongkir + 2500 // 2500 is service fee
 
   return (
@@ -216,37 +272,49 @@ const Checkout = () => {
                   <h2 className="text-lg font-semibold text-gray-900">Opsi Pengiriman</h2>
                 </div>
 
-                <div className="space-y-4">
-
+                {loadingShipping ? (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <label className={`border rounded-xl p-4 cursor-pointer transition-all ${shippingOption === 'reguler' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'}`}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-gray-900">Reguler</span>
-                        <input type="radio" name="shipping" value="reguler" checked={shippingOption === 'reguler'} onChange={(e) => setShippingOption(e.target.value)} className="text-primary-600" />
+                    {[1,2,3].map(i => (
+                      <div key={i} className="animate-pulse border border-gray-100 rounded-xl p-4 space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/3"></div>
                       </div>
-                      <p className="text-xs text-gray-500 mb-2">2-3 hari kerja</p>
-                      <p className="font-semibold text-gray-900">{formatCurrency(shippingRates.reguler)}</p>
-                    </label>
-                    
-                    <label className={`border rounded-xl p-4 cursor-pointer transition-all ${shippingOption === 'next_day' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'}`}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-gray-900">Next Day</span>
-                        <input type="radio" name="shipping" value="next_day" checked={shippingOption === 'next_day'} onChange={(e) => setShippingOption(e.target.value)} className="text-primary-600" />
-                      </div>
-                      <p className="text-xs text-gray-500 mb-2">1 hari kerja</p>
-                      <p className="font-semibold text-gray-900">{formatCurrency(shippingRates.next_day)}</p>
-                    </label>
-
-                    <label className={`border rounded-xl p-4 cursor-pointer transition-all ${shippingOption === 'cargo' ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'}`}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-gray-900">Cargo</span>
-                        <input type="radio" name="shipping" value="cargo" checked={shippingOption === 'cargo'} onChange={(e) => setShippingOption(e.target.value)} className="text-primary-600" />
-                      </div>
-                      <p className="text-xs text-gray-500 mb-2">3-5 hari kerja</p>
-                      <p className="font-semibold text-gray-900">{formatCurrency(shippingRates.cargo)}</p>
-                    </label>
+                    ))}
                   </div>
-                </div>
+                ) : shippingOptions.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-4">Tidak ada opsi pengiriman tersedia.</p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {shippingOptions.map((option, index) => {
+                      const isSelected = selectedShipping === option
+                      return (
+                        <label
+                          key={index}
+                          className={`border rounded-xl p-4 cursor-pointer transition-all ${isSelected ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'}`}
+                          onClick={() => setSelectedShipping(option)}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-medium text-gray-900 text-sm">
+                              {option.courier_name} - {option.type}
+                            </span>
+                            <input
+                              type="radio"
+                              name="shipping"
+                              checked={isSelected}
+                              onChange={() => setSelectedShipping(option)}
+                              className="text-primary-600"
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mb-2">
+                            Estimasi {option.shipment_duration_range} {option.shipment_duration_unit === 'days' ? 'hari' : option.shipment_duration_unit}
+                          </p>
+                          <p className="font-semibold text-gray-900">{formatCurrency(option.price)}</p>
+                        </label>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
 
 

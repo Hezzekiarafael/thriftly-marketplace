@@ -210,8 +210,35 @@ export const transactionService = {
   },
 
   // 🚚 Helper: Tandai sudah dikirim
-  async markAsShipped(id, videoPacking = '') {
-    return this.updateTransactionStatus(id, 'shipped', { video_packing: videoPacking });
+  async markAsShipped(id, courier, resiNumber, videoUrl = null) {
+    try {
+      const response = await api.put(`/transactions/${id}/status`, {
+        status: 'shipped',
+        courier: courier,
+        resi_number: resiNumber,
+        video_unboxing_url: videoUrl
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to mark as shipped', error);
+      throw error;
+    }
+  },
+
+  // 📦 Lacak Pengiriman
+  async trackShipment(resiNumber, courierCode) {
+    try {
+      const response = await api.get('/track', {
+        params: {
+          waybill_id: resiNumber,
+          courier: courierCode
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to track shipment', error);
+      throw error;
+    }
   },
 
   // 🏁 Helper: Tandai selesai

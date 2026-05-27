@@ -28,6 +28,14 @@ const SellerOrders = () => {
   const [pilihanOngkir, setPilihanOngkir] = useState('pembeli') // 'pembeli' atau 'penjual'
   const [isSubmittingKonfirmasi, setIsSubmittingKonfirmasi] = useState(false)
 
+  // State untuk modal kirim pesanan
+  const [isShippingModalOpen, setIsShippingModalOpen] = useState(false)
+  const [selectedOrderToShip, setSelectedOrderToShip] = useState(null)
+  const [isAutoResi, setIsAutoResi] = useState(true)
+  const [resiNumber, setResiNumber] = useState('')
+  const [courierCode, setCourierCode] = useState('jnt')
+  const [isShippingSubmitting, setIsShippingSubmitting] = useState(false)
+
   const tabs = ['Semua', 'Perlu Diproses', 'Telah Diproses', 'Pembatalan']
 
   useEffect(() => {
@@ -91,15 +99,36 @@ const SellerOrders = () => {
     }
   }
 
-  const handleKirim = async (id) => {
-    if (window.confirm('Proses pengiriman pesanan ini?')) {
-        try {
-            await transactionService.markAsShipped(id)
-            toast.success('Pesanan berhasil diproses & dikirim!')
-            await loadOrders()
-        } catch (error) {
-            toast.error('Gagal memperbarui status pengiriman')
-        }
+  const handleKirim = (order) => {
+    setSelectedOrderToShip(order)
+    setIsAutoResi(true)
+    setResiNumber('')
+    const cc = order.courier ? order.courier.split(' ')[0].toLowerCase() : 'jnt'
+    setCourierCode(cc)
+    setIsShippingModalOpen(true)
+  }
+
+  const confirmKirimBarang = async () => {
+    setIsShippingSubmitting(true)
+    try {
+      const finalResi = isAutoResi ? 'OTOMATIS' : resiNumber;
+      if (!isAutoResi && !resiNumber.trim()) {
+        toast.error('Nomor resi wajib diisi jika manual!')
+        return;
+      }
+      await transactionService.markAsShipped(
+        selectedOrderToShip.id,
+        courierCode,
+        finalResi,
+        null
+      )
+      toast.success('Status diubah menjadi Dikirim!')
+      setIsShippingModalOpen(false)
+      loadOrders()
+    } catch (error) {
+      toast.error(error?.response?.data?.message || 'Gagal memproses pesanan')
+    } finally {
+      setIsShippingSubmitting(false)
     }
   }
 
@@ -287,7 +316,7 @@ const SellerOrders = () => {
                       </Button>
                     )}
                     {(order.status === 'paid' || order.status === 'settlement') && (
-                      <Button onClick={() => handleKirim(order.id)}>
+                      <Button onClick={() => handleKirim(order)}>
                         Kirim Pesanan
                       </Button>
                     )}
@@ -352,6 +381,64 @@ const SellerOrders = () => {
             <Button fullWidth isLoading={isSubmittingKonfirmasi} onClick={handleKonfirmasiOngkir}>
               Konfirmasi
             </Button>
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal Kirim Pesanan */}
+      <Modal
+        isOpen={isShippingModalOpen}
+        onClose={() => !isShippingSubmitting && setIsShippingModalOpen(false)}
+        title="Kirim Pesanan"
+      >
+        {selectedOrderToShip && (
+          <div className="space-y-4">
+            <div className="bg-blue-50 border border-blue-100 p-3 rounded-lg text-sm text-blue-800">
+              Silakan atur resi pengiriman untuk <strong>{selectedOrderToShip.product?.nama}</strong>.
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Kurir Pengiriman</label>
+              <input
+                type="text"
+                value={courierCode.toUpperCase()}
+                onChange={(e) => setCourierCode(e.target.value.toLowerCase())}
+                className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+                placeholder="Contoh: JNT, SICEPAT"
+              />
+            </div>
+
+            <label className="flex items-center gap-2 cursor-pointer mt-2">
+              <input 
+                type="checkbox" 
+                checked={isAutoResi} 
+                onChange={(e) => {
+                  setIsAutoResi(e.target.checked)
+                  if (e.target.checked) setResiNumber('')
+                }}
+                className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+              />
+              <span className="text-sm font-medium text-gray-700">Gunakan Resi Otomatis</span>
+            </label>
+
+            {!isAutoResi && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nomor Resi</label>
+                <input
+                  type="text"
+                  value={resiNumber}
+                  onChange={(e) => setResiNumber(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg p-2.5 outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+                  placeholder="Masukkan nomor resi..."
+                />
+              </div>
+            )}
+
+            <div className="pt-2">
+              <Button fullWidth isLoading={isShippingSubmitting} onClick={confirmKirimBarang}>
+                Konfirmasi Kirim
+              </Button>
+            </div>
           </div>
         )}
       </Modal>

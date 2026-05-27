@@ -61,7 +61,8 @@ const Homepage = () => {
 
   // Cek status langganan saat komponen dimuat
   useEffect(() => {
-    if (user) {
+    const token = localStorage.getItem('token')
+    if (user && token) {
       const checkSubscription = async () => {
         try {
           const res = await api.get('/user/newsletter')
@@ -69,7 +70,10 @@ const Homepage = () => {
             setIsSubscribed(true)
           }
         } catch (error) {
-          console.error("Gagal mengecek status langganan", error)
+          // 401 = token expired atau belum login, tidak perlu ditampilkan ke console
+          if (error?.response?.status !== 401) {
+            console.error("Gagal mengecek status langganan", error)
+          }
         }
       }
       checkSubscription()

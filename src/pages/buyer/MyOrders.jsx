@@ -15,6 +15,12 @@ import { formatCurrency, formatDate } from '../../utils/helpers'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
 
+const getOngkirValue = (order) => {
+  if (order.status === 'menunggu_konfirmasi_penjual') return 0;
+  if (order.nego_ongkir_by === 'penjual') return 0;
+  return order.ongkir || 0;
+}
+
 const MyOrders = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -82,13 +88,14 @@ const MyOrders = () => {
       toast.dismiss('payment');
       // Fallback ke payment/token
       try {
+        const activeOngkir = getOngkirValue(order);
         const hargaDasar = order.product?.harga || order.hargaFinal || 0;
         const response = await api.post('/payment/token', {
           product_id: order.productId,
           price: hargaDasar,
           seller_id: order.sellerId,
           alamat_pengiriman: order.alamatPengiriman || '-',
-          ongkir: order.ongkir || 0,
+          ongkir: activeOngkir,
           return_url: `${window.location.origin}/buyer/orders`,
           callback_url: `${window.location.origin}/buyer/orders`
         });
@@ -252,7 +259,7 @@ const MyOrders = () => {
                     <div className="flex-1">
                       <h3 className="font-medium text-gray-900 mb-1">{order.product?.nama || 'Produk tidak tersedia'}</h3>
                       <p className="text-sm text-gray-500 mb-2">Total Belanja</p>
-                      <p className="font-bold text-primary-700">{formatCurrency((order.product?.harga || order.hargaFinal || 0) + (order.ongkir || 0) + 2500)}</p>
+                      <p className="font-bold text-primary-700">{formatCurrency((order.product?.harga || order.hargaFinal || 0) + getOngkirValue(order) + 2500)}</p>
                     </div>
                   </div>
 
@@ -391,7 +398,7 @@ const MyOrders = () => {
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Ongkos Kirim</span>
-                    <span>{formatCurrency(selectedOrder.ongkir || 0)}</span>
+                    <span>{getOngkirValue(selectedOrder) === 0 ? 'Gratis (Rp 0)' : formatCurrency(getOngkirValue(selectedOrder))}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Biaya Layanan</span>
@@ -399,7 +406,7 @@ const MyOrders = () => {
                   </div>
                   <div className="flex justify-between font-bold text-gray-900 pt-3 border-t border-gray-100 mt-3">
                     <span>Total Bayar</span>
-                    <span className="text-primary-700">{formatCurrency((selectedOrder.product?.harga || selectedOrder.hargaFinal || 0) + (selectedOrder.ongkir || 0) + 2500)}</span>
+                    <span className="text-primary-700">{formatCurrency((selectedOrder.product?.harga || selectedOrder.hargaFinal || 0) + getOngkirValue(selectedOrder) + 2500)}</span>
                   </div>
                 </div>
               </div>

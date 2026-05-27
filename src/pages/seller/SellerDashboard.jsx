@@ -12,10 +12,12 @@ import { productService } from '../../services/productService'
 import { formatCurrency } from '../../utils/helpers'
 import { BUTTONS, SECTIONS } from '../../constants/copywriting'
 import { getPrimaryValue } from '../../utils/profileUtils'
+import { useVerification } from '../../hooks/useVerification'
 
 const SellerDashboard = () => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { checkVerification, isChecking, VerificationModal } = useVerification()
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -168,11 +170,11 @@ const SellerDashboard = () => {
                   Pesanan Toko / Transaksi
                 </Button>
               </Link>
-              <Link to="/seller/products/add" className="block w-full">
-                <Button fullWidth variant="accent" className="shadow-md hover:scale-[1.02] active:scale-[0.98] py-2 md:py-2.5 text-xs md:text-sm">
-                  {BUTTONS.sell}
+              <div className="block w-full">
+                <Button fullWidth variant="accent" onClick={checkVerification} disabled={isChecking} className="shadow-md hover:scale-[1.02] active:scale-[0.98] py-2 md:py-2.5 text-xs md:text-sm">
+                  {isChecking ? 'Mengecek...' : BUTTONS.sell}
                 </Button>
-              </Link>
+              </div>
               <Link to="/seller/products" className="block w-full">
                 <Button fullWidth variant="outline" className="shadow-sm hover:bg-indigo-50 py-2 md:py-2.5 text-xs md:text-sm">
                   {SECTIONS.myProducts}
@@ -193,7 +195,8 @@ const SellerDashboard = () => {
           </Card>
         </div>
       </Container>
-
+      
+      <VerificationModal />
       <Footer />
     </div>
   )

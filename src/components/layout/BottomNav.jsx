@@ -2,11 +2,13 @@ import { Link, useLocation } from 'react-router-dom'
 import { Home, Search, ShoppingBag, Package, MessageCircle, User, PlusCircle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useApp } from '../../context/AppContext'
+import { useVerification } from '../../hooks/useVerification'
 
 const BottomNav = () => {
   const { user, isBuyer, isSeller } = useAuth()
   const { unreadCount } = useApp()
   const location = useLocation()
+  const { checkVerification, VerificationModal } = useVerification()
 
   const hiddenRoutes = ['/admin', '/login', '/register']
   if (hiddenRoutes.some(route => location.pathname.startsWith(route))) {
@@ -67,9 +69,9 @@ const BottomNav = () => {
             /* ── Tombol Jual (primary/floating) ── */
             if (item.primary) {
               return (
-                <Link
+                <button
                   key={index}
-                  to={item.path}
+                  onClick={checkVerification}
                   className="flex flex-col items-center justify-end w-full h-full pb-1 -mt-4"
                 >
                   <div
@@ -82,7 +84,7 @@ const BottomNav = () => {
                     <Icon size={22} color="#4f46e5" />
                   </div>
                   <span className="text-[9px] font-semibold mt-1 text-white">{item.label}</span>
-                </Link>
+                </button>
               )
             }
 
@@ -140,6 +142,7 @@ const BottomNav = () => {
           })}
         </nav>
       </div>
+      <VerificationModal />
     </div>
   )
 }

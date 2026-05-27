@@ -11,6 +11,7 @@ import { productService } from '../../services/productService'
 import { formatCurrency } from '../../utils/helpers'
 import { STATUS } from '../../constants/copywriting'
 import toast from 'react-hot-toast'
+import { useVerification } from '../../hooks/useVerification'
 
 // --- Custom Confirmation Modal ---
 const ConfirmModal = ({ isOpen, onClose, onConfirm, title, description, confirmLabel, confirmVariant = 'danger', icon: Icon, isLoading }) => {
@@ -71,6 +72,8 @@ const MyProducts = () => {
   // Modal state
   const [modal, setModal] = useState({ open: false, type: null, productId: null, productName: '' })
   const [isActionLoading, setIsActionLoading] = useState(false)
+  
+  const { checkVerification, isChecking, VerificationModal } = useVerification()
 
   useEffect(() => {
     if (user) {
@@ -163,9 +166,9 @@ const MyProducts = () => {
         <Container>
           <div className="flex justify-between items-center mb-4 md:mb-6">
             <h1 className="text-xl md:text-3xl font-bold text-gray-900">Produk Saya</h1>
-            <Link to="/seller/products/add">
-              <Button size="sm" className="md:px-6 md:py-2.5 md:text-base text-xs py-2 px-4 shadow-md font-bold">Tambah Produk</Button>
-            </Link>
+            <Button size="sm" onClick={checkVerification} disabled={isChecking} className="md:px-6 md:py-2.5 md:text-base text-xs py-2 px-4 shadow-md font-bold">
+              {isChecking ? 'Mengecek...' : 'Tambah Produk'}
+            </Button>
           </div>
 
           {products.length === 0 ? (
@@ -177,11 +180,9 @@ const MyProducts = () => {
               <p className="text-xs text-gray-500 leading-relaxed mb-6 max-w-xs">
                 Kamu belum mengunggah produk apa pun untuk dijual. Yuk, mulai pajang produk pertamamu sekarang!
               </p>
-              <Link to="/seller/products/add">
-                <Button variant="primary" size="sm" className="px-5 py-2 font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] text-xs">
-                  Mulai Jual Barang Nganggur
-                </Button>
-              </Link>
+              <Button variant="primary" size="sm" onClick={checkVerification} disabled={isChecking} className="px-5 py-2 font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] text-xs">
+                {isChecking ? 'Mengecek...' : 'Mulai Jual Barang Nganggur'}
+              </Button>
             </div>
           ) : (
             <div className="space-y-3 md:space-y-4">
@@ -268,6 +269,8 @@ const MyProducts = () => {
           )}
         </Container>
       </main>
+
+      <VerificationModal />
 
       <Footer />
 

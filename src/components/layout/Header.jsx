@@ -7,6 +7,7 @@ import Badge from '../common/Badge'
 import Button from '../common/Button'
 import { BUTTONS, PLACEHOLDERS } from '../../constants/copywriting'
 import api from '../../services/api'
+import { useVerification } from '../../hooks/useVerification'
 
 const Header = () => {
   const navigate = useNavigate()
@@ -17,6 +18,7 @@ const Header = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isPremium, setIsPremium] = useState(false)
   const userMenuRef = useRef(null)
+  const { checkVerification, isChecking, VerificationModal } = useVerification()
 
   useEffect(() => {
     if (user) {
@@ -118,11 +120,14 @@ const Header = () => {
                     <Link to="/seller/dashboard" className="text-vintage-modern hover:scale-105 transition-all">
                       Dashboard
                     </Link>
-                    <Link to="/seller/products/add">
-                      <Button size="sm" className="bg-primary-600 hover:bg-primary-700 text-white border-none shadow-md hover:scale-105 transition-transform font-bold">
-                        {BUTTONS.sell}
-                      </Button>
-                    </Link>
+                    <Button 
+                      size="sm" 
+                      onClick={checkVerification}
+                      disabled={isChecking}
+                      className="bg-primary-600 hover:bg-primary-700 text-white border-none shadow-md hover:scale-105 transition-transform font-bold"
+                    >
+                      {isChecking ? 'Mengecek...' : BUTTONS.sell}
+                    </Button>
                   </>
                 )}
 

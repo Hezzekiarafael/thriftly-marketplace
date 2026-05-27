@@ -70,12 +70,14 @@ const MyOrders = () => {
     // Otherwise, generate a fresh token from API just like Checkout.jsx
     try {
       toast.loading('Mengambil link pembayaran...', { id: 'payment' });
-      // hargaFinal di DB = harga produk saja, backend yang tambah ongkir+fee
-      const totalPembayaran = order.hargaFinal || 0;
+      // hargaFinal di DB sudah berisi total harga + ongkir + fee.
+      // Endpoint /payment/token di backend akan otomatis menambah ongkir + 2500 lagi.
+      // Jadi kita harus mengirim harga dasar produk saja agar tidak double-counting.
+      const hargaDasarProduk = (order.hargaFinal || 0) - (order.ongkir || 0) - 2500;
       
       const response = await api.post('/payment/token', {
         product_id: order.productId,
-        price: totalPembayaran,
+        price: hargaDasarProduk,
         seller_id: order.sellerId,
         alamat_pengiriman: order.alamatPengiriman || '-',
         ongkir: order.ongkir || 0
@@ -238,7 +240,7 @@ const MyOrders = () => {
                     <div className="flex-1">
                       <h3 className="font-medium text-gray-900 mb-1">{order.product?.nama || 'Produk tidak tersedia'}</h3>
                       <p className="text-sm text-gray-500 mb-2">Total Belanja</p>
-                      <p className="font-bold text-primary-700">{formatCurrency((order.hargaFinal || 0) + (order.ongkir || 0) + 2500)}</p>
+                      <p className="font-bold text-primary-700">{formatCurrency(order.hargaFinal || 0)}</p>
                     </div>
                   </div>
 
@@ -353,7 +355,7 @@ const MyOrders = () => {
                 <div className="flex-1 space-y-2 text-sm bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
                   <div className="flex justify-between text-gray-600">
                     <span>Harga Barang</span>
-                    <span>{formatCurrency(selectedOrder.hargaFinal || selectedOrder.price || 0)}</span>
+                    <span>{formatCurrency((selectedOrder.hargaFinal || 0) - (selectedOrder.ongkir || 0) - 2500)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span>Ongkos Kirim</span>
@@ -365,7 +367,7 @@ const MyOrders = () => {
                   </div>
                   <div className="flex justify-between font-bold text-gray-900 pt-3 border-t border-gray-100 mt-3">
                     <span>Total Bayar</span>
-                    <span className="text-primary-700">{formatCurrency((selectedOrder.hargaFinal || selectedOrder.price || 0) + (selectedOrder.ongkir || 0) + 2500)}</span>
+                    <span className="text-primary-700">{formatCurrency(selectedOrder.hargaFinal || 0)}</span>
                   </div>
                 </div>
               </div>

@@ -153,8 +153,10 @@ const SellerOrders = () => {
     setTrackingData(null)
     
     try {
+      const actualResi = order.resi_number || order.waybill_id || order.resi || order.id;
+      console.log('Tracking Order ID:', order.id, '| Using Resi:', actualResi);
       const courierCode = order.courier ? order.courier.split(' ')[0].toLowerCase() : 'jnt'
-      const data = await transactionService.trackShipment(order.resi_number || order.id, courierCode)
+      const data = await transactionService.trackShipment(actualResi, courierCode)
       setTrackingData(data)
     } catch (error) {
       toast.error(error?.response?.data?.message || 'Gagal melacak pengiriman')
@@ -309,8 +311,18 @@ const SellerOrders = () => {
                       <p className="text-sm text-gray-500 mb-2">Total Tagihan: <span className="font-bold text-primary-700">{formatCurrency(order.hargaFinal)}</span></p>
                       
                       <div className="bg-gray-50 rounded-lg p-3 mt-3 text-sm">
-                        <p className="font-medium text-gray-700 mb-1 flex items-center gap-1"><Truck size={14}/> Info Pengiriman:</p>
+                        <div className="flex justify-between items-start mb-1">
+                          <p className="font-medium text-gray-700 flex items-center gap-1"><Truck size={14}/> Info Pengiriman:</p>
+                          {order.status === 'shipped' && (order.resi_number || order.waybill_id) && (
+                            <span className="font-semibold text-primary-600 text-[11px] sm:text-xs bg-primary-50 px-2 py-0.5 rounded border border-primary-200 uppercase">
+                              Resi: {order.resi_number || order.waybill_id}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-gray-600 line-clamp-2">{order.alamatPengiriman}</p>
+                        {order.status === 'shipped' && order.courier && (
+                          <p className="text-gray-500 text-[11px] sm:text-xs mt-1">Kurir: <span className="uppercase font-medium text-gray-700">{order.courier}</span></p>
+                        )}
                       </div>
                     </div>
                   </div>

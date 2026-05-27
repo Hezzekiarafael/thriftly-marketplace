@@ -226,13 +226,11 @@ export const transactionService = {
   },
 
   // 📦 Lacak Pengiriman
-  async trackShipment(resiNumber, courierCode) {
+  async trackShipment(waybillId, courierCode) {
     try {
-      const response = await api.get('/track', {
-        params: {
-          waybill_id: resiNumber,
-          courier: courierCode
-        }
+      const response = await api.post('/shipping/track', {
+        waybill_id: waybillId,
+        courier: courierCode
       });
       return response.data;
     } catch (error) {

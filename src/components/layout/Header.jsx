@@ -10,7 +10,7 @@ import api from '../../services/api'
 
 const Header = () => {
   const navigate = useNavigate()
-  const { user, logout, isSeller, isBuyer, isAdmin } = useAuth()
+  const { user, loading, logout, isSeller, isBuyer, isAdmin } = useAuth()
   const { unreadCount } = useApp()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -97,7 +97,11 @@ const Header = () => {
               Semua Produk
             </Link>
 
-            {!user && (
+            {loading ? (
+              <div className="flex items-center space-x-4 animate-pulse">
+                <div className="h-8 w-24 bg-white/20 rounded-md"></div>
+              </div>
+            ) : !user ? (
               <div className="flex items-center space-x-3">
                 <Link to="/login">
                   <Button size="sm" className="bg-primary-600 hover:bg-primary-700 text-white border-none shadow-md hover:scale-105 transition-transform font-bold">
@@ -105,9 +109,7 @@ const Header = () => {
                   </Button>
                 </Link>
               </div>
-            )}
-
-            {user && (
+            ) : (
               <>
                 {isSeller && (
                   <>
@@ -155,7 +157,12 @@ const Header = () => {
             )}
           </nav>
 
-          {user && (
+          {loading ? (
+            <div className="hidden md:flex animate-pulse items-center md:pl-4 md:border-l border-white/20">
+               <div className="w-8 h-8 rounded-full bg-white/20"></div>
+               <div className="w-20 h-4 bg-white/20 rounded ml-2"></div>
+            </div>
+          ) : user ? (
             <div className="relative md:pl-4 md:border-l border-gray-200" ref={userMenuRef}>
                <button
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -236,18 +243,20 @@ const Header = () => {
                     </>
                   )}
                 </div>
-          )}
+          ) : null}
 
-          {!user && (
+          {loading ? (
+            <div className="md:hidden animate-pulse p-2">
+               <div className="w-6 h-6 rounded bg-white/20"></div>
+            </div>
+          ) : !user ? (
             <button
               className="md:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
               onClick={() => navigate('/login')}
             >
               <User size={24} />
             </button>
-          )}
-          
-          {user && (
+          ) : (
             <button
               className="md:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { MapPin, Truck, ShieldCheck } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -12,7 +12,8 @@ import { userService } from '../../services/userService'
 import api from '../../services/api'
 import { formatCurrency } from '../../utils/helpers'
 
-import { getPrimaryValue } from '../../utils/profileUtils'
+import { getPrimaryValue, parseProfileList } from '../../utils/profileUtils'
+import Modal from '../../components/common/Modal'
 
 const Checkout = () => {
   const { productId } = useParams()
@@ -29,10 +30,18 @@ const Checkout = () => {
   const [selectedShipping, setSelectedShipping] = useState(null)
   const [loadingShipping, setLoadingShipping] = useState(false)
 
-  // Helper: ambil alamat dari berbagai kemungkinan field backend
-  const getUserAddress = () => {
+  // Mengambil daftar semua alamat user
+  const userAddresses = useMemo(() => {
     const rawAlamat = user?.alamat || user?.profile?.alamat || ''
-    return getPrimaryValue(rawAlamat, 'alamat')
+    return parseProfileList(rawAlamat, 'alamat', user?.id)
+  }, [user])
+
+  const [selectedAddressIndex, setSelectedAddressIndex] = useState(0)
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false)
+
+  // Helper: ambil alamat terpilih
+  const getUserAddress = () => {
+    return userAddresses[selectedAddressIndex]?.alamat || ''
   }
 
   // Helper: ekstrak kode pos 5 digit dari string alamat
@@ -42,8 +51,8 @@ const Checkout = () => {
   }
 
   // Fetch ongkir real-time dari Biteship via backend
-  const getBiteshipRates = async (productData, sellerData) => {
-    const buyerAddress = getUserAddress()
+  const getBiteshipRates = async (productData, sellerData, overrideBuyerAddr = null) => {
+    const buyerAddress = overrideBuyerAddr || getUserAddress()
     if (!buyerAddress || !productData || !sellerData) return
 
     setLoadingShipping(true)
@@ -128,7 +137,7 @@ const Checkout = () => {
         product_id: product.id,
         price: product.harga,  // kirim harga bersih saja, backend yang tambah ongkir+fee
         seller_id: seller?.id || product.user_id,
-        alamat_pengiriman: user.alamat || user.profile?.alamat || '-',
+        alamat_pengiriman: getUserAddress() || '-',
         ongkir: ongkir,
         return_url: `${window.location.origin}/buyer/orders`,
         callback_url: `${window.location.origin}/buyer/orders`
@@ -238,7 +247,11 @@ const Checkout = () => {
                       <p className="font-semibold text-gray-900">{user.profile?.nama}</p>
                       <p className="text-sm text-gray-500">{user.profile?.noTelp || '-'}</p>
                     </div>
-                    <span className="bg-primary-50 text-primary-700 text-xs font-medium px-2.5 py-1 rounded-full">Utama</span>
+                    {userAddresses.length > 1 && (
+                      <Button variant="outline" size="sm" onClick={() => setIsAddressModalOpen(true)} className="!px-3 !py-1 text-xs">
+                        Pilih Alamat Lain
+                      </Button>
+                    )}
                   </div>
                   <p className="text-sm text-gray-700 mt-2">
                     {getUserAddress() || 'Alamat belum diatur. Silakan update profil Anda.'}
@@ -375,6 +388,43 @@ const Checkout = () => {
 
       <Footer />
 
+      {/* Modal Pilih Alamat */}
+      <Modal 
+        isOpen={isAddressModalOpen} 
+        onClose={() => setIsAddressModalOpen(false)}
+        title="Pilih Alamat Pengiriman"
+      >
+        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+          {userAddresses.map((addr, idx) => (
+            <label 
+              key={idx} 
+              className={`block p-4 border rounded-xl cursor-pointer transition-all ${selectedAddressIndex === idx ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-primary-300'}`}
+              onClick={() => {
+                setSelectedAddressIndex(idx)
+                setIsAddressModalOpen(false)
+                getBiteshipRates(product, seller, addr.alamat)
+              }}
+            >
+              <div className="flex justify-between items-start">
+                <div className="flex-1 pr-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-gray-900">{addr.lokasi || 'Alamat ' + (idx + 1)}</span>
+                    {idx === 0 && <span className="bg-primary-100 text-primary-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Utama</span>}
+                  </div>
+                  <p className="text-sm text-gray-700 leading-relaxed">{addr.alamat}</p>
+                </div>
+                <input 
+                  type="radio" 
+                  name="selectedAddress" 
+                  checked={selectedAddressIndex === idx} 
+                  onChange={() => {}} // dikendalikan oleh onClick wrapper
+                  className="mt-1 text-primary-600"
+                />
+              </div>
+            </label>
+          ))}
+        </div>
+      </Modal>
 
     </div>
   )

@@ -6,6 +6,7 @@ import { AppProvider } from './context/AppContext'
 import AppRoutes from './routes'
 import BottomNav from './components/layout/BottomNav'
 import { seedDatabase } from './services/seedData'
+import ChatBot from './components/common/ChatBot'
 
 function App() {
   useEffect(() => {
@@ -24,6 +25,7 @@ function App() {
               <AppRoutes />
             </div>
             <BottomNav />
+            <ChatBot />
             <Toaster position="top-center" />
           </div>
         </AppProvider>

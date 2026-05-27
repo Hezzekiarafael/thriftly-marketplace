@@ -1,0 +1,114 @@
+Total pages: 3
+
+=== PAGE 1 ===
+ 
+6. PANDUAN RESPONS CHATBOT CS 
+ 
+6.1 Template Sapaan & Pembuka 
+TEMPLATE RESPONS PEMBUKA 
+Sapaan Pembuka 
+[Halo, [Panggilan Pelanggan, misal: Kak/Bunda/Bapak/Ibu]! 
+👋 Selamat datang di [Nama Bisnis]. Kami siap melayani 
+kebutuhan Anda terkait [Sektor Bisnis/Layanan Utama]. Ada 
+yang bisa kami bantu hari ini?] 
+Saat ditanya tentang program 
+[[Nama Bisnis] menyediakan [Layanan A] dan [Layanan B]. 
+Keduanya dirancang untuk [Manfaat Utama]. Mana yang 
+ingin [Panggilan Pelanggan] ketahui lebih lanjut?] 
+Saat pengunjung ingin daftar/beli 
+[Terima kasih atas minatnya! 🎉 Untuk mempermudah 
+proses, Anda bisa melakukan [Pendaftaran/Pemesanan] 
+melalui: 
+ 
+ 
+- Website: [URL] 
+ 
+ 
+- WhatsApp: [Nomor HP] 
+ 
+ 
+- Email: [Email] 
+ 
+ 
+Ingin kami bantu pandu prosesnya?] 
+ 
+6.2 Respons Pertanyaan Biaya 
+TEMPLATE RESPONS BIAYA 
+Saat ditanya biaya/harga 
+[Untuk detail harga, kami memiliki beberapa pilihan paket 
+yang bisa disesuaikan dengan kebutuhan Anda. Silakan 
+hubungi tim kami agar kami dapat merekomendasikan 
+pilihan terbaik: 
+ 
+📱 WhatsApp: [Nomor HP] 
+ 
+📧 Email: [Email] 
+ 
+Kami siap memberikan penawaran terbaik untuk Anda! 🌸] 
+Saat ditanya apakah ada diskon 
+[Kami memiliki penawaran promo khusus secara berkala. 
+Untuk informasi promo yang sedang berlangsung saat ini, 
+
+
+=== PAGE 2 ===
+silakan hubungi kami di [Nomor HP/Link]. Tim kami akan 
+menginformasikan penawaran terbaru untuk Anda!] 
+ 
+6.3 Respons Keluhan & Eskalasi 
+TEMPLATE RESPONS KELUHAN 
+Saat ada keluhan dari pengunjung 
+[Kami mohon maaf atas ketidaknyamanan yang Anda alami. 
+Masukan Anda sangat berharga bagi kami agar dapat 
+memberikan layanan yang lebih baik. Mohon ceritakan lebih 
+lanjut situasinya agar kami dapat segera menindaklanjuti. 
+ 
+ 
+Untuk penanganan langsung, silakan hubungi: 
+ 
+ 
+📱 WhatsApp: [Nomor HP] 
+ 
+ 
+📧 Email: [Email]] 
+Saat pertanyaan tidak bisa dijawab 
+chatbot 
+[Maaf, pertanyaan tersebut memerlukan jawaban lebih 
+spesifik dari tim ahli kami. Silakan hubungi kami melalui 
+[Kontak] agar tim kami dapat membantu dengan sepenuh 
+hati! 💚] 
+ 
+ 
+7. INFORMASI KONTAK & REFERENSI 
+ 
+7.1 Kontak Resmi 
+Telepon / WhatsApp 
+[Contoh: 08123456789] 
+Email 
+[Contoh: info@example.com] 
+Website 
+[Link URL Website] 
+Pendaftaran Online 
+[Link URL Website Pendaftaran] 
+Login Pengunjung 
+[Link URL Website Login] 
+ 
+7.2 Halaman Penting di Website 
+Beranda 
+[Link URL Website Beranda] 
+Program 
+[Link URL Website Program] 
+Fasilitas 
+[Link URL Website Fasilitas] 
+Testimoni 
+[Link URL Website Testimoni] 
+Kontak 
+[Link URL Website Kontak] 
+
+
+=== PAGE 3 ===
+ 
+ 
+Dokumen ini adalah knowledge base internal untuk chatbot Customer Service. 
+[Nama Bisnis/Proyek] | [Link URL Website] | [info@example.com] | [08123456789] 
+
+

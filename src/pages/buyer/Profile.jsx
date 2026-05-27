@@ -523,11 +523,7 @@ const Profile = () => {
 
     try {
       // Use configured api instance for FormData with _method PUT
-      await api.post('/user/profile', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
-      })
+      await api.post('/user/profile', formData)
       
       // Refresh user data in context
       await refreshUser()

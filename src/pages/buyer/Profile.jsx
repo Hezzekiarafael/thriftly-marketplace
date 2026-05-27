@@ -4,7 +4,7 @@ import {
   User, MapPin, ShieldCheck, Camera, 
   Calendar, ArrowLeft, Mail, Phone, 
   Lock, CheckCircle, Plus, Edit2, AlertCircle,
-  X, Upload, CreditCard, Locate, Crown, Star, Zap, Clock
+  X, Upload, CreditCard, Locate, Crown, Star, Zap, Clock, Check
 } from 'lucide-react'
 import dayjs from 'dayjs'
 import 'dayjs/locale/id'

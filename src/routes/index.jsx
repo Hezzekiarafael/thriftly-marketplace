@@ -10,10 +10,10 @@ import ProfileSkeleton from '../components/common/ProfileSkeleton'
 
 // ── Eager load: hanya halaman publik utama ────────────────────────────────────
 import Homepage from '../pages/guest/Homepage'
+import ProductList from '../pages/guest/ProductList'
+import ProductDetail from '../pages/guest/ProductDetail'
 
 // ── Lazy load: semua halaman lainnya ──────────────────────────────────────────
-const ProductList = lazy(() => import('../pages/guest/ProductList'))
-const ProductDetail = lazy(() => import('../pages/guest/ProductDetail'))
 const Login = lazy(() => import('../pages/auth/Login'))
 const EmailSimulation = lazy(() => import('../pages/guest/EmailSimulation'))
 const Membership = lazy(() => import('../pages/guest/Membership'))

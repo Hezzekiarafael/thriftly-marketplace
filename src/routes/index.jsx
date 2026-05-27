@@ -7,6 +7,9 @@ import AdminPageSkeleton from '../components/common/AdminPageSkeleton'
 import BuyerDashboardSkeleton from '../components/common/BuyerDashboardSkeleton'
 import SellerDashboardSkeleton from '../components/common/SellerDashboardSkeleton'
 import ProfileSkeleton from '../components/common/ProfileSkeleton'
+import AuthSkeleton from '../components/common/AuthSkeleton'
+import CheckoutSkeleton from '../components/common/CheckoutSkeleton'
+import FullWidthSkeleton from '../components/common/FullWidthSkeleton'
 
 // ── Eager load: hanya halaman publik utama ────────────────────────────────────
 import Homepage from '../pages/guest/Homepage'
@@ -67,22 +70,40 @@ const Profile = lazy(() => import('../pages/buyer/Profile'))
 
 // ── Loading Fallback ──────────────────────────────────────────────────────────
 const PageLoader = () => {
-  const location = useLocation()
+  const path = useLocation().pathname
   
-  if (location.pathname.startsWith('/admin')) {
+  if (path.startsWith('/admin')) {
     return <AdminPageSkeleton />
   }
   
-  if (location.pathname === '/buyer/dashboard' || location.pathname === '/login-success') {
-    return <BuyerDashboardSkeleton />
+  if (path.startsWith('/buyer/checkout')) {
+    return <CheckoutSkeleton />
   }
   
-  if (location.pathname === '/seller/dashboard') {
-    return <SellerDashboardSkeleton />
+  if (path.startsWith('/buyer')) {
+    if (path === '/buyer/dashboard') return <BuyerDashboardSkeleton />
+    if (path === '/buyer/orders' || path.startsWith('/buyer/simulation')) return <FullWidthSkeleton />
+    return <AuthSkeleton /> // fallback for buyer/subscription etc
   }
   
-  if (location.pathname === '/profile') {
+  if (path.startsWith('/seller')) {
+    if (path === '/seller/dashboard') return <SellerDashboardSkeleton />
+    if (path.startsWith('/seller/register')) return <AuthSkeleton />
+    return <FullWidthSkeleton />
+  }
+  
+  if (path === '/profile') {
     return <ProfileSkeleton />
+  }
+  
+  const authRoutes = ['/login', '/register', '/verify', '/payment/success', '/subscription']
+  if (authRoutes.some(route => path.startsWith(route))) {
+    return <AuthSkeleton />
+  }
+  
+  const fullWidthRoutes = ['/about', '/careers', '/press', '/blog', '/help', '/how-it-works', '/terms', '/privacy', '/chat', '/complaints', '/simulation']
+  if (fullWidthRoutes.some(route => path.startsWith(route))) {
+    return <FullWidthSkeleton />
   }
   
   return <PageSkeleton />

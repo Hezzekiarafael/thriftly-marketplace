@@ -209,16 +209,15 @@ const Profile = () => {
     e.preventDefault()
     setIsSubmitting(true)
     try {
-      // Map and include all required fields for backend validation
+      // Kirim hanya field yang sesuai dengan $request->only() di backend
       const payload = {
-        ...profileForm,
         name: profileForm.nama,
         email: profileForm.email,
-        no_telp: profileForm.noTelp,
-        date_of_birth: profileForm.tanggalLahir,
+        no_telp: profileForm.noTelp || '',
+        date_of_birth: profileForm.tanggalLahir || null,
         gender: profileForm.jenisKelamin === 'Laki-laki' ? 'L' : 'P',
-        role: user.role,
         alamat: addressForm.alamat || user?.profile?.alamat || '',
+        lokasi: user?.profile?.lokasi || 'Semarang',
       }
       const result = await updateProfile(payload)
       if (result && !result.success) return

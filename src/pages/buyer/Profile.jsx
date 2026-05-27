@@ -136,7 +136,7 @@ const Profile = () => {
 
   // Address States
   const [addressForm, setAddressForm] = useState({
-    alamat: getPrimaryValue(user?.profile?.alamat, 'alamat') || ''
+    alamat: getPrimaryValue(user?.profile?.alamat, 'alamat', user?.id) || ''
   })
   const [isEditingAddress, setIsEditingAddress] = useState(false)
   const [editingAddressIndex, setEditingAddressIndex] = useState(null)
@@ -154,7 +154,7 @@ const Profile = () => {
         tanggalLahir: user.profile.tanggalLahir || '',
       })
       setAddressForm({
-        alamat: getPrimaryValue(user?.profile?.alamat, 'alamat') || ''
+        alamat: getPrimaryValue(user?.profile?.alamat, 'alamat', user?.id) || ''
       })
     }
   }, [user])
@@ -188,6 +188,11 @@ const Profile = () => {
 
   // Helper: parse noRekening → array of {namaBank, nomorRekening, namaPemilik}
   const parseRekeningList = () => {
+    const local = localStorage.getItem(`rekening_${user?.id}`)
+    if (local) {
+      try { return JSON.parse(local) } catch (e) {}
+    }
+
     if (!user?.profile?.noRekening) return []
     try {
       const parsed = JSON.parse(user.profile.noRekening)
@@ -237,7 +242,7 @@ const Profile = () => {
         }
       }
 
-      const existingList = parseProfileList(user?.profile?.alamat, 'alamat')
+      const existingList = parseProfileList(user?.profile?.alamat, 'alamat', user?.id)
       let updatedList = [...existingList]
 
       if (editingAddressIndex !== null) {
@@ -246,11 +251,13 @@ const Profile = () => {
         updatedList.push({ alamat: addressForm.alamat.trim(), lokasi: lokasiValue })
       }
 
+      localStorage.setItem(`alamat_${user.id}`, JSON.stringify(updatedList))
+
       await updateProfile({
         name: user.profile.nama,
         email: user.email,
-        alamat: JSON.stringify(updatedList),
-        address: JSON.stringify(updatedList), // legacy compatibility
+        alamat: updatedList.length > 0 ? updatedList[0].alamat : '',
+        address: updatedList.length > 0 ? updatedList[0].alamat : '', // legacy compatibility
         lokasi: lokasiValue // keep primary location in this field
       })
       toast.success('Alamat berhasil disimpan')
@@ -266,7 +273,7 @@ const Profile = () => {
   const handleSetPrimaryAddress = async (index) => {
     setIsSubmitting(true)
     try {
-      const existingList = parseProfileList(user?.profile?.alamat, 'alamat')
+      const existingList = parseProfileList(user?.profile?.alamat, 'alamat', user?.id)
       if (index === 0 || index >= existingList.length) return
       
       const newPrimary = existingList[index]
@@ -276,11 +283,13 @@ const Profile = () => {
         ...existingList.slice(index + 1)
       ]
       
+      localStorage.setItem(`alamat_${user.id}`, JSON.stringify(updatedList))
+
       await updateProfile({
         name: user.profile.nama,
         email: user.email,
-        alamat: JSON.stringify(updatedList),
-        address: JSON.stringify(updatedList),
+        alamat: updatedList.length > 0 ? updatedList[0].alamat : '',
+        address: updatedList.length > 0 ? updatedList[0].alamat : '',
         lokasi: newPrimary.lokasi || user?.profile?.lokasi
       })
       toast.success('Alamat utama berhasil diubah')
@@ -294,14 +303,20 @@ const Profile = () => {
   const handleRemoveAddress = async (index) => {
     setIsSubmitting(true)
     try {
-      const existingList = parseProfileList(user?.profile?.alamat, 'alamat')
+      const existingList = parseProfileList(user?.profile?.alamat, 'alamat', user?.id)
       const updatedList = existingList.filter((_, i) => i !== index)
       
+      if (updatedList.length > 0) {
+        localStorage.setItem(`alamat_${user.id}`, JSON.stringify(updatedList))
+      } else {
+        localStorage.removeItem(`alamat_${user.id}`)
+      }
+
       await updateProfile({
         name: user.profile.nama,
         email: user.email,
-        alamat: updatedList.length > 0 ? JSON.stringify(updatedList) : null,
-        address: updatedList.length > 0 ? JSON.stringify(updatedList) : null,
+        alamat: updatedList.length > 0 ? updatedList[0].alamat : null,
+        address: updatedList.length > 0 ? updatedList[0].alamat : null,
         lokasi: updatedList.length > 0 ? updatedList[0].lokasi : null
       })
       toast.success('Alamat berhasil dihapus')
@@ -353,10 +368,12 @@ const Profile = () => {
       }
       const updatedList = [...existingList, newEntry]
       
+      localStorage.setItem(`rekening_${user.id}`, JSON.stringify(updatedList))
+      
       await updateProfile({
         name: user.profile.nama,
         email: user.email,
-        no_rekening: JSON.stringify(updatedList)
+        no_rekening: updatedList.length > 0 ? `${updatedList[0].namaBank} - ${updatedList[0].nomorRekening} - ${updatedList[0].namaPemilik}` : null
       })
       toast.success('Rekening bank berhasil disimpan')
       setIsRekeningModalOpen(false)
@@ -374,10 +391,16 @@ const Profile = () => {
       const existingList = parseRekeningList()
       const updatedList = existingList.filter((_, i) => i !== index)
       
+      if (updatedList.length > 0) {
+        localStorage.setItem(`rekening_${user.id}`, JSON.stringify(updatedList))
+      } else {
+        localStorage.removeItem(`rekening_${user.id}`)
+      }
+      
       await updateProfile({
         name: user.profile.nama,
         email: user.email,
-        no_rekening: updatedList.length > 0 ? JSON.stringify(updatedList) : null
+        no_rekening: updatedList.length > 0 ? `${updatedList[0].namaBank} - ${updatedList[0].nomorRekening} - ${updatedList[0].namaPemilik}` : null
       })
       toast.success('Rekening bank berhasil dihapus')
       setDeleteRekeningIndex(null)
@@ -896,7 +919,7 @@ const Profile = () => {
   )
 
   const renderAddressTab = () => {
-    const addressList = parseProfileList(user?.profile?.alamat, 'alamat')
+    const addressList = parseProfileList(user?.profile?.alamat, 'alamat', user?.id)
     const hasAddress = addressList.length > 0
 
     return (

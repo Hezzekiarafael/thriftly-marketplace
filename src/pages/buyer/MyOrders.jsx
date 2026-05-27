@@ -79,8 +79,21 @@ const MyOrders = () => {
       const data = await transactionService.trackShipment(actualResi, courierCode)
       setTrackingData(data)
     } catch (error) {
-      toast.error(error?.response?.data?.message || 'Gagal melacak pengiriman')
-      setIsTrackingModalOpen(false)
+      const errorCode = error?.response?.data?.error?.code;
+      if (errorCode === 40003001 || errorCode === 40003003) {
+        setTrackingData({
+          history: [
+            {
+              note: 'Pesanan sedang diproses. Menunggu penjemputan oleh kurir atau sistem kurir belum mengupdate status resi.',
+              updated_at: new Date().toLocaleString('id-ID'),
+              status: 'menunggu_kurir'
+            }
+          ]
+        });
+      } else {
+        toast.error(error?.response?.data?.message || 'Gagal melacak pengiriman')
+        setIsTrackingModalOpen(false)
+      }
     }
   }
 

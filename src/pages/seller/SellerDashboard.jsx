@@ -11,6 +11,7 @@ import { useAuth } from '../../context/AuthContext'
 import { productService } from '../../services/productService'
 import { formatCurrency } from '../../utils/helpers'
 import { BUTTONS, SECTIONS } from '../../constants/copywriting'
+import { getPrimaryValue } from '../../utils/profileUtils'
 
 const SellerDashboard = () => {
   const { user, logout } = useAuth()
@@ -73,7 +74,7 @@ const SellerDashboard = () => {
               </p>
               <p className="text-xs md:text-sm text-gray-500 font-medium flex items-center gap-1 md:gap-1.5 bg-gray-50 w-fit px-2.5 py-1 md:px-3 md:py-1.5 rounded-lg border border-gray-200">
                 <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4 text-indigo-600 shrink-0" />
-                {user?.profile?.alamat || 'Alamat Toko Belum Diatur'}
+                {getPrimaryValue(user?.profile?.alamat, 'alamat') || 'Alamat Toko Belum Diatur'}
               </p>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Package, ShoppingBag, Settings, MapPin, RefreshCw, LogOut, X, Check } from 'lucide-react'
 import Header from '../../components/layout/Header'
 import Footer from '../../components/layout/Footer'
@@ -58,7 +58,7 @@ const BuyerDashboard = () => {
   const navigate = useNavigate()
 
   const [isEditingAlamat, setIsEditingAlamat] = useState(false)
-  const [newAlamat, setNewAlamat] = useState(user?.profile?.alamat || '')
+  const [newAlamat, setNewAlamat] = useState(getPrimaryValue(user?.profile?.alamat, 'alamat') || '')
   const [isSaving, setIsSaving] = useState(false)
   const [mapPosition, setMapPosition] = useState([-6.9932, 110.4229]) // Default: Semarang
   const [isLocating, setIsLocating] = useState(false)
@@ -135,7 +135,7 @@ const BuyerDashboard = () => {
                     <p className="text-sm font-medium text-gray-500 mb-1 flex items-center gap-1">
                       <MapPin size={14} /> Alamat Pengiriman
                     </p>
-                    <p className="font-medium text-gray-900 mt-1 line-clamp-2 pr-4">{user?.profile?.alamat || 'Belum diatur'}</p>
+                    <p className="font-medium text-gray-900 mt-1 line-clamp-2 pr-4">{getPrimaryValue(user?.profile?.alamat, 'alamat') || 'Belum diatur'}</p>
                   </div>
                   <Button variant="outline" size="sm" onClick={() => setIsEditingAlamat(true)}>
                     Edit Alamat
@@ -163,7 +163,7 @@ const BuyerDashboard = () => {
         isOpen={isEditingAlamat}
         onClose={() => {
           setIsEditingAlamat(false)
-          setNewAlamat(user?.profile?.alamat || '')
+          setNewAlamat(getPrimaryValue(user?.profile?.alamat, 'alamat') || '')
         }}
         title="Ubah Alamat Pengiriman"
       >
@@ -260,7 +260,7 @@ const BuyerDashboard = () => {
               className="flex-1"
               onClick={() => {
                 setIsEditingAlamat(false)
-                setNewAlamat(user?.profile?.alamat || '')
+                setNewAlamat(getPrimaryValue(user?.profile?.alamat, 'alamat') || '')
               }}
             >
               Batal

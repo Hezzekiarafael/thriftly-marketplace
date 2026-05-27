@@ -12,6 +12,8 @@ import { userService } from '../../services/userService'
 import api from '../../services/api'
 import { formatCurrency } from '../../utils/helpers'
 
+import { getPrimaryValue } from '../../utils/profileUtils'
+
 const Checkout = () => {
   const { productId } = useParams()
   const navigate = useNavigate()
@@ -32,7 +34,8 @@ const Checkout = () => {
 
   // Helper: ambil alamat dari berbagai kemungkinan field backend
   const getUserAddress = () => {
-    return user?.alamat || user?.profile?.alamat || ''
+    const rawAlamat = user?.alamat || user?.profile?.alamat || ''
+    return getPrimaryValue(rawAlamat, 'alamat')
   }
 
   useEffect(() => {

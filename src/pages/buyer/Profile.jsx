@@ -17,6 +17,7 @@ import { toast } from 'react-hot-toast'
 import api from '../../services/api'
 import { userService } from '../../services/userService'
 import { newsletterService } from '../../services/newsletterService'
+import { parseProfileList, getPrimaryValue } from '../../utils/profileUtils'
 
 import Modal from '../../components/common/Modal'
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet'
@@ -132,9 +133,11 @@ const Profile = () => {
 
   // Address States
   const [addressForm, setAddressForm] = useState({
-    alamat: user?.profile?.alamat || ''
+    alamat: getPrimaryValue(user?.profile?.alamat, 'alamat') || ''
   })
   const [isEditingAddress, setIsEditingAddress] = useState(false)
+  const [editingAddressIndex, setEditingAddressIndex] = useState(null)
+  const [deleteAddressIndex, setDeleteAddressIndex] = useState(null)
   const [mapPosition, setMapPosition] = useState([-6.9932, 110.4229]) // Default: Semarang
   const [isLocating, setIsLocating] = useState(false)
 
@@ -148,7 +151,7 @@ const Profile = () => {
         tanggalLahir: user.profile.tanggalLahir || '',
       })
       setAddressForm({
-        alamat: user.profile.alamat || ''
+        alamat: getPrimaryValue(user?.profile?.alamat, 'alamat') || ''
       })
     }
   }, [user])
@@ -226,23 +229,83 @@ const Profile = () => {
     try {
       let lokasiValue = user?.profile?.lokasi || 'Semarang'
       if (mapPosition && mapPosition.length === 2) {
-        const resolved = reverseGeocode(mapPosition[0], mapPosition[1])
+        const resolved = await reverseGeocode(mapPosition[0], mapPosition[1])
         if (resolved) {
           lokasiValue = resolved.name || resolved.id || lokasiValue
         }
       }
 
+      const existingList = parseProfileList(user?.profile?.alamat, 'alamat')
+      let updatedList = [...existingList]
+
+      if (editingAddressIndex !== null) {
+        updatedList[editingAddressIndex] = { alamat: addressForm.alamat.trim(), lokasi: lokasiValue }
+      } else {
+        updatedList.push({ alamat: addressForm.alamat.trim(), lokasi: lokasiValue })
+      }
+
       await updateProfile({
         name: user.profile.nama,
         email: user.email,
-        alamat: addressForm.alamat.trim(),
-        address: addressForm.alamat.trim(),
-        lokasi: lokasiValue
+        alamat: JSON.stringify(updatedList),
+        address: JSON.stringify(updatedList), // legacy compatibility
+        lokasi: lokasiValue // keep primary location in this field
       })
       toast.success('Alamat berhasil disimpan')
       setIsEditingAddress(false)
+      setEditingAddressIndex(null)
     } catch (error) {
-      toast.error(error.message || 'Gagal menyimpan alamat')
+      toast.error(error.message || 'Gagal menyimpan alamat. Jika muncul error, minta backend matikan validasi max:50 pada alamat.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleSetPrimaryAddress = async (index) => {
+    setIsSubmitting(true)
+    try {
+      const existingList = parseProfileList(user?.profile?.alamat, 'alamat')
+      if (index === 0 || index >= existingList.length) return
+      
+      const newPrimary = existingList[index]
+      const updatedList = [
+        newPrimary,
+        ...existingList.slice(0, index),
+        ...existingList.slice(index + 1)
+      ]
+      
+      await updateProfile({
+        name: user.profile.nama,
+        email: user.email,
+        alamat: JSON.stringify(updatedList),
+        address: JSON.stringify(updatedList),
+        lokasi: newPrimary.lokasi || user?.profile?.lokasi
+      })
+      toast.success('Alamat utama berhasil diubah')
+    } catch (error) {
+      toast.error(error.message || 'Gagal mengubah alamat utama')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleRemoveAddress = async (index) => {
+    setIsSubmitting(true)
+    try {
+      const existingList = parseProfileList(user?.profile?.alamat, 'alamat')
+      const updatedList = existingList.filter((_, i) => i !== index)
+      
+      await updateProfile({
+        name: user.profile.nama,
+        email: user.email,
+        alamat: updatedList.length > 0 ? JSON.stringify(updatedList) : null,
+        address: updatedList.length > 0 ? JSON.stringify(updatedList) : null,
+        lokasi: updatedList.length > 0 ? updatedList[0].lokasi : null
+      })
+      toast.success('Alamat berhasil dihapus')
+      setDeleteAddressIndex(null)
+    } catch (error) {
+      toast.error(error.message || 'Gagal menghapus alamat')
     } finally {
       setIsSubmitting(false)
     }
@@ -830,72 +893,143 @@ const Profile = () => {
     </div>
   )
 
-  const renderAddressTab = () => (
-    <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-sm md:shadow-soft-lg border border-gray-100 animate-in fade-in duration-300">
-      <div className="flex justify-between items-center mb-4 md:mb-6">
-        <h2 className="text-base md:text-xl font-bold text-gray-900">Alamat Saya</h2>
-        {!isEditingAddress && (
+  const renderAddressTab = () => {
+    const addressList = parseProfileList(user?.profile?.alamat, 'alamat')
+    const hasAddress = addressList.length > 0
+
+    return (
+      <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-sm md:shadow-soft-lg border border-gray-100 animate-in fade-in duration-300">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 md:mb-6">
+          <div>
+            <h2 className="text-base md:text-xl font-bold text-gray-900">Alamat Pengiriman</h2>
+            <p className="text-gray-400 text-[10px] md:text-xs mt-0.5 md:mt-1">Atur alamat pengiriman untuk keperluan checkout dan pengiriman barang.</p>
+          </div>
           <button 
             onClick={() => {
+              setAddressForm({ alamat: '' })
+              setEditingAddressIndex(null)
               setIsEditingAddress(true)
             }}
-            className="flex items-center gap-1 text-primary-600 font-semibold text-xs md:text-sm hover:text-primary-700"
+            className="flex items-center gap-1 px-3 py-1.5 border border-primary-600 text-primary-600 hover:bg-primary-50 font-bold rounded-xl text-[10px] md:text-xs transition-colors shrink-0"
           >
-            {user?.profile?.alamat ? <Edit2 size={16} /> : <Plus size={16} />}
-            {user?.profile?.alamat ? 'Ubah Alamat' : 'Tambah Alamat Baru'}
+            <Plus size={14} /> {hasAddress ? 'Tambah Alamat Baru' : 'Tambah Alamat Sekarang'}
           </button>
-        )}
-      </div>
+        </div>
 
-      <div className="space-y-3 md:space-y-4">
-        {user?.profile?.alamat ? (
-          <div className="p-4 md:p-6 border-2 border-primary-100 bg-primary-50/30 rounded-2xl md:rounded-3xl relative">
-            <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-              <span className="text-xs md:text-sm font-bold text-gray-900">Utama</span>
-              <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[8px] md:text-[9px] font-bold rounded-full">
-                <MapPin size={8} /> ALAMAT TERSIMPAN
+        <div className="space-y-3 md:space-y-4">
+          {!hasAddress ? (
+            <div className="border-2 border-dashed border-gray-200 rounded-2xl md:rounded-3xl p-6 md:p-12 text-center flex flex-col items-center justify-center bg-gray-50/50">
+              <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 mb-3 md:mb-4">
+                <MapPin size={24} className="md:w-7 md:h-7" />
               </div>
-            </div>
-            <div className="space-y-1 text-gray-700">
-              <p className="text-sm md:text-base font-bold text-gray-900">{user?.profile?.nama}</p>
-              <p className="text-xs md:text-sm leading-relaxed max-w-lg">
-                {user.profile.alamat}
+              <h3 className="font-bold text-gray-900 text-xs md:text-sm mb-1">Belum ada alamat</h3>
+              <p className="text-[10px] md:text-xs text-gray-500 max-w-xs leading-relaxed mb-4 md:mb-6">
+                Tambahkan alamat pengiriman agar bisa melakukan checkout.
               </p>
             </div>
-            <button 
-              onClick={() => setIsEditingAddress(true)}
-              className="mt-3 md:mt-4 text-primary-600 font-bold text-xs md:text-sm hover:underline"
-            >
-              Ubah Alamat
-            </button>
-          </div>
-        ) : (
-          <div className="border-2 border-dashed border-gray-200 rounded-2xl md:rounded-3xl p-6 md:p-12 text-center flex flex-col items-center justify-center bg-gray-50/50">
-            <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-xl md:rounded-2xl flex items-center justify-center text-gray-400 mb-3 md:mb-4">
-              <MapPin size={24} className="md:w-7 md:h-7" />
+          ) : (
+            addressList.map((addr, index) => (
+              <div key={index} className={`p-4 md:p-6 border-2 rounded-2xl md:rounded-3xl relative transition-all ${
+                index === 0 ? 'border-primary-100 bg-primary-50/30' : 'border-gray-100 bg-white hover:border-gray-200'
+              }`}>
+                <div className="flex items-center justify-between gap-2 md:gap-3 mb-3 md:mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs md:text-sm font-bold text-gray-900">{user?.profile?.nama}</span>
+                    {index === 0 && (
+                      <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[8px] md:text-[9px] font-bold rounded-full">
+                        <Check size={8} /> UTAMA
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    {index !== 0 && (
+                      <button
+                        onClick={() => handleSetPrimaryAddress(index)}
+                        disabled={isSubmitting}
+                        className="text-[10px] md:text-xs font-bold text-gray-500 hover:text-emerald-600 border border-gray-200 hover:border-emerald-200 px-2 py-1 rounded-lg transition-colors"
+                      >
+                        Jadikan Utama
+                      </button>
+                    )}
+                    <button 
+                      onClick={() => {
+                        setAddressForm({ alamat: addr.alamat })
+                        setEditingAddressIndex(index)
+                        setIsEditingAddress(true)
+                      }}
+                      className="p-1.5 md:p-2 text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-lg transition-all"
+                      title="Ubah Alamat"
+                    >
+                      <Edit2 size={14} className="md:w-4 md:h-4" />
+                    </button>
+                    <button 
+                      onClick={() => setDeleteAddressIndex(index)}
+                      className="p-1.5 md:p-2 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all"
+                      title="Hapus Alamat"
+                    >
+                      <X size={14} className="md:w-4 md:h-4" />
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-1 text-gray-700 pr-12 md:pr-16">
+                  <p className="text-xs md:text-sm leading-relaxed max-w-2xl">
+                    {addr.alamat}
+                  </p>
+                  {addr.lokasi && (
+                    <p className="text-[10px] md:text-xs text-gray-500 font-medium pt-1 flex items-center gap-1">
+                      <MapPin size={10} /> Titik map: {addr.lokasi}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Custom Delete Confirmation Modal */}
+        {deleteAddressIndex !== null && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setDeleteAddressIndex(null)} />
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-in fade-in zoom-in-95 duration-200">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-red-50 text-red-500">
+                <MapPin className="w-7 h-7" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 text-center mb-2">Hapus Alamat?</h3>
+              <p className="text-sm text-gray-500 text-center leading-relaxed mb-6">
+                Apakah Anda yakin ingin menghapus alamat ini dari daftar alamat Anda?
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteAddressIndex(null)}
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={() => handleRemoveAddress(deleteAddressIndex)}
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold text-sm transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Menghapus...</>
+                  ) : 'Ya, Hapus'}
+                </button>
+              </div>
             </div>
-            <h3 className="font-bold text-gray-900 text-xs md:text-sm mb-1">Belum ada alamat</h3>
-            <p className="text-[10px] md:text-xs text-gray-500 max-w-xs leading-relaxed mb-4 md:mb-6">
-              Tambahkan alamat pengiriman agar bisa melakukan checkout.
-            </p>
-            <button 
-              onClick={() => setIsEditingAddress(true)}
-              className="px-4 py-2.5 md:px-6 md:py-3 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl md:rounded-2xl text-[10px] md:text-xs flex items-center gap-1.5 transition-all shadow-md animate-bounce"
-            >
-              <Plus size={14} /> Tambah Alamat Sekarang
-            </button>
           </div>
         )}
-      </div>
 
       {/* Address Edit Modal with Leaflet Map */}
       <Modal
         isOpen={isEditingAddress}
         onClose={() => {
           setIsEditingAddress(false)
-          setAddressForm({ alamat: user?.profile?.alamat || '' })
+          setEditingAddressIndex(null)
+          setAddressForm({ alamat: '' })
         }}
-        title="Ubah Alamat Pengiriman"
+        title={editingAddressIndex !== null ? "Ubah Alamat Pengiriman" : "Tambah Alamat Pengiriman"}
         size="lg"
       >
         <div className="space-y-4">
@@ -996,7 +1130,7 @@ const Profile = () => {
         </div>
       </Modal>
     </div>
-  )
+  )}
 
   const renderRekeningTab = () => {
     const rekeningList = parseRekeningList()

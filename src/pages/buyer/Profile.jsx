@@ -160,6 +160,7 @@ const Profile = () => {
   })
 
   const [isRekeningModalOpen, setIsRekeningModalOpen] = useState(false)
+  const [deleteRekeningIndex, setDeleteRekeningIndex] = useState(null) // index to confirm delete
   const [bankForm, setBankForm] = useState({
     namaBank: 'BCA',
     nomorRekening: '',
@@ -179,23 +180,17 @@ const Profile = () => {
   const videoRef = useRef(null)
   const streamRef = useRef(null)
 
-  // Sinkronisasi rekening bank
-  useEffect(() => {
-    if (user?.profile?.noRekening) {
-      const parts = user.profile.noRekening.split(' - ')
-      setBankForm({
-        namaBank: parts[0] || 'BCA',
-        nomorRekening: parts[1] || user.profile.noRekening,
-        namaPemilik: parts[2] || user.profile.nama || ''
-      })
-    } else {
-      setBankForm({
-        namaBank: 'BCA',
-        nomorRekening: '',
-        namaPemilik: user?.profile?.nama || ''
-      })
-    }
-  }, [user])
+  // Helper: parse noRekening → array of {namaBank, nomorRekening, namaPemilik}
+  const parseRekeningList = (noRekening) => {
+    if (!noRekening) return []
+    try {
+      const parsed = JSON.parse(noRekening)
+      if (Array.isArray(parsed)) return parsed
+    } catch {}
+    // Legacy: single string format "BCA - 1234 - Nama"
+    const parts = noRekening.split(' - ')
+    return [{ namaBank: parts[0] || 'Bank', nomorRekening: parts[1] || noRekening, namaPemilik: parts[2] || '' }]
+  }
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault()
@@ -284,14 +279,22 @@ const Profile = () => {
     }
     setIsSubmitting(true)
     try {
-      const combinedValue = `${bankForm.namaBank} - ${bankForm.nomorRekening.trim()} - ${bankForm.namaPemilik.trim()}`
+      // Ambil list yang sudah ada, tambahkan rekening baru
+      const existingList = parseRekeningList(user?.profile?.noRekening)
+      const newEntry = {
+        namaBank: bankForm.namaBank,
+        nomorRekening: bankForm.nomorRekening.trim(),
+        namaPemilik: bankForm.namaPemilik.trim()
+      }
+      const updatedList = [...existingList, newEntry]
       await updateProfile({
         name: user.profile.nama,
         email: user.email,
-        no_rekening: combinedValue
+        no_rekening: JSON.stringify(updatedList)
       })
-      toast.success('Rekening bank berhasil disimpan')
+      toast.success('Rekening bank berhasil ditambahkan')
       setIsRekeningModalOpen(false)
+      setBankForm({ namaBank: 'BCA', nomorRekening: '', namaPemilik: user?.profile?.nama || '' })
     } catch (error) {
       toast.error(error.message || 'Gagal menyimpan rekening bank')
     } finally {
@@ -299,21 +302,22 @@ const Profile = () => {
     }
   }
 
-  const handleRemoveRekening = async () => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus rekening bank ini?')) {
-      setIsSubmitting(true)
-      try {
-        await updateProfile({
-          name: user.profile.nama,
-          email: user.email,
-          no_rekening: null
-        })
-        toast.success('Rekening bank berhasil dihapus')
-      } catch (error) {
-        toast.error(error.message || 'Gagal menghapus rekening bank')
-      } finally {
-        setIsSubmitting(false)
-      }
+  const handleRemoveRekening = async (index) => {
+    setIsSubmitting(true)
+    try {
+      const existingList = parseRekeningList(user?.profile?.noRekening)
+      const updatedList = existingList.filter((_, i) => i !== index)
+      await updateProfile({
+        name: user.profile.nama,
+        email: user.email,
+        no_rekening: updatedList.length > 0 ? JSON.stringify(updatedList) : null
+      })
+      toast.success('Rekening bank berhasil dihapus')
+      setDeleteRekeningIndex(null)
+    } catch (error) {
+      toast.error(error.message || 'Gagal menghapus rekening bank')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -993,13 +997,8 @@ const Profile = () => {
   )
 
   const renderRekeningTab = () => {
-    const hasRekening = !!user?.profile?.noRekening;
-    
-    // Parse combined rekening
-    const parts = (user?.profile?.noRekening || '').split(' - ');
-    const bankName = parts[0] || 'Bank';
-    const accNo = parts[1] || user?.profile?.noRekening || '';
-    const accHolder = parts[2] || user?.profile?.nama || '';
+    const rekeningList = parseRekeningList(user?.profile?.noRekening)
+    const hasRekening = rekeningList.length > 0
 
     return (
       <div className="bg-white rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-sm md:shadow-soft-lg border border-gray-100 animate-in fade-in duration-300">
@@ -1008,14 +1007,15 @@ const Profile = () => {
             <h2 className="text-base md:text-xl font-bold text-gray-900">Simpan rekening untuk penarikan saldo</h2>
             <p className="text-gray-400 text-[10px] md:text-xs mt-0.5 md:mt-1">Saldo Thriftly kamu bisa ditarik ke rekening ini.</p>
           </div>
-          {hasRekening && (
-            <button 
-              onClick={() => setIsRekeningModalOpen(true)}
-              className="flex items-center gap-1 px-3 py-1.5 border border-emerald-600 text-emerald-600 hover:bg-emerald-50 font-bold rounded-xl text-[10px] md:text-xs transition-colors shrink-0"
-            >
-              + Tambah Rekening Lain
-            </button>
-          )}
+          <button 
+            onClick={() => {
+              setBankForm({ namaBank: 'BCA', nomorRekening: '', namaPemilik: user?.profile?.nama || '' })
+              setIsRekeningModalOpen(true)
+            }}
+            className="flex items-center gap-1 px-3 py-1.5 border border-emerald-600 text-emerald-600 hover:bg-emerald-50 font-bold rounded-xl text-[10px] md:text-xs transition-colors shrink-0"
+          >
+            + {hasRekening ? 'Tambah Rekening Lain' : 'Tambah Rekening Sekarang'}
+          </button>
         </div>
 
         {!hasRekening ? (
@@ -1027,44 +1027,77 @@ const Profile = () => {
             <p className="text-[10px] md:text-xs text-gray-500 max-w-xs leading-relaxed mb-4 md:mb-6">
               Hubungkan rekening bank Anda untuk memudahkan penarikan saldo penjualan.
             </p>
-            <button 
-              onClick={() => setIsRekeningModalOpen(true)}
-              className="px-4 py-2.5 md:px-6 md:py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl md:rounded-2xl text-[10px] md:text-xs flex items-center gap-1.5 transition-all shadow-md animate-bounce"
-            >
-              + Tambah Rekening Sekarang
-            </button>
           </div>
         ) : (
-          <div className="space-y-4">
-            {/* Premium Bank Card */}
-            <div className="p-4 md:p-6 border border-emerald-100 bg-emerald-50/30 rounded-2xl md:rounded-3xl relative flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3 md:gap-4">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl md:rounded-2xl flex items-center justify-center border border-gray-100 shadow-sm shrink-0">
-                  <div className="font-bold text-[10px] md:text-xs text-emerald-600 uppercase tracking-wider">
-                    {bankName.substring(0, 3)}
+          <div className="space-y-3">
+            {rekeningList.map((rek, index) => (
+              <div key={index} className={`p-4 md:p-5 border rounded-2xl relative flex items-start justify-between gap-4 transition-all ${
+                index === 0 ? 'border-emerald-100 bg-emerald-50/30' : 'border-gray-100 bg-gray-50/50'
+              }`}>
+                <div className="flex items-start gap-3 md:gap-4">
+                  <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl flex items-center justify-center border border-gray-100 shadow-sm shrink-0">
+                    <span className="font-bold text-[10px] md:text-xs text-emerald-600 uppercase tracking-wider">
+                      {rek.namaBank.substring(0, 3)}
+                    </span>
+                  </div>
+                  <div className="space-y-0.5 md:space-y-1">
+                    <h4 className="font-bold text-gray-900 text-sm md:text-base">{rek.namaBank}</h4>
+                    <p className="font-mono text-xs md:text-sm text-gray-600 tracking-wider">
+                      {rek.nomorRekening.replace(/(\d{4})/g, '$1 ').trim()}
+                    </p>
+                    <p className="text-[10px] md:text-xs text-gray-400 font-semibold uppercase tracking-wider">
+                      a.n. {rek.namaPemilik}
+                    </p>
                   </div>
                 </div>
-                <div className="space-y-0.5 md:space-y-1">
-                  <h4 className="font-bold text-gray-900 text-sm md:text-base">{bankName}</h4>
-                  <p className="font-mono text-xs md:text-sm text-gray-600 tracking-wider">
-                    {accNo.replace(/(\d{4})/g, '$1 ').trim()}
-                  </p>
-                  <p className="text-[10px] md:text-xs text-gray-400 font-semibold uppercase tracking-wider">
-                    a.n. {accHolder}
-                  </p>
+
+                <div className="flex items-center gap-1.5">
+                  {index === 0 && (
+                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[8px] md:text-[10px] font-bold rounded-full uppercase tracking-wider">
+                      Utama
+                    </span>
+                  )}
+                  <button 
+                    onClick={() => setDeleteRekeningIndex(index)}
+                    className="p-1.5 md:p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                    title="Hapus Rekening"
+                  >
+                    <X size={14} className="md:w-4 md:h-4" />
+                  </button>
                 </div>
               </div>
+            ))}
+          </div>
+        )}
 
-              <div className="flex items-center gap-1.5 md:gap-2">
-                <span className="px-2 md:px-2.5 py-0.5 md:py-1 bg-emerald-100 text-emerald-700 text-[8px] md:text-[10px] font-bold rounded-full uppercase tracking-wider">
-                  Aktif
-                </span>
-                <button 
-                  onClick={handleRemoveRekening}
-                  className="p-1.5 md:p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg md:rounded-xl transition-all"
-                  title="Hapus Rekening"
+        {/* Custom Delete Confirmation Modal */}
+        {deleteRekeningIndex !== null && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setDeleteRekeningIndex(null)} />
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-in fade-in zoom-in-95 duration-200">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-red-50 text-red-500">
+                <CreditCard className="w-7 h-7" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 text-center mb-2">Hapus Rekening?</h3>
+              <p className="text-sm text-gray-500 text-center leading-relaxed mb-6">
+                Rekening <strong>{rekeningList[deleteRekeningIndex]?.namaBank}</strong> {rekeningList[deleteRekeningIndex]?.nomorRekening} akan dihapus dari daftar Anda.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteRekeningIndex(null)}
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
-                  <X size={14} className="md:w-4 md:h-4" />
+                  Batal
+                </button>
+                <button
+                  onClick={() => handleRemoveRekening(deleteRekeningIndex)}
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold text-sm transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Menghapus...</>
+                  ) : 'Ya, Hapus'}
                 </button>
               </div>
             </div>

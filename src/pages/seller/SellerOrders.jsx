@@ -91,12 +91,12 @@ const SellerOrders = () => {
     }
   }
 
-  const handleKirim = (id) => {
+  const handleKirim = async (id) => {
     if (window.confirm('Proses pengiriman pesanan ini?')) {
         try {
-            transactionService.markAsShipped(id)
+            await transactionService.markAsShipped(id)
             toast.success('Pesanan berhasil diproses & dikirim!')
-            loadOrders()
+            await loadOrders()
         } catch (error) {
             toast.error('Gagal memperbarui status pengiriman')
         }

@@ -369,7 +369,13 @@ const Homepage = () => {
 
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h2 className="text-2xl md:text-5xl font-bold text-white mb-4 md:mb-6 tracking-tight leading-tight">
-            {user?.role === 'seller' ? (
+            {isSubscribed ? (
+              user?.role === 'seller' ? (
+                <>Anda Adalah <span className="text-amber-400">Premium Seller!</span></>
+              ) : (
+                <>Halo <span className="bg-gradient-to-r from-primary-400 via-indigo-400 to-primary-400 bg-clip-text text-transparent">Member Premium!</span></>
+              )
+            ) : user?.role === 'seller' ? (
               'Tingkatkan Penjualan Anda!'
             ) : (
               <>Siap Berburu <span className="bg-gradient-to-r from-primary-400 via-indigo-400 to-primary-400 bg-clip-text text-transparent">Barang Baru?</span></>
@@ -378,16 +384,18 @@ const Homepage = () => {
           <p className={`mb-6 md:mb-10 max-w-2xl mx-auto text-sm md:text-xl font-light ${
             user?.role === 'seller' ? 'text-amber-100' : 'text-gray-400'
           }`}>
-            {user?.role === 'seller' 
-              ? 'Berlangganan Premium Seller sekarang dan jadikan produk Anda tampil di urutan paling atas secara eksklusif.'
-              : user 
-                ? 'Berlangganan Premium sekarang dan nikmati keuntungan eksklusif sebagai member!'
-                : 'Langganan newsletter kita biar nggak ketinggalan update barang-barang premium yang baru masuk.'
+            {isSubscribed
+              ? 'Terima kasih telah berlangganan. Nikmati berbagai keuntungan eksklusif khusus untuk Anda.'
+              : user?.role === 'seller' 
+                ? 'Berlangganan Premium Seller sekarang dan jadikan produk Anda tampil di urutan paling atas secara eksklusif.'
+                : user 
+                  ? 'Berlangganan Premium sekarang dan nikmati keuntungan eksklusif sebagai member!'
+                  : 'Langganan newsletter kita biar nggak ketinggalan update barang-barang premium yang baru masuk.'
             }
           </p>
 
-          {/* Tampilkan kotak penawaran langganan HANYA JIKA isSubscribed = false */}
-          {!isSubscribed && (
+          {/* Tampilkan penawaran langganan ATAU status sudah langganan */}
+          {!isSubscribed ? (
             <>
               {/* Guest: tampilkan form email */}
               {!user && (
@@ -437,15 +445,29 @@ const Homepage = () => {
                   )}
                   <p className={`text-xs ${user.role === 'seller' ? 'text-amber-200' : 'text-gray-500'}`}>
                     Sudah berlangganan?{' '}
-                    <a href="/profile?tab=subscription" className={`underline underline-offset-2 transition-colors ${
+                    <Link to="/profile?tab=subscription" className={`underline underline-offset-2 transition-colors ${
                       user.role === 'seller' ? 'text-white hover:text-amber-100' : 'text-primary-400 hover:text-primary-300'
                     }`}>
                       Cek status langganan kamu
-                    </a>
+                    </Link>
                   </p>
                 </div>
               )}
             </>
+          ) : (
+            <div className="flex flex-col items-center gap-4">
+              <div className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-white/10 backdrop-blur-md border ${user?.role === 'seller' ? 'border-amber-400/30 text-amber-200' : 'border-white/20 text-white'} font-medium shadow-lg`}>
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-green-500/90 text-white text-xs">
+                  ✓
+                </span>
+                Sudah Berlangganan Premium
+              </div>
+              <Link to="/profile?tab=subscription" className={`text-sm underline underline-offset-4 transition-colors ${
+                  user?.role === 'seller' ? 'text-amber-200/70 hover:text-amber-100' : 'text-gray-400 hover:text-white'
+                }`}>
+                Kelola Langganan Saya
+              </Link>
+            </div>
           )}
         </div>
       </section>

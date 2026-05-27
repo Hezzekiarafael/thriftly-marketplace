@@ -98,8 +98,10 @@ const Header = () => {
             </Link>
 
             {loading ? (
-              <div className="flex items-center space-x-4 animate-pulse">
-                <div className="h-8 w-24 bg-white/20 rounded-md"></div>
+              <div className="flex items-center space-x-5 animate-pulse opacity-60">
+                <div className="h-4 w-20 bg-white/20 rounded"></div>
+                <div className="h-5 w-5 bg-white/20 rounded"></div>
+                <div className="h-5 w-5 bg-white/20 rounded"></div>
               </div>
             ) : !user ? (
               <div className="flex items-center space-x-3">
@@ -158,9 +160,9 @@ const Header = () => {
           </nav>
 
           {loading ? (
-            <div className="hidden md:flex animate-pulse items-center md:pl-4 md:border-l border-white/20">
+            <div className="hidden md:flex animate-pulse items-center md:pl-4 md:border-l border-white/20 opacity-60">
                <div className="w-8 h-8 rounded-full bg-white/20"></div>
-               <div className="w-20 h-4 bg-white/20 rounded ml-2"></div>
+               <div className="w-20 h-4 bg-white/20 rounded ml-2 hidden lg:block"></div>
             </div>
           ) : user ? (
             <div className="relative md:pl-4 md:border-l border-gray-200" ref={userMenuRef}>

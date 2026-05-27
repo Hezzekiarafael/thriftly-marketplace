@@ -1072,7 +1072,8 @@ const Profile = () => {
                   () => {
                     toast.error('Gagal mengambil lokasi, pastikan izin akses lokasi diberikan');
                     setIsLocating(false);
-                  }
+                  },
+                  { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );
               }}
               className="flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 border border-emerald-500 hover:bg-emerald-50 text-emerald-600 font-bold rounded-full text-[10px] md:text-xs transition-colors"

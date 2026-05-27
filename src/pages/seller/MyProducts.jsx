@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Edit, Trash2, Package } from 'lucide-react'
+import { Edit, Trash2, Package, CheckCircle, RotateCcw, AlertTriangle, ShoppingBag } from 'lucide-react'
 import Header from '../../components/layout/Header'
 import Footer from '../../components/layout/Footer'
 import Container from '../../components/layout/Container'
@@ -12,9 +12,65 @@ import { formatCurrency } from '../../utils/helpers'
 import { STATUS } from '../../constants/copywriting'
 import toast from 'react-hot-toast'
 
+// --- Custom Confirmation Modal ---
+const ConfirmModal = ({ isOpen, onClose, onConfirm, title, description, confirmLabel, confirmVariant = 'danger', icon: Icon, isLoading }) => {
+  if (!isOpen) return null
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={!isLoading ? onClose : undefined}
+      />
+      {/* Modal */}
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 animate-in fade-in zoom-in-95 duration-200">
+        {/* Icon */}
+        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
+          confirmVariant === 'danger' ? 'bg-red-50 text-red-500' :
+          confirmVariant === 'success' ? 'bg-green-50 text-green-600' :
+          'bg-amber-50 text-amber-500'
+        }`}>
+          {Icon && <Icon className="w-7 h-7" />}
+        </div>
+
+        <h3 className="text-lg font-bold text-gray-900 text-center mb-2">{title}</h3>
+        <p className="text-sm text-gray-500 text-center leading-relaxed mb-6">{description}</p>
+
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            disabled={isLoading}
+            className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            Batal
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isLoading}
+            className={`flex-1 px-4 py-2.5 rounded-xl font-semibold text-sm text-white transition-all disabled:opacity-70 flex items-center justify-center gap-2 ${
+              confirmVariant === 'danger' ? 'bg-red-500 hover:bg-red-600' :
+              confirmVariant === 'success' ? 'bg-green-500 hover:bg-green-600' :
+              'bg-amber-500 hover:bg-amber-600'
+            }`}
+          >
+            {isLoading ? (
+              <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Memproses...</>
+            ) : confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// --- Main Page ---
 const MyProducts = () => {
   const { user } = useAuth()
   const [products, setProducts] = useState([])
+
+  // Modal state
+  const [modal, setModal] = useState({ open: false, type: null, productId: null, productName: '' })
+  const [isActionLoading, setIsActionLoading] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -30,27 +86,35 @@ const MyProducts = () => {
     }
   }, [user])
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Yakin mau hapus produk ini?')) {
-      try {
-        await productService.deleteProduct(id)
-        setProducts(products.filter(p => p.id !== id))
-        toast.success('Produk berhasil dihapus')
-      } catch (error) {
-        toast.error('Gagal menghapus produk')
-      }
-    }
+  const openModal = (type, product) => {
+    setModal({ open: true, type, productId: product.id, productName: product.nama })
   }
 
-  const handleMarkAsSold = async (id) => {
-    if (window.confirm('Tandai produk ini sebagai terjual?')) {
-      try {
-        await productService.markAsSold(id)
-        setProducts(products.map(p => p.id === id ? { ...p, status: 'sold' } : p))
+  const closeModal = () => {
+    if (!isActionLoading) setModal({ open: false, type: null, productId: null, productName: '' })
+  }
+
+  const handleConfirm = async () => {
+    setIsActionLoading(true)
+    try {
+      if (modal.type === 'delete') {
+        await productService.deleteProduct(modal.productId)
+        setProducts(products.filter(p => p.id !== modal.productId))
+        toast.success('Produk berhasil dihapus')
+      } else if (modal.type === 'sold') {
+        await productService.markAsSold(modal.productId)
+        setProducts(products.map(p => p.id === modal.productId ? { ...p, status: 'sold' } : p))
         toast.success('Produk berhasil ditandai terjual')
-      } catch (error) {
-        toast.error('Gagal menandai produk terjual')
+      } else if (modal.type === 'relist') {
+        await productService.markAsAvailable(modal.productId)
+        setProducts(products.map(p => p.id === modal.productId ? { ...p, status: 'approved' } : p))
+        toast.success('Produk berhasil diaktifkan kembali!')
       }
+      closeModal()
+    } catch (error) {
+      toast.error(error.message || 'Terjadi kesalahan')
+    } finally {
+      setIsActionLoading(false)
     }
   }
 
@@ -64,10 +128,37 @@ const MyProducts = () => {
     return <Badge variant={variants[status] || 'default'}>{STATUS[status] || status}</Badge>
   }
 
+  // Modal config per type
+  const modalConfig = {
+    sold: {
+      title: 'Tandai Sebagai Terjual?',
+      description: `Produk "${modal.productName}" akan disembunyikan dari katalog. Kamu bisa mengaktifkannya kembali kapan saja.`,
+      confirmLabel: 'Ya, Tandai Terjual',
+      confirmVariant: 'warning',
+      icon: CheckCircle
+    },
+    relist: {
+      title: 'Aktifkan Kembali Produk?',
+      description: `Produk "${modal.productName}" akan ditampilkan kembali ke katalog sehingga pembeli dapat melihat dan membelinya.`,
+      confirmLabel: 'Ya, Aktifkan Kembali',
+      confirmVariant: 'success',
+      icon: RotateCcw
+    },
+    delete: {
+      title: 'Hapus Produk?',
+      description: `Produk "${modal.productName}" akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan.`,
+      confirmLabel: 'Ya, Hapus Permanen',
+      confirmVariant: 'danger',
+      icon: AlertTriangle
+    }
+  }
+
+  const currentModalConfig = modal.type ? modalConfig[modal.type] : {}
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 pb-16 md:pb-0">
       <Header />
-      
+
       <main className="flex-grow py-6 md:py-10">
         <Container>
           <div className="flex justify-between items-center mb-4 md:mb-6">
@@ -102,7 +193,7 @@ const MyProducts = () => {
                       alt={product.nama}
                       className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 object-cover rounded-xl shrink-0"
                     />
-                    
+
                     <div className="flex-1 flex flex-col justify-between min-w-0">
                       <div>
                         <div className="flex flex-col sm:flex-row justify-between items-start gap-1.5 mb-1 md:mb-2">
@@ -112,18 +203,31 @@ const MyProducts = () => {
                               {formatCurrency(product.harga)}
                             </p>
                           </div>
-                          
+
                           <div className="flex gap-1.5 md:gap-2 mt-1 sm:mt-0 shrink-0">
+                            {/* Tandai Terjual - hanya untuk produk approved */}
                             {product.status === 'approved' && (
-                              <Button
-                                variant="success"
-                                size="sm"
-                                className="text-[9px] md:text-xs py-1 px-2 md:py-1.5 md:px-3 font-bold"
-                                onClick={() => handleMarkAsSold(product.id)}
+                              <button
+                                onClick={() => openModal('sold', product)}
+                                className="inline-flex items-center gap-1 text-[9px] md:text-xs py-1 px-2 md:py-1.5 md:px-3 font-bold bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
                               >
+                                <CheckCircle className="w-3 h-3" />
                                 Tandai Terjual
-                              </Button>
+                              </button>
                             )}
+
+                            {/* Aktifkan Kembali - hanya untuk produk sold */}
+                            {product.status === 'sold' && (
+                              <button
+                                onClick={() => openModal('relist', product)}
+                                className="inline-flex items-center gap-1 text-[9px] md:text-xs py-1 px-2 md:py-1.5 md:px-3 font-bold bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                              >
+                                <RotateCcw className="w-3 h-3" />
+                                Aktifkan Lagi
+                              </button>
+                            )}
+
+                            {/* Edit - semua kecuali sold */}
                             {product.status !== 'sold' && (
                               <Link to={`/seller/products/edit/${product.id}`} className="block">
                                 <Button variant="outline" size="sm" className="p-1 md:p-2">
@@ -131,23 +235,25 @@ const MyProducts = () => {
                                 </Button>
                               </Link>
                             )}
+
+                            {/* Hapus - selalu tampil */}
                             <Button
                               variant="danger"
                               size="sm"
                               className="p-1 md:p-2"
-                              onClick={() => handleDelete(product.id)}
+                              onClick={() => openModal('delete', product)}
                             >
                               <Trash2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
                             </Button>
                           </div>
                         </div>
-                        
+
                         <div className="flex flex-wrap gap-1 md:gap-1.5 mb-1">
                           {getStatusBadge(product.status)}
                           {product.isBU && <Badge variant="bu">BU</Badge>}
                         </div>
                       </div>
-                      
+
                       {product.adminNote && (
                         <div className="mt-2 p-2.5 md:p-3 bg-yellow-50 border border-yellow-100 rounded-xl">
                           <p className="text-[10px] md:text-xs font-bold text-yellow-800">Catatan Admin:</p>
@@ -164,6 +270,19 @@ const MyProducts = () => {
       </main>
 
       <Footer />
+
+      {/* Custom Confirmation Modal */}
+      <ConfirmModal
+        isOpen={modal.open}
+        onClose={closeModal}
+        onConfirm={handleConfirm}
+        isLoading={isActionLoading}
+        title={currentModalConfig.title}
+        description={currentModalConfig.description}
+        confirmLabel={currentModalConfig.confirmLabel}
+        confirmVariant={currentModalConfig.confirmVariant}
+        icon={currentModalConfig.icon}
+      />
     </div>
   )
 }

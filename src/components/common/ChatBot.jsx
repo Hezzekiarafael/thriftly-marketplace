@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { MessageCircle, X, Send, Bot, User, ChevronDown, Sparkles } from 'lucide-react'
-import { CHATBOT_CONFIG, QUICK_REPLIES, KNOWLEDGE_BASE, findAnswer } from '../../data/chatbotKnowledge'
+import { CHATBOT_CONFIG, QUICK_REPLIES } from '../../data/chatbotKnowledge'
+import api from '../../services/api'
 
 const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -79,7 +80,7 @@ const ChatBot = () => {
   }
 
   // Kirim pesan
-  const handleSend = (text = null) => {
+  const handleSend = async (text = null) => {
     const messageText = text || inputValue.trim()
     if (!messageText) return
 
@@ -90,28 +91,49 @@ const ChatBot = () => {
       text: messageText,
       time: new Date(),
     }
-    setMessages((prev) => [...prev, userMsg])
+    
+    const updatedMessages = [...messages, userMsg]
+    setMessages(updatedMessages)
     setInputValue('')
-
-    // Typing indicator
     setIsTyping(true)
 
-    // Simulasi delay bot (300-800ms)
-    const delay = Math.random() * 500 + 300
-    setTimeout(() => {
-      setIsTyping(false)
+    try {
+      // 1. Format array riwayat sesuai format spesifikasi API backend (role: user/model)
+      const payloadMessages = updatedMessages.map(msg => ({
+        role: msg.type === 'bot' ? 'model' : 'user',
+        content: msg.text
+      }))
 
-      const result = findAnswer(messageText)
+      // 2. Tembak endpoint AI chatbot
+      // api.js sudah otomatis memasukkan header Authorization Bearer token jika user login!
+      const res = await api.post('/chat', { messages: payloadMessages })
 
-      const botMsg = {
+      // 3. Masukkan respons AI ke dalam state
+      if (res.data?.reply?.content) {
+        const botMsg = {
+          id: Date.now() + 1,
+          type: 'bot',
+          text: res.data.reply.content,
+          time: new Date(),
+          showQuickReplies: false, // AI dinamis, tidak perlu menu quick replies
+        }
+        setMessages(prev => [...prev, botMsg])
+      } else {
+        throw new Error('Format response dari server AI tidak dikenali.')
+      }
+    } catch (error) {
+      console.error('Error menghubungkan ke AI Chatbot:', error)
+      const errorMsg = {
         id: Date.now() + 1,
         type: 'bot',
-        text: result ? result.answer : CHATBOT_CONFIG.fallback,
+        text: 'Maaf, server AI sedang sibuk atau ada gangguan jaringan. Silakan coba lagi nanti ya. 🙏',
         time: new Date(),
-        followUp: result?.followUp || [],
+        showQuickReplies: true,
       }
-      setMessages((prev) => [...prev, botMsg])
-    }, delay)
+      setMessages(prev => [...prev, errorMsg])
+    } finally {
+      setIsTyping(false)
+    }
   }
 
   // Handle keyboard

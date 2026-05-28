@@ -6,16 +6,18 @@ import { useAuth } from '../../context/AuthContext'
 
 const ChatBot = () => {
   const { user } = useAuth()
-  const storageKey = user?.id ? `thriftly_chat_history_${user.id}` : 'thriftly_chat_history_guest'
+  const storageKey = user?.id ? `thriftly_chat_history_${user.id}` : null
 
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState(() => {
-    const saved = localStorage.getItem(storageKey)
-    if (saved) {
-      try {
-        return JSON.parse(saved)
-      } catch (e) {
-        return []
+    if (storageKey) {
+      const saved = localStorage.getItem(storageKey)
+      if (saved) {
+        try {
+          return JSON.parse(saved)
+        } catch (e) {
+          return []
+        }
       }
     }
     return []
@@ -29,11 +31,15 @@ const ChatBot = () => {
 
   // Load ulang riwayat jika user berganti (login/logout)
   useEffect(() => {
-    const saved = localStorage.getItem(storageKey)
-    if (saved) {
-      try {
-        setMessages(JSON.parse(saved))
-      } catch (e) {
+    if (storageKey) {
+      const saved = localStorage.getItem(storageKey)
+      if (saved) {
+        try {
+          setMessages(JSON.parse(saved))
+        } catch (e) {
+          setMessages([])
+        }
+      } else {
         setMessages([])
       }
     } else {
@@ -41,10 +47,24 @@ const ChatBot = () => {
     }
   }, [storageKey])
 
-  // Simpan ke localStorage setiap kali messages berubah
+  // Simpan ke localStorage setiap kali messages berubah (HANYA untuk user yang login)
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(messages))
+    if (storageKey) {
+      localStorage.setItem(storageKey, JSON.stringify(messages))
+    }
   }, [messages, storageKey])
+
+  // Handler untuk buka/tutup chatbot
+  const toggleChatBot = useCallback((nextState) => {
+    const isOpening = typeof nextState === 'boolean' ? nextState : !isOpen
+    setIsOpen(isOpening)
+    
+    // Hapus riwayat jika ditutup dan user belum login (guest)
+    if (!isOpening && !user) {
+      // Delay sedikit agar animasi menutup selesai dulu sebelum reset
+      setTimeout(() => setMessages([]), 500)
+    }
+  }, [isOpen, user])
 
   // Initial greeting saat pertama kali dibuka
   const initChat = useCallback(() => {
@@ -214,7 +234,7 @@ const ChatBot = () => {
     <>
       {/* ── Floating Button ─────────────────── */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => toggleChatBot(!isOpen)}
         className={`fixed z-[9999] bottom-20 md:bottom-6 right-4 md:right-6 w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all duration-500 group ${
           isOpen
             ? 'bg-gray-700 hover:bg-gray-800 rotate-0'
@@ -262,7 +282,7 @@ const ChatBot = () => {
             </div>
 
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={() => toggleChatBot(false)}
               className="relative z-10 w-8 h-8 rounded-lg bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors md:hidden"
             >
               <X size={18} className="text-white" />

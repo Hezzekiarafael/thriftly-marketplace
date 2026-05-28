@@ -177,11 +177,7 @@ const ChatBot = () => {
         {isOpen ? (
           <X size={22} className="text-white" />
         ) : (
-          <>
-            <MessageCircle size={24} className="text-white" />
-            {/* Pulse ring */}
-            <span className="absolute inset-0 rounded-full bg-primary-400 animate-ping opacity-30" />
-          </>
+          <MessageCircle size={24} className="text-white" />
         )}
       </button>
 

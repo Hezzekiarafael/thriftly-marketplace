@@ -2,11 +2,15 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { MessageCircle, X, Send, Bot, User, ChevronDown, Sparkles } from 'lucide-react'
 import { CHATBOT_CONFIG, QUICK_REPLIES } from '../../data/chatbotKnowledge'
 import api from '../../services/api'
+import { useAuth } from '../../context/AuthContext'
 
 const ChatBot = () => {
+  const { user } = useAuth()
+  const storageKey = user?.id ? `thriftly_chat_history_${user.id}` : 'thriftly_chat_history_guest'
+
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState(() => {
-    const saved = localStorage.getItem('thriftly_chat_history')
+    const saved = localStorage.getItem(storageKey)
     if (saved) {
       try {
         return JSON.parse(saved)
@@ -23,10 +27,24 @@ const ChatBot = () => {
   const messagesContainerRef = useRef(null)
   const inputRef = useRef(null)
 
+  // Load ulang riwayat jika user berganti (login/logout)
+  useEffect(() => {
+    const saved = localStorage.getItem(storageKey)
+    if (saved) {
+      try {
+        setMessages(JSON.parse(saved))
+      } catch (e) {
+        setMessages([])
+      }
+    } else {
+      setMessages([])
+    }
+  }, [storageKey])
+
   // Simpan ke localStorage setiap kali messages berubah
   useEffect(() => {
-    localStorage.setItem('thriftly_chat_history', JSON.stringify(messages))
-  }, [messages])
+    localStorage.setItem(storageKey, JSON.stringify(messages))
+  }, [messages, storageKey])
 
   // Initial greeting saat pertama kali dibuka
   const initChat = useCallback(() => {

@@ -123,7 +123,12 @@ const ChatBot = () => {
       }))
 
       // 2. Tembak endpoint AI chatbot
-      // api.js sudah otomatis memasukkan header Authorization Bearer token jika user login!
+      // Jika user belum login (guest), langsung lempar error agar ditangani oleh fallback lokal
+      // Ini mencegah munculnya error merah 401 di console browser.
+      if (!user) {
+        throw new Error('Guest user fallback')
+      }
+      
       const res = await api.post('/chat', { messages: payloadMessages })
 
       // 3. Masukkan respons AI ke dalam state

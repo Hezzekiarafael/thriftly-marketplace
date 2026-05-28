@@ -43,7 +43,7 @@ export const KNOWLEDGE_BASE = [
   // CARA BELANJA (PEMBELI)
   // ────────────────────────────────────────────
   {
-    keywords: ['cara belanja', 'cara beli', 'gimana beli', 'bagaimana beli', 'cara membeli', 'cara order', 'mau beli', 'pengen beli', 'beli barang'],
+    keywords: ['cara belanja', 'cara beli', 'gimana beli', 'bagaimana beli', 'cara membeli', 'cara order', 'mau beli', 'pengen beli', 'beli barang', 'beli produk', 'pesan produk'],
     answer: 'Cara belanja di Thriftly sangat mudah! 🛒\n\n1️⃣ **Cari Barang** — Temukan barang impian dari ribuan penjual terpercaya.\n2️⃣ **Tawar & Beli** — Gunakan fitur negosiasi untuk harga terbaik atau langsung checkout.\n3️⃣ **Bayar Aman** — Pembayaran melalui DOKU Payment Gateway.\n4️⃣ **Barang Dikirim** — Penjual mengirimkan via JNE/J&T/SiCepat.\n5️⃣ **Selesai** — Barang sampai, dana diteruskan ke penjual. Aman!\n\n👉 Mulai belanja di: /products',
     followUp: ['keamanan', 'pembayaran', 'pengiriman']
   },
@@ -240,7 +240,7 @@ export const KNOWLEDGE_BASE = [
 
 /**
  * Fungsi untuk mencocokkan pesan pengguna dengan knowledge base
- * Menggunakan keyword matching sederhana
+ * Menggunakan sistem pencocokan kata (multi-word matching)
  */
 export const findAnswer = (userMessage) => {
   const msg = userMessage.toLowerCase().trim()
@@ -252,9 +252,17 @@ export const findAnswer = (userMessage) => {
   for (const entry of KNOWLEDGE_BASE) {
     let score = 0
     for (const keyword of entry.keywords) {
-      if (msg.includes(keyword.toLowerCase())) {
-        // Beri skor berdasarkan panjang keyword (keyword panjang = lebih spesifik = skor lebih tinggi)
-        score += keyword.length
+      // Pecah keyword menjadi kata-kata terpisah (contoh: "cara beli" -> ["cara", "beli"])
+      const words = keyword.toLowerCase().split(' ')
+      
+      // Cek apakah SEMUA kata dari keyword ini ada di dalam pesan user
+      // Ini akan cocok dengan "bagaimana cara saya jika ingin beli produk" untuk keyword "cara beli"
+      const allWordsPresent = words.every(w => msg.includes(w))
+
+      if (allWordsPresent) {
+        // Beri skor berdasarkan panjang keyword dan jumlah kata
+        // (keyword yang lebih panjang/spesifik mendapat skor lebih tinggi)
+        score += keyword.length + (words.length * 5)
       }
     }
     if (score > bestScore) {

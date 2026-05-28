@@ -44,7 +44,7 @@ export const KNOWLEDGE_BASE = [
   // ────────────────────────────────────────────
   {
     keywords: ['cara belanja', 'cara beli', 'gimana beli', 'bagaimana beli', 'cara membeli', 'cara order', 'mau beli', 'pengen beli', 'beli barang', 'beli produk', 'pesan produk'],
-    answer: 'Cara belanja di Thriftly sangat mudah! 🛒\n\n1️⃣ **Cari Barang** — Temukan barang impian dari ribuan penjual terpercaya.\n2️⃣ **Tawar & Beli** — Gunakan fitur negosiasi untuk harga terbaik atau langsung checkout.\n3️⃣ **Bayar Aman** — Pembayaran melalui DOKU Payment Gateway.\n4️⃣ **Barang Dikirim** — Penjual mengirimkan via JNE/J&T/SiCepat.\n5️⃣ **Selesai** — Barang sampai, dana diteruskan ke penjual. Aman!\n\n👉 Mulai belanja di: /products',
+    answer: 'Cara belanja di Thriftly sangat mudah! 🛒\n\n1️⃣ **Cari Barang** — Temukan barang impian dari ribuan penjual terpercaya.\n2️⃣ **Tawar & Beli** — Gunakan fitur negosiasi untuk harga terbaik atau langsung checkout.\n3️⃣ **Bayar Aman** — Pembayaran melalui DOKU Payment Gateway.\n4️⃣ **Barang Dikirim** — Penjual mengirimkan via JNE/J&T/SiCepat.\n5️⃣ **Selesai** — Barang sampai, dana diteruskan ke penjual. Aman!\n\n👉 Mulai belanja di: [Halaman Produk](/products)',
     followUp: ['keamanan', 'pembayaran', 'pengiriman']
   },
 
@@ -53,7 +53,7 @@ export const KNOWLEDGE_BASE = [
   // ────────────────────────────────────────────
   {
     keywords: ['cara jual', 'gimana jual', 'bagaimana jual', 'cara menjual', 'mau jual', 'jual barang', 'daftar penjual', 'jadi seller', 'jadi penjual'],
-    answer: 'Menjual barang di Thriftly cuma butuh 30 detik! 🏷️\n\n1️⃣ **Daftar sebagai Penjual** — Registrasi di halaman pendaftaran penjual.\n2️⃣ **Upload Produk** — Foto, deskripsi, harga, dan kondisi barang.\n3️⃣ **Tunggu Approval** — Admin akan mereview produk Anda.\n4️⃣ **Kelola Pesanan** — Terima pesanan, konfirmasi ongkir, dan kirim barang.\n5️⃣ **Terima Dana** — Cairkan saldo ke rekening bank Anda kapan saja!\n\n👉 Daftar di: /register/seller',
+    answer: 'Menjual barang di Thriftly cuma butuh 30 detik! 🏷️\n\n1️⃣ **Daftar sebagai Penjual** — Registrasi di halaman pendaftaran penjual.\n2️⃣ **Upload Produk** — Foto, deskripsi, harga, dan kondisi barang.\n3️⃣ **Tunggu Approval** — Admin akan mereview produk Anda.\n4️⃣ **Kelola Pesanan** — Terima pesanan, konfirmasi ongkir, dan kirim barang.\n5️⃣ **Terima Dana** — Cairkan saldo ke rekening bank Anda kapan saja!\n\n👉 Daftar di: [Daftar Penjual](/register/seller)',
     followUp: ['kategori', 'kondisi barang', 'pencairan']
   },
 
@@ -62,7 +62,7 @@ export const KNOWLEDGE_BASE = [
   // ────────────────────────────────────────────
   {
     keywords: ['daftar', 'registrasi', 'register', 'buat akun', 'sign up', 'mendaftar'],
-    answer: 'Anda bisa mendaftar di Thriftly dengan mudah! 🎉\n\n👤 **Sebagai Pembeli:** /register/buyer\n🏪 **Sebagai Penjual:** /register/seller\n\nProses pendaftaran cepat dan gratis. Setelah terdaftar, Anda bisa langsung mulai berbelanja atau menjual!',
+    answer: 'Anda bisa mendaftar di Thriftly dengan mudah! 🎉\n\n👤 **Sebagai Pembeli:** [Daftar Pembeli](/register/buyer)\n🏪 **Sebagai Penjual:** [Daftar Penjual](/register/seller)\n\nProses pendaftaran cepat dan gratis. Setelah terdaftar, Anda bisa langsung mulai berbelanja atau menjual!',
     followUp: ['cara belanja', 'cara jual']
   },
 
@@ -107,7 +107,7 @@ export const KNOWLEDGE_BASE = [
   // ────────────────────────────────────────────
   {
     keywords: ['kategori', 'jenis barang', 'apa saja dijual', 'barang apa', 'jual apa', 'produk apa'],
-    answer: 'Thriftly memiliki 6 kategori produk: 🏷️\n\n💻 **Tech** — Phones, Laptops, Tablets, Smartwatches\n👕 **Style** — Clothing, Shoes, Bags, Watches\n🏍️ **Auto** — Motorcycles, Cars, Bicycles\n🛋️ **Home** — Furniture, Kitchenware, Decor\n⚽ **Active** — Sports gear, Gaming, Collectibles\n📚 **Books** — Books, Novels, Stationery\n\n👉 Lihat semua produk di: /products',
+    answer: 'Thriftly memiliki 6 kategori produk: 🏷️\n\n💻 **Tech** — Phones, Laptops, Tablets, Smartwatches\n👕 **Style** — Clothing, Shoes, Bags, Watches\n🏍️ **Auto** — Motorcycles, Cars, Bicycles\n🛋️ **Home** — Furniture, Kitchenware, Decor\n⚽ **Active** — Sports gear, Gaming, Collectibles\n📚 **Books** — Books, Novels, Stationery\n\n👉 Lihat semua produk di: [Katalog Produk](/products)',
     followUp: ['kondisi barang', 'cara belanja']
   },
 
@@ -197,7 +197,7 @@ export const KNOWLEDGE_BASE = [
   // ────────────────────────────────────────────
   {
     keywords: ['faq', 'pertanyaan', 'bantuan', 'help', 'pusat bantuan', 'tanya'],
-    answer: 'Berikut pertanyaan yang sering diajukan: ❓\n\n**Q: Bagaimana cara membatalkan pesanan?**\nA: Buka Pesanan Saya → pilih produk → klik Batal (selama belum dikirim).\n\n**Q: Apakah barang bisa dikembalikan?**\nA: Bisa, jika tidak sesuai deskripsi. Gunakan fitur Komplain dalam 2x24 jam.\n\n**Q: Berapa lama estimasi pengiriman?**\nA: 2-5 hari kerja untuk sesama pulau.\n\n👉 Info lengkap di: /help',
+    answer: 'Berikut pertanyaan yang sering diajukan: ❓\n\n**Q: Bagaimana cara membatalkan pesanan?**\nA: Buka Pesanan Saya → pilih produk → klik Batal (selama belum dikirim).\n\n**Q: Apakah barang bisa dikembalikan?**\nA: Bisa, jika tidak sesuai deskripsi. Gunakan fitur Komplain dalam 2x24 jam.\n\n**Q: Berapa lama estimasi pengiriman?**\nA: 2-5 hari kerja untuk sesama pulau.\n\n👉 Info lengkap di: [Pusat Bantuan](/help)',
     followUp: ['komplain', 'pengiriman', 'kontak']
   },
 
@@ -206,7 +206,7 @@ export const KNOWLEDGE_BASE = [
   // ────────────────────────────────────────────
   {
     keywords: ['syarat', 'ketentuan', 'terms', 'aturan', 'peraturan', 'kebijakan'],
-    answer: 'Untuk informasi lengkap mengenai syarat & ketentuan penggunaan Thriftly, silakan kunjungi:\n\n📋 **Syarat & Ketentuan:** /terms\n🔒 **Kebijakan Privasi:** /privacy\n\nKami berkomitmen menjaga keamanan dan privasi data Anda.',
+    answer: 'Untuk informasi lengkap mengenai syarat & ketentuan penggunaan Thriftly, silakan kunjungi:\n\n📋 **Syarat & Ketentuan:** [Halaman S&K](/terms)\n🔒 **Kebijakan Privasi:** [Halaman Privasi](/privacy)\n\nKami berkomitmen menjaga keamanan dan privasi data Anda.',
     followUp: ['keamanan', 'kontak']
   },
 
@@ -233,7 +233,7 @@ export const KNOWLEDGE_BASE = [
   // ────────────────────────────────────────────
   {
     keywords: ['blog', 'artikel', 'berita', 'newsletter', 'info terbaru'],
-    answer: 'Thriftly memiliki blog yang berisi artikel menarik seputar tips thrifting, tren fashion, dan informasi marketplace! 📰\n\n👉 Kunjungi blog kami di: /blog\n\nAnda juga bisa berlangganan newsletter untuk mendapatkan update terbaru langsung ke email Anda.',
+    answer: 'Thriftly memiliki blog yang berisi artikel menarik seputar tips thrifting, tren fashion, dan informasi marketplace! 📰\n\n👉 Kunjungi blog kami di: [Blog Thriftly](/blog)\n\nAnda juga bisa berlangganan newsletter untuk mendapatkan update terbaru langsung ke email Anda.',
     followUp: ['membership', 'cara belanja']
   },
 ]

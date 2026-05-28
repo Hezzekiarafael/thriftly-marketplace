@@ -68,13 +68,12 @@ const ChatBot = () => {
 
   // Format pesan (bold, link, dll)
   const formatMessage = (text) => {
-    // 1. Escape link-like paths first (hanya yang berdiri sendiri, bukan di dalam HTML tag)
     let result = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     result = result.replace(/\n/g, '<br/>')
-    // Hanya cocokkan / yang diawali spasi, awal baris, atau setelah ':' (bukan di dalam tag HTML)
+    // Parse format link markdown: [Teks](url)
     result = result.replace(
-      /(?:^|\s)(\/[\w-]+(?:\/[\w-]+)*)/g,
-      (match, path) => match.replace(path, `<a href="${path}" class="text-primary-600 underline hover:text-primary-800 transition-colors" target="_blank">${path}</a>`)
+      /\[([^\]]+)\]\(([^)]+)\)/g,
+      '<a href="$2" class="text-primary-600 font-medium underline hover:text-primary-800 transition-colors" target="_blank">$1</a>'
     )
     return result
   }

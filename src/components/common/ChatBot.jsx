@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { MessageCircle, X, Send, Bot, User, ChevronDown, Sparkles } from 'lucide-react'
-import { CHATBOT_CONFIG, QUICK_REPLIES } from '../../data/chatbotKnowledge'
+import { CHATBOT_CONFIG, QUICK_REPLIES, KNOWLEDGE_BASE, findAnswer } from '../../data/chatbotKnowledge'
 import api from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 
@@ -141,14 +141,18 @@ const ChatBot = () => {
       }
     } catch (error) {
       console.error('Error menghubungkan ke AI Chatbot:', error)
-      const errorMsg = {
+      
+      // FALLBACK KE SISTEM LOKAL JIKA API GAGAL (MENGHEMAT BIAYA & HANDLE GUEST 401)
+      const result = findAnswer(messageText)
+      const fallbackMsg = {
         id: Date.now() + 1,
         type: 'bot',
-        text: 'Maaf, server AI sedang sibuk atau ada gangguan jaringan. Silakan coba lagi nanti ya. 🙏',
+        text: result ? result.answer : CHATBOT_CONFIG.fallback,
         time: new Date(),
         showQuickReplies: true,
+        followUp: result?.followUp || [],
       }
-      setMessages(prev => [...prev, errorMsg])
+      setMessages(prev => [...prev, fallbackMsg])
     } finally {
       setIsTyping(false)
     }

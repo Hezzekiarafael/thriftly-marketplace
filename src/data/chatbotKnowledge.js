@@ -7,7 +7,7 @@ export const CHATBOT_CONFIG = {
   name: 'Thriftly CS',
   avatar: '🛍️',
   greeting: 'Halo, Kak! 👋 Selamat datang di Thriftly — Marketplace Barang Bekas Terpercaya. Ada yang bisa kami bantu hari ini?',
-  fallback: 'Maaf, saya belum bisa menjawab pertanyaan tersebut. Silakan hubungi tim kami melalui WhatsApp di +62 812 3456 7890 atau email triftlydev@gmail.com agar tim kami dapat membantu dengan sepenuh hati! 💚',
+  fallback: 'Maaf, pertanyaan tersebut memerlukan jawaban lebih spesifik dari tim ahli kami. Silakan hubungi kami melalui WhatsApp di +62 812 3456 7890 atau email triftlydev@gmail.com agar tim kami dapat membantu dengan sepenuh hati! 💚',
   contact: {
     whatsapp: '+62 812 3456 7890',
     email: 'triftlydev@gmail.com',
@@ -121,10 +121,19 @@ export const KNOWLEDGE_BASE = [
   },
 
   // ────────────────────────────────────────────
+  // KELUHAN UMUM (APLIKASI/LAYANAN)
+  // ────────────────────────────────────────────
+  {
+    keywords: ['lemot', 'lambat', 'error', 'bug', 'susah', 'jelek', 'kurang', 'masalah', 'kecewa', 'buruk', 'gagal', 'keluhan'],
+    answer: 'Kami mohon maaf atas ketidaknyamanan yang Anda alami. Masukan Anda sangat berharga bagi kami agar dapat memberikan layanan yang lebih baik. Mohon ceritakan lebih lanjut situasinya agar kami dapat segera menindaklanjuti.\n\nUntuk penanganan langsung, silakan hubungi:\n📱 **WhatsApp:** +62 812 3456 7890\n📧 **Email:** triftlydev@gmail.com',
+    followUp: ['kontak']
+  },
+
+  // ────────────────────────────────────────────
   // KOMPLAIN & RETUR
   // ────────────────────────────────────────────
   {
-    keywords: ['komplain', 'keluhan', 'retur', 'kembalikan', 'barang rusak', 'tidak sesuai', 'beda', 'kecewa', 'return', 'refund', 'pengembalian'],
+    keywords: ['komplain', 'retur', 'kembalikan', 'barang rusak', 'tidak sesuai', 'beda', 'return', 'refund', 'pengembalian'],
     answer: 'Kami mohon maaf atas ketidaknyamanan yang Anda alami. 🙏\n\nJika barang yang diterima tidak sesuai deskripsi atau rusak, Anda bisa menggunakan fitur **Komplain** dalam **2x24 jam** setelah barang diterima:\n\n1️⃣ Buka menu **Pesanan Saya**\n2️⃣ Pilih pesanan yang bermasalah\n3️⃣ Klik **Ajukan Komplain**\n4️⃣ Jelaskan masalahnya dan lampirkan foto bukti\n\nTim kami akan menindaklanjuti secepatnya!',
     followUp: ['keamanan', 'kontak']
   },

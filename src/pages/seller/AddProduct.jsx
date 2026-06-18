@@ -182,7 +182,7 @@ const AddProduct = () => {
           </h1>
 
           {/* === Tokopedia Import Section === */}
-          <div className="mb-6 rounded-xl overflow-hidden shadow-lg border border-green-100" style={{ background: 'linear-gradient(135deg, #00AA5B 0%, #00C76B 50%, #008746 100%)' }}>
+          <div className="hidden mb-6 rounded-xl overflow-hidden shadow-lg border border-green-100" style={{ background: 'linear-gradient(135deg, #00AA5B 0%, #00C76B 50%, #008746 100%)' }}>
             <button
               type="button"
               onClick={() => setShowImportPanel(!showImportPanel)}

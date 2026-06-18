@@ -296,7 +296,7 @@ const AddProduct = () => {
                     <p className="text-sm text-gray-600">Dijual ke pembeli lain</p>
                   </div>
                 </label>
-                <label className="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:border-red-500">
+                <label className="hidden items-center p-4 border-2 rounded-lg cursor-pointer hover:border-red-500">
                   <input
                     type="radio"
                     {...register('tipeJual')}

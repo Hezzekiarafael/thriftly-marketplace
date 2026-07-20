@@ -49,6 +49,12 @@ const ProductList = () => {
 
   const debouncedSearch = useDebounce(searchQuery, 500)
 
+  // Sinkronisasi searchQuery jika URL param berubah (misal dari search bar di Header)
+  useEffect(() => {
+    const paramSearch = searchParams.get('search') || ''
+    setSearchQuery(paramSearch)
+  }, [searchParams])
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -69,9 +75,9 @@ const ProductList = () => {
 
     if (debouncedSearch) {
       const query = debouncedSearch.toLowerCase()
-      filtered = filtered.filter(p => 
-        p.nama.toLowerCase().includes(query) ||
-        p.deskripsi.toLowerCase().includes(query)
+      filtered = filtered.filter(p =>
+        (p.nama || '').toLowerCase().includes(query) ||
+        (p.deskripsi || '').toLowerCase().includes(query)
       )
     }
 
@@ -114,13 +120,25 @@ const ProductList = () => {
 
   const SidebarContent = () => (
     <div className="space-y-2">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-gray-900">Filter Dulu</h2>
         {hasActiveFilters && (
           <button onClick={clearFilters} className="text-sm text-accent-500 hover:text-accent-600 font-medium">
             Hapus Semua
           </button>
         )}
+      </div>
+
+      {/* Search bar di sidebar desktop */}
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Cari nama atau deskripsi..."
+          className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none"
+        />
       </div>
 
       <Accordion title="Kategori">

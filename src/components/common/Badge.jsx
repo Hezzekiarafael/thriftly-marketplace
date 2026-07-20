@@ -13,7 +13,8 @@ const Badge = ({ children, variant = 'default', size = 'md', className = '' }) =
     discount: 'bg-primary-600 text-white shadow-sm',
     sold: 'bg-gray-800 text-white shadow-sm',
     new: 'bg-green-600 text-white shadow-sm',
-    'solid-red': 'bg-red-500 text-white'
+    'solid-red': 'bg-red-500 text-white',
+    premium: 'bg-amber-400 text-amber-900 shadow-sm'
   }
   
   const sizes = {
